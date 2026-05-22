@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/*)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/SKILL.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/README.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/SKILL.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/tasks/current/task_skill.md)",
+      "Bash(mv $CLAUDE_PROJECT_DIR/.claude/skills/tasks/current/task_skill.md $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/task_skill_*.md)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9])",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/月度任务索引.md)",
+      "Bash(echo \"\" >> $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/月度任务索引.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/missing_skills.md)",
+      "Bash(echo \"\" >> $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/missing_skills.md)",
+      "Bash(edit $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/2026-04)",
+      "Bash(mv $CLAUDE_PROJECT_DIR/.claude/skills/tasks/current/task_skill.md $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/2026-04/task_skill_20260409180500_123456.md)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/2026-05)",
+      "Bash(cp $CLAUDE_PROJECT_DIR/.claude/skills/tasks/current/task_skill.md $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/2026-05/task_skill_20260521_843921.md)"
+    ]
+  }
+}
