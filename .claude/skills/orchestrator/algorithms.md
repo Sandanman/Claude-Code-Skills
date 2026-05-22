@@ -1,368 +1,81 @@
-# 核心算法实现
+# Orchestrator 核心算法实现（v1.2）
 
-本文档详细说明 Orchestrator Reasoner 的核心算法实现。
-
----
-
-## 1. 意图识别算法
-
-### 1.1 复杂度评分
-
-通过以下维度评分，总分 ≥ 3 判定为复杂目标：
-
-| 维度 | 简单(1分) | 复杂(3分) | 权重 |
-|------|-----------|-----------|------|
-| 步骤数量 | 单步操作 | 多步操作 | 1.0 |
-| 状态依赖 | 无状态 | 需保存状态 | 1.2 |
-| 技能组合 | 单skill | 多skill协同 | 1.1 |
-| 文件数量 | ≤2个文件 | >2个文件 | 0.8 |
-| 决策点 | 无分支 | 多分支决策 | 0.9 |
-
-**判断规则**：
-```python
-def calculate_complexity(intent):
-    scores = []
-    scores.append(1 if intent.is_single_step else 3)
-    scores.append(1 if not intent.needs_state else 3)
-    scores.append(1 if intent.single_skill else 3)
-    scores.append(1 if intent.file_count <= 2 else 3)
-    scores.append(1 if not intent.has_branches else 3)
-
-    total = sum(s * w for s, w in zip(scores, [1.0, 1.2, 1.1, 0.8, 0.9]))
-    return total / 5  # 归一化
-```
-
-### 1.2 意图压缩算法
-
-**输出格式**（JSON结构）：
-```json
-{
-  "intent_id": "INT_{timestamp}_{random4}",
-  "domain": "frontend|backend|database|...",
-  "action": "fix|create|optimize|refactor|analyze",
-  "target": {
-    "type": "file|component|api|function",
-    "name": "具体名称",
-    "path": "文件路径（可选）"
-  },
-  "constraints": ["技术栈约束", "兼容性要求"],
-  "keywords": ["关键词1", "关键词2"],
-  "success_criteria": "成功标准描述",
-  "original_input": "用户原始输入（前100字符）",
-  "complexity_score": 4
-}
-```
-
-**压缩步骤**：
-1. 提取核心动词作为 action
-2. 识别目标对象类型和名称
-3. 提取关键词列表（最多10个）
-4. 总结成功标准（1-2句话）
-5. 计算复杂度分数
-6. 生成唯一 intent_id
+本文档提供 Orchestrator v1.2 的核心算法伪代码实现。
 
 ---
 
-### 1.3 复杂度评分（旧规则算法 - LLM不可用时的fallback）
+## 算法索引
 
-> ⚠️ **注意**：以下规则算法仅作为 LLM 意图识别不可用时的 fallback 方案。正常情况下应由 LLM 进行意图识别（见 1.5 节）。
-
-通过以下维度评分，总分 ≥ 3 判定为复杂目标：
-
-| 维度 | 简单(1分) | 复杂(3分) | 权重 |
-|------|-----------|-----------|------|
-| 步骤数量 | 单步操作 | 多步操作 | 1.0 |
-| 状态依赖 | 无状态 | 需保存状态 | 1.2 |
-| 技能组合 | 单skill | 多skill协同 | 1.1 |
-| 文件数量 | ≤2个文件 | >2个文件 | 0.8 |
-| 决策点 | 无分支 | 多分支决策 | 0.9 |
-
-**判断规则**：
-```python
-def calculate_complexity(intent):
-    scores = []
-    scores.append(1 if intent.is_single_step else 3)
-    scores.append(1 if not intent.needs_state else 3)
-    scores.append(1 if intent.single_skill else 3)
-    scores.append(1 if intent.file_count <= 2 else 3)
-    scores.append(1 if not intent.has_branches else 3)
-
-    total = sum(s * w for s, w in zip(scores, [1.0, 1.2, 1.1, 0.8, 0.9]))
-    return total / 5  # 归一化
-```
-
-### 1.4 意图压缩（旧规则算法 - LLM不可用时的fallback）
-
-> ⚠️ **注意**：以下规则算法仅作为 LLM 意图识别不可用时的 fallback 方案。
-
-**输出格式**（JSON结构）：
-```json
-{
-  "intent_id": "INT_{timestamp}_{random4}",
-  "domain": "frontend|backend|database|...",
-  "action": "fix|create|optimize|refactor|analyze",
-  "target": {
-    "type": "file|component|api|function",
-    "name": "具体名称",
-    "path": "文件路径（可选）"
-  },
-  "constraints": ["技术栈约束", "兼容性要求"],
-  "keywords": ["关键词1", "关键词2"],
-  "success_criteria": "成功标准描述",
-  "original_input": "用户原始输入（前100字符）",
-  "complexity_score": 4
-}
-```
-
-**压缩步骤**：
-1. 提取核心动词作为 action
-2. 识别目标对象类型和名称
-3. 提取关键词列表（最多10个）
-4. 总结成功标准（1-2句话）
-5. 计算复杂度分数
-6. 生成唯一 intent_id
+| 编号 | 算法名称 | 复杂度 | 用途 |
+|------|---------|--------|------|
+| 1 | 意图识别算法 | O(n) | LLM驱动 + fallback |
+| 2 | 历史相似度计算 | O(k×m) | Jaccard + 加权维度 |
+| 3 | 主skill匹配算法 | O(n×m) | 关键词+领域+操作 评分 |
+| 4 | DAG构建与循环检测 | O(V+E) | 依赖图构建 |
+| 5 | Kahn拓扑排序 | O(V+E) | 执行顺序生成 |
+| 6 | 并行层识别算法 | O(V²) | 可并行技能分组 |
+| 7 | 完成标准验证 | O(n) | 各原子skill标准校验 |
+| 8 | 目标偏差量化 | O(n) | 加权偏差计算 |
+| 9 | 错误影响评估 | O(5) | 5维度评分模型 |
+| 10 | 反思重规划算法 | O(n×m) | 问题分类 + 调整生成 |
 
 ---
 
-## 1.5 LLM意图识别（新 - 主要方案）
+## 算法1：意图识别算法
 
-> ✅ **推荐**：以下 LLM 驱动的意图识别为主方案，能够处理模糊、多义、隐含的用户输入，比规则匹配更准确。规则算法（1.3/1.4节）仅作为 LLM 不可用时的 fallback。
-
-### 1.5.1 LLM意图识别流程
-
-```
-用户原始输入
-    ↓
-构造意图分析Prompt（系统提示词 + 用户输入）
-    ↓
-调用 LLM（使用 config.md 中的配置参数）
-    ↓
-解析 LLM 返回的 JSON
-    ↓
-验证JSON格式（intent_id、domain、action等字段）
-    ↓ 验证失败
-fallback: 使用规则算法（1.3/1.4节）生成意图
-    ↓ 验证成功
-返回结构化意图（与规则算法格式完全兼容）
-```
-
-### 1.5.2 意图分析系统提示词
+### 1.1 LLM意图识别（主方案）
 
 ```python
-INTENT_SYSTEM_PROMPT = """
-你是一个专业的 AI 代码助手意图分析专家。你的任务是对用户的自然语言输入进行深度分析，提取结构化的意图信息。
-
-【分析原则】
-1. 深入理解用户的真实需求，而不仅仅是表面文字
-2. 对于模糊的输入，基于上下文做出合理推断
-3. 识别隐含的需求和潜在的问题
-4. 区分简单任务和复杂任务
-
-【简单任务判断标准】- 满足以下 ALL 条件才算简单：
-  ✅ 单个操作即可完成（无需分解为多个步骤）
-  ✅ 不需要保存中间状态供后续使用
-  ✅ 仅涉及一个原子技能（见下方技能列表）
-  ✅ 不涉及复杂决策或多分支逻辑
-  ✅ 修改/创建文件数量 ≤ 2 个
-
-【复杂任务特征】- 满足以下 ANY 条件即为复杂：
-  ❌ 需要多步骤执行
-  ❌ 需要保存状态供后续步骤使用
-  ❌ 需要多个技能协同完成
-  ❌ 涉及多文件操作（> 2个）
-  ❌ 包含条件判断或分支逻辑
-  ❌ 涉及多个领域（前端+后端+数据库等）
-
-【领域分类】domain（选择一个最匹配的）
-- frontend：Vue/React/Angular组件、页面、样式、UI交互
-- backend：Node.js/Python/Java后端API、服务端逻辑
-- database：数据库设计、SQL、ORM、数据模型
-- fullstack：前后端联动、涉及多个技术栈
-- devops：部署、CI/CD、容器化、环境配置
-- security：安全相关（认证、授权、加密、防护）
-- testing：测试用例、单元测试、E2E测试
-- refactoring：代码重构、性能优化、消除重复
-- debugging：问题诊断、bug修复、错误分析
-- architecture：系统设计、技术选型、架构决策
-- documentation：文档编写、注释、README
-- analysis：代码分析、项目扫描、技术调研
-- general：不属于上述任何领域的通用问题
-
-【操作分类】action（选择一个最匹配的）
-- fix：修复bug、解决问题、调试错误
-- create：新建功能、创建文件、实现需求
-- optimize：优化性能、提升效率、重构代码
-- refactor：重构代码结构、改善可维护性
-- analyze：分析代码、项目诊断、技术调研
-- document：编写文档、添加注释
-- test：编写测试、验证功能
-- deploy：部署、发布、环境配置
-- review：代码审查、安全审查
-- maintain：日常维护、版本更新
-- integrate：集成第三方服务、API对接
-- configure：配置管理、环境变量、项目设置
-
-【约束提取】
-从用户输入中识别并提取：
-- 技术栈约束（"必须用 Vue3"、"不能用 jQuery"）
-- 兼容性要求（"兼容 IE11"、"移动端适配"）
-- 性能要求（"支持1000并发"、"首屏<2s"）
-- 其他约束（"不能引入新依赖"、"保持现有风格"）
-
-【关键词提取】
-提取最能代表任务本质的关键词（最多10个），用于后续技能匹配和历史检索。
-
-【成功标准】
-明确描述任务完成后的可验证标准，描述应该是具体可测量的。
-"""
-```
-
-### 1.5.3 意图分析用户输入模板
-
-```python
-INTENT_USER_TEMPLATE = """
-【用户输入】
-{user_input}
-
-【已注册的主技能列表】（用于判断涉及领域和匹配技能）
-主技能列表：{main_skills_list}
-（如果用户意图与某个主技能高度相关，domain 应选择该技能对应领域）
-
-【项目上下文】（如果有）
-{project_context}
-（如果存在项目上下文，需要结合上下文理解用户意图）
-
-请分析上述用户输入，输出以下格式的 JSON（纯JSON，不要有其他内容）：
-
-{{
-  "intent_id": "INT_时间戳_四位随机数",
-  "domain": "领域标签（从上面列表中选择，或推断一个新的通用领域）",
-  "action": "主要操作类型（从上面列表中选择最匹配的）",
-  "target": {{
-    "type": "file|component|api|function|module|page|feature|system|other",
-    "name": "具体名称或描述",
-    "path": "文件路径或目录（如果有，可为空字符串）"
-  }},
-  "constraints": ["约束1", "约束2"],
-  "keywords": ["关键词1", "关键词2", "关键词3"],
-  "success_criteria": "成功标准描述（一句话，具体可验证）",
-  "original_input": "用户原始输入（完整保留，最多截取前200字符）",
-  "complexity_assessment": {{
-    "is_simple": true或false,
-    "complexity_score": 1到10的数字,
-    "reasoning": "复杂度判断的理由（50字以内）",
-    "requires_multiple_steps": true或false,
-    "needs_state": true或false,
-    "requires_multiple_skills": true或false,
-    "involves_multiple_files": true或false,
-    "has_branching": true或false,
-    "estimated_skills": ["可能需要的技能名称"]
-  }},
-  "confidence": {{
-    "overall": 0.0到1.0之间的置信度,
-    "domain_confidence": 0.0到1.0,
-    "action_confidence": 0.0到1.0,
-    "complexity_confidence": 0.0到1.0,
-    "uncertain_aspects": ["描述不确定的方面"]
-  }}
-}}
-
-注意：
-1. 仅输出 JSON，不要有 ```json 或其他格式标记
-2. 如果用户输入非常模糊，基于上下文做出合理推断
-3. complexity_score：1-3为简单，4-6为一般复杂，7-10为非常复杂
-4. confidence 反映分析结果的可靠性，低于 0.6 时需要提示用户确认
-"""
-```
-
-### 1.5.4 LLM意图识别代码实现
-
-```python
-import re
-import json
-import time
-import random
-
 def llm_intent_recognition(user_input: str,
-                            main_skills_list: list = None,
-                            project_context: str = None) -> dict:
+                             main_skills_list: list = None,
+                             project_context: str = None) -> dict:
     """
     LLM驱动的意图识别函数
 
     Args:
         user_input: 用户原始输入
-        main_skills_list: 已注册的主技能列表（用于上下文）
-        project_context: 项目上下文信息（可选）
+        main_skills_list: 已注册主skill列表（用于上下文）
+        project_context: 项目上下文（如 project_context.json 内容）
 
     Returns:
-        dict: 结构化意图对象（与规则算法格式兼容）
-
-    流程:
-        1. 构造Prompt（系统提示词 + 用户输入）
-        2. 调用LLM
-        3. 解析JSON响应
-        4. 验证格式
-        5. 通过验证 → 返回结果
-        6. 验证失败 → fallback到规则算法
+        dict: 结构化意图对象
     """
     from config import LLM_INTENT_CONFIG
 
     # Step 1: 构造Prompt
-    skills_text = ""
-    if main_skills_list:
-        skills_text = "\n".join([
-            f"- {s['name']}: {s['desc']}"
-            for s in main_skills_list
-        ])
-    else:
-        skills_text = "（无可用技能列表）"
-
-    context_text = project_context if project_context else "（无项目上下文）"
+    skills_text = "\n".join([
+        f"- {s['name']}: {s['desc']}"
+        for s in (main_skills_list or [])
+    ]) or "（无可用技能列表）"
 
     user_prompt = INTENT_USER_TEMPLATE.format(
         user_input=user_input,
         main_skills_list=skills_text,
-        project_context=context_text
+        project_context=project_context or "（无项目上下文）"
     )
 
     # Step 2: 调用LLM
     try:
-        from anthropic import Anthropic
-        client = Anthropic()
-
         response = client.messages.create(
             model=LLM_INTENT_CONFIG["model"],
             max_tokens=LLM_INTENT_CONFIG["max_tokens"],
             system=INTENT_SYSTEM_PROMPT,
-            messages=[{
-                "role": "user",
-                "content": user_prompt
-            }],
+            messages=[{"role": "user", "content": user_prompt}],
             temperature=LLM_INTENT_CONFIG["temperature"]
         )
-
         raw_response = response.content[0].text.strip()
-
     except Exception as e:
         print(f"[意图识别] LLM调用失败: {e}，使用规则算法 fallback")
         return rule_based_intent_recognition(user_input)
 
     # Step 3: 解析JSON
-    # 尝试从响应中提取JSON（处理响应中可能包含的额外文本）
-    json_match = re.search(
-        r'\{[\s\S]*\}',
-        raw_response,
-        re.MULTILINE
-    )
-
+    import re, json
+    json_match = re.search(r'\{[\s\S]*\}', raw_response, re.MULTILINE)
     if not json_match:
-        print(f"[意图识别] LLM响应无法解析为JSON，使用规则算法 fallback")
         return rule_based_intent_recognition(user_input)
-
     try:
         intent_data = json.loads(json_match.group())
-    except json.JSONDecodeError as e:
-        print(f"[意图识别] JSON解析失败: {e}，使用规则算法 fallback")
+    except json.JSONDecodeError:
         return rule_based_intent_recognition(user_input)
 
     # Step 4: 验证必需字段
@@ -371,222 +84,121 @@ def llm_intent_recognition(user_input: str,
         "constraints", "keywords", "success_criteria",
         "original_input", "complexity_assessment", "confidence"
     ]
-
-    missing_fields = [f for f in required_fields if f not in intent_data]
-
-    if missing_fields:
-        print(f"[意图识别] 缺少字段: {missing_fields}，使用规则算法 fallback")
+    if any(f not in intent_data for f in required_fields):
         return rule_based_intent_recognition(user_input)
 
     # Step 5: 补充和标准化
-    # 确保 intent_id 格式正确
+    import time, random
     if not intent_data["intent_id"].startswith("INT_"):
-        timestamp = time.strftime("%Y%m%d%H%M%S")
-        random_id = random.randint(1000, 9999)
-        intent_data["intent_id"] = f"INT_{timestamp}_{random_id}"
+        intent_data["intent_id"] = f"INT_{time.strftime('%Y%m%d%H%M%S')}_{random.randint(1000, 9999)}"
 
-    # 确保 target 是字典
     if isinstance(intent_data["target"], str):
-        intent_data["target"] = {
-            "type": "unknown",
-            "name": intent_data["target"],
-            "path": ""
-        }
+        intent_data["target"] = {"type": "unknown", "name": intent_data["target"], "path": ""}
 
-    # 提取复杂度分数（兼容新旧格式）
-    complexity = intent_data.get("complexity_assessment", {})
-    if isinstance(complexity, dict):
-        intent_data["complexity_score"] = complexity.get("complexity_score", 3)
-        intent_data["complexity_reasoning"] = complexity.get("reasoning", "")
-    else:
-        intent_data["complexity_score"] = int(complexity)
-        intent_data["complexity_reasoning"] = ""
-
-    # Step 6: 检查置信度，生成警告
-    confidence = intent_data.get("confidence", {})
-    overall_confidence = confidence.get("overall", 1.0)
-
-    if overall_confidence < LLM_INTENT_CONFIG["confidence_threshold"]:
-        uncertain = confidence.get("uncertain_aspects", [])
-        print(f"[意图识别] ⚠️ 置信度较低 ({overall_confidence:.2f})，不确定方面: {uncertain}")
-        print(f"[意图识别] 建议向用户确认意图")
-
-    # Step 7: 添加元数据
+    # Step 6: 添加元数据
     intent_data["recognition_method"] = "llm"
     intent_data["llm_model"] = LLM_INTENT_CONFIG["model"]
     intent_data["recognition_timestamp"] = time.strftime("%Y-%m-%d %H:%M:%S")
 
     return intent_data
+```
 
+### 1.2 规则意图识别（fallback）
 
+```python
 def rule_based_intent_recognition(user_input: str) -> dict:
-    """
-    规则算法意图识别（LLM不可用时的fallback）
-    保留原有的规则解析逻辑，但输出格式与LLM版本兼容
-    """
-    # 原有规则算法逻辑...
-    # （见 1.3 和 1.4 节的实现）
+    """规则算法意图识别（LLM不可用时的fallback）"""
+    import time, random
 
-    timestamp = time.strftime("%Y%m%d%H%M%S")
-    random_id = random.randint(1000, 9999)
+    def detect_domain(text):
+        domain_keywords = {
+            "frontend": ["vue", "react", "组件", "页面", "样式", "css", "html", "前端"],
+            "backend": ["api", "接口", "后端", "数据库", "server", "node"],
+            "database": ["sql", "mongodb", "数据库", "表结构"],
+            "security": ["安全", "认证", "授权", "登录", "权限", "加密"],
+            "testing": ["测试", "test", "单元测试", "e2e"],
+            "refactoring": ["重构", "优化", "简化", "重写"],
+            "debugging": ["bug", "错误", "修复", "问题", "调试"]
+        }
+        text_lower = text.lower()
+        for domain, keywords in domain_keywords.items():
+            if any(kw in text_lower for kw in keywords):
+                return domain
+        return "general"
 
-    intent = {
-        "intent_id": f"INT_{timestamp}_{random_id}",
+    def extract_action(text):
+        action_keywords = {
+            "fix": ["修复", "解决", "bug", "错误", "问题"],
+            "create": ["新建", "创建", "实现", "添加"],
+            "optimize": ["优化", "改进", "提升", "性能"],
+            "refactor": ["重构", "重写", "简化"],
+            "analyze": ["分析", "扫描", "诊断", "检查"],
+            "document": ["文档", "注释", "说明"],
+            "test": ["测试", "验证"],
+            "deploy": ["部署", "发布", "上线"]
+        }
+        text_lower = text.lower()
+        for action, keywords in action_keywords.items():
+            if any(kw in text_lower for kw in keywords):
+                return action
+        return "create"
+
+    def extract_target(text):
+        return {"type": "unknown", "name": text[:50], "path": ""}
+
+    def extract_keywords(text):
+        stop_words = {"的", "是", "在", "和", "了", "我", "你"}
+        words = [w for w in text if len(w) > 1 and w not in stop_words]
+        return list(set(words))[:10]
+
+    def calculate_complexity(text):
+        score = 3
+        step_indicators = ["然后", "接着", "最后", "第一", "第二", "第三"]
+        file_indicators = ["多个", "几个", "不同的", "多个文件"]
+        if any(ind in text for ind in step_indicators): score += 2
+        if any(ind in text for ind in file_indicators): score += 1
+        if len(text) > 100: score += 1
+        return min(max(score, 1), 10)
+
+    return {
+        "intent_id": f"INT_{time.strftime('%Y%m%d%H%M%S')}_{random.randint(1000, 9999)}",
         "domain": detect_domain(user_input),
         "action": extract_action(user_input),
         "target": extract_target(user_input),
-        "constraints": extract_constraints(user_input),
+        "constraints": [],
         "keywords": extract_keywords(user_input),
-        "success_criteria": generate_success_criteria(user_input),
+        "success_criteria": f"完成需求：{user_input[:50]}",
         "original_input": user_input[:200],
         "complexity_score": calculate_complexity(user_input),
-        "complexity_reasoning": "由规则算法生成（LLM不可用）",
+        "complexity_assessment": {
+            "is_simple": calculate_complexity(user_input) <= 3,
+            "complexity_score": calculate_complexity(user_input),
+            "reasoning": "规则算法生成",
+            "requires_multiple_steps": calculate_complexity(user_input) > 3,
+            "needs_state": False,
+            "requires_multiple_skills": False,
+            "involves_multiple_files": len(user_input) > 100,
+            "has_branching": False
+        },
+        "confidence": {"overall": 0.5, "uncertain_aspects": ["LLM不可用，使用规则算法"]},
         "recognition_method": "rule_based_fallback",
         "recognition_timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
-
-    return intent
-
-
-def detect_domain(user_input: str) -> str:
-    """基于关键词识别领域"""
-    domain_keywords = {
-        "frontend": ["vue", "react", "组件", "页面", "样式", "css", "html", "前端"],
-        "backend": ["api", "接口", "后端", "数据库", "server", "node"],
-        "database": ["sql", "mongodb", "数据库", "表结构", "query"],
-        "security": ["安全", "认证", "授权", "登录", "权限", "加密"],
-        "testing": ["测试", "test", "单元测试", "e2e"],
-        "refactoring": ["重构", "优化", "简化", "重写"],
-        "debugging": ["bug", "错误", "修复", "问题", "调试"]
-    }
-
-    user_input_lower = user_input.lower()
-    for domain, keywords in domain_keywords.items():
-        if any(kw.lower() in user_input_lower for kw in keywords):
-            return domain
-    return "general"
-
-
-def extract_action(user_input: str) -> str:
-    """基于关键词识别操作类型"""
-    action_keywords = {
-        "fix": ["修复", "解决", "bug", "错误", "问题"],
-        "create": ["新建", "创建", "实现", "添加"],
-        "optimize": ["优化", "改进", "提升", "性能"],
-        "refactor": ["重构", "重写", "简化"],
-        "analyze": ["分析", "扫描", "诊断", "检查"],
-        "document": ["文档", "注释", "说明"],
-        "test": ["测试", "验证"],
-        "deploy": ["部署", "发布", "上线"]
-    }
-
-    user_input_lower = user_input.lower()
-    for action, keywords in action_keywords.items():
-        if any(kw.lower() in user_input_lower for kw in keywords):
-            return action
-    return "create"
-
-
-def extract_target(user_input: str) -> dict:
-    """提取目标对象"""
-    # 简化的目标提取逻辑
-    return {
-        "type": "unknown",
-        "name": user_input[:50],
-        "path": ""
-    }
-
-
-def extract_constraints(user_input: str) -> list:
-    """提取约束条件"""
-    constraints = []
-    constraint_keywords = ["必须", "不能", "需要", "要求", "只能"]
-    for kw in constraint_keywords:
-        if kw in user_input:
-            constraints.append(kw + user_input.split(kw)[1].split("，")[0].split("。")[0])
-    return constraints[:5]
-
-
-def extract_keywords(user_input: str) -> list:
-    """提取关键词"""
-    stop_words = {"的", "是", "在", "和", "了", "我", "你", "他", "她", "它"}
-    words = [w for w in user_input if len(w) > 1 and w not in stop_words]
-    return list(set(words))[:10]
-
-
-def generate_success_criteria(user_input: str) -> str:
-    """生成成功标准"""
-    return f"完成用户描述的需求：{user_input[:50]}..."
-
-
-def calculate_complexity(user_input: str) -> int:
-    """
-    简化版复杂度评分（fallback专用）
-    返回 1-10 的分数
-    """
-    score = 3  # 默认中等复杂度
-
-    # 多步骤指示
-    step_indicators = ["然后", "接着", "最后", "其次", "第一", "第二", "第三"]
-    if any(ind in user_input for ind in step_indicators):
-        score += 2
-
-    # 多文件指示
-    file_indicators = ["多个", "几个", "不同的", "多个文件"]
-    if any(ind in user_input for ind in file_indicators):
-        score += 1
-
-    # 复杂描述
-    if len(user_input) > 100:
-        score += 1
-
-    return min(max(score, 1), 10)  # 限制在1-10范围
 ```
 
-### 1.5.5 LLM意图识别使用流程
+### 1.3 统一入口
 
 ```python
 def recognize_intent(user_input: str,
                     use_llm: bool = True,
                     main_skills_list: list = None,
                     project_context: str = None) -> dict:
-    """
-    统一的意图识别入口函数
-
-    Args:
-        user_input: 用户原始输入
-        use_llm: 是否优先使用LLM（False时强制使用规则算法）
-        main_skills_list: 已注册的主技能列表
-        project_context: 项目上下文
-
-    Returns:
-        dict: 结构化意图对象
-    """
+    """统一的意图识别入口函数"""
     from config import LLM_INTENT_CONFIG
 
-    # 如果显式禁用LLM，直接使用规则算法
-    if not use_llm:
-        print("[意图识别] LLM已被禁用，使用规则算法")
+    if not use_llm or not LLM_INTENT_CONFIG.get("enabled", True):
         return rule_based_intent_recognition(user_input)
 
-    # 如果配置要求优先使用规则算法
-    if not LLM_INTENT_CONFIG.get("enabled", True):
-        print("[意图识别] LLM意图识别未启用，使用规则算法")
-        return rule_based_intent_recognition(user_input)
-
-    # 检查是否需要强制使用规则算法
-    # （简单查询、帮助请求等场景）
-    simple_patterns = [
-        r"^help$", r"^帮助$", r"^怎么用", r"^如何使用",
-        r"^what.*skill", r"^有哪些.*技能"
-    ]
-    for pattern in simple_patterns:
-        if re.match(pattern, user_input.lower().strip()):
-            print("[意图识别] 检测到简单查询，使用规则算法")
-            return rule_based_intent_recognition(user_input)
-
-    # 使用LLM进行意图识别
-    print("[意图识别] 使用LLM进行意图分析...")
     return llm_intent_recognition(
         user_input=user_input,
         main_skills_list=main_skills_list,
@@ -594,139 +206,55 @@ def recognize_intent(user_input: str,
     )
 ```
 
-### 1.5.6 与现有流程集成
-
-意图识别在 Orchestrator 中的完整集成流程：
-
-```python
-# Orchestrator 执行入口
-def orchestrator_main(user_input: str):
-    """
-    Orchestrator 主执行流程
-    """
-    # ========== 步骤1：意图识别与目标推理 ==========
-    # 读取已注册的主技能列表（用于LLM上下文）
-    main_skills = load_main_skills()
-
-    # 读取项目上下文（如果存在）
-    project_context = load_project_context()
-
-    # 统一意图识别入口
-    # use_llm=True 启用LLM识别（主方案）
-    # use_llm=False 强制规则算法
-    intent = recognize_intent(
-        user_input=user_input,
-        use_llm=True,  # ✅ 新增：LLM意图识别
-        main_skills_list=main_skills,
-        project_context=project_context
-    )
-
-    # 根据复杂度判断执行路径
-    if intent["complexity_assessment"]["is_simple"]:
-        # 简单目标：直接执行单个原子技能
-        print(f"[意图识别] 判定为简单目标，直接执行")
-        direct_execute(intent)
-        return
-
-    # 复杂目标：进入完整执行流程
-    print(f"[意图识别] 判定为复杂目标，进入任务编排流程")
-    print(f"  - 领域: {intent['domain']}")
-    print(f"  - 操作: {intent['action']}")
-    print(f"  - 复杂度: {intent['complexity_score']}/10")
-    if intent.get("confidence", {}).get("overall", 1.0) < 0.6:
-        print(f"  ⚠️ 置信度较低: {intent['confidence']['overall']:.2f}")
-        print(f"  ⚠️ 不确定方面: {intent['confidence'].get('uncertain_aspects', [])}")
-
-    # ========== 后续步骤（略）==========
-    # 步骤2：历史意图检索
-    # 步骤3：主skill匹配
-    # ... (其余流程不变)
-```
-
-### 1.5.7 置信度低时的用户确认机制
-
-当 LLM 意图识别的置信度低于阈值（默认0.6）时，应向用户确认：
-
-```python
-def prompt_intent_confirmation(intent: dict) -> str:
-    """
-    当置信度低时，向用户确认意图
-
-    Args:
-        intent: LLM识别出的意图
-
-    Returns:
-        str: 用户确认后的意图（确认/修改/忽略）
-    """
-    confidence = intent.get("confidence", {})
-    uncertain = confidence.get("uncertain_aspects", [])
-
-    confirmation_prompt = f"""
-🤔 我对您的意图理解有一定不确定性（置信度: {confidence.get('overall', 0):.0%}），请确认：
-
-【我的理解】
-- 领域: {intent['domain']}
-- 操作: {intent['action']}
-- 目标: {intent['target']['name']}
-- 复杂度: {'简单' if intent['complexity_assessment']['is_simple'] else '复杂'}
-
-【不确定的方面】
-{chr(10).join(f"  - {a}" for a in uncertain) if uncertain else "  无"}
-
-【请选择】
-A. 确认 - 我的理解正确，开始执行
-B. 修改 - 需要调整以上内容
-C. 忽略 - 直接执行我的原始需求
-"""
-
-    # 等待用户响应...
-    # (使用 user_interaction.md 中的确认机制)
-```
-
 ---
 
-## 2. 历史意图检索算法
+## 算法2：历史相似度计算
 
 ### 2.1 特征提取
 
-**特征向量**：
 ```python
-feature_vector = {
-    "domain": String,           # 领域标签
-    "action": String,           # 操作类型
-    "target_type": String,      # 目标类型
-    "keywords": Array[String],  # 关键词列表（权重高）
-    "tech_stack": Array[String],# 技术栈
-    "complexity": Number        # 复杂度分数
-}
+def extract_intent_features(intent: dict) -> dict:
+    """提取意图特征向量"""
+    return {
+        "domain": intent.get("domain", ""),
+        "action": intent.get("action", ""),
+        "target_type": intent.get("target", {}).get("type", ""),
+        "keywords": set(intent.get("keywords", [])),
+        "complexity": intent.get("complexity_score", 3),
+    }
 ```
-
-**特征权重**：
-- domain: 0.25
-- action: 0.20
-- keywords: 0.30（最重要）
-- target_type: 0.15
-- tech_stack: 0.10
 
 ### 2.2 相似度计算
 
-**相似度计算公式**：
 ```python
-def calculate_similarity(intent_a, intent_b):
-    # 各维度相似度
-    domain_sim = 1 if intent_a.domain == intent_b.domain else 0
-    action_sim = 1 if intent_a.action == intent_b.action else 0
+def calculate_similarity(intent_a: dict, intent_b: dict) -> float:
+    """
+    计算两个意图的相似度（0.0 ~ 1.0）
+    权重：domain=0.25, action=0.20, keywords=0.30, target_type=0.15, complexity=0.10
+    """
+    features_a = extract_intent_features(intent_a)
+    features_b = extract_intent_features(intent_b)
 
-    # Jaccard相似度
-    keywords_a = set(intent_a.keywords)
-    keywords_b = set(intent_b.keywords)
-    keyword_sim = len(keywords_a & keywords_b) / len(keywords_a | keywords_b)
+    # 1. 领域匹配（精确）
+    domain_sim = 1.0 if features_a["domain"] == features_b["domain"] else 0.0
 
-    target_sim = 1 if intent_a.target_type == intent_b.target_type else 0
+    # 2. 操作匹配（精确）
+    action_sim = 1.0 if features_a["action"] == features_b["action"] else 0.0
 
-    tech_a = set(intent_a.tech_stack)
-    tech_b = set(intent_b.tech_stack)
-    tech_sim = len(tech_a & tech_b) / len(tech_a | tech_b) if (tech_a | tech_b) else 0
+    # 3. 关键词Jaccard相似度（最重要）
+    kw_a = features_a["keywords"]
+    kw_b = features_b["keywords"]
+    if kw_a and kw_b:
+        keyword_sim = len(kw_a & kw_b) / len(kw_a | kw_b)
+    else:
+        keyword_sim = 0.0
+
+    # 4. 目标类型匹配
+    target_sim = 1.0 if features_a["target_type"] == features_b["target_type"] else 0.0
+
+    # 5. 复杂度相似度
+    complexity_diff = abs(features_a["complexity"] - features_b["complexity"])
+    complexity_sim = max(0, 1 - complexity_diff / 10)
 
     # 加权求和
     similarity = (
@@ -734,96 +262,154 @@ def calculate_similarity(intent_a, intent_b):
         0.20 * action_sim +
         0.30 * keyword_sim +
         0.15 * target_sim +
-        0.10 * tech_sim
+        0.10 * complexity_sim
     )
 
     return similarity
 ```
 
-**召回策略**：
-- 从月度索引中召回 Top 3-5
-- 相似度排序：按 similarity 降序
-- 阈值判断：similarity ≥ 0.85 认为高度相似
-- Top1 ≥ 0.85：直接使用历史结果
-- 0.70 ≤ similarity < 0.85：作为参考案例展示
+### 2.3 Top-K 召回
+
+```python
+def retrieve_similar_history(intent: dict,
+                              monthly_index: list,
+                              top_k: int = 5,
+                              threshold: float = 0.85) -> list:
+    """
+    从月度索引中召回最相似的Top-K历史任务
+
+    Args:
+        intent: 当前意图
+        monthly_index: 月度索引列表（每个元素含 intent_json 字段）
+        top_k: 召回数量
+        threshold: 相似度阈值（≥ threshold 为高度相似）
+
+    Returns:
+        list: [{task_id, similarity, task_path}, ...] 按相似度降序
+    """
+    scored = []
+    for entry in monthly_index:
+        # 月度索引中存储了 intent_json 字段
+        historical_intent = entry.get("intent_json", {})
+        similarity = calculate_similarity(intent, historical_intent)
+        scored.append({
+            "task_id": entry["task_id"],
+            "similarity": similarity,
+            "task_path": entry["archive_path"],
+            "result_summary": entry.get("result_summary", ""),
+            "main_skill": entry.get("main_skill", "")
+        })
+
+    # 按相似度降序
+    scored.sort(key=lambda x: x["similarity"], reverse=True)
+
+    # 分类
+    high_similarity = [s for s in scored if s["similarity"] >= threshold]
+    candidates = scored[:top_k]
+
+    return {
+        "high_similarity": high_similarity,  # ≥ 0.85：直接复用
+        "candidates": candidates              # Top-K：展示参考
+    }
+```
 
 ---
 
-## 3. 主skill匹配算法
+## 算法3：主skill匹配算法
 
 ### 3.1 匹配分数计算
 
 ```python
-def calculate_match_score(intent, skill):
-    match_score = 0
+def calculate_match_score(intent: dict, skill: dict) -> float:
+    """
+    计算意图与主skill的匹配分数
+    权重：关键词=0.5, 领域=0.3, 操作=0.2（归一化）
+    """
+    score = 0.0
+    keywords = set(intent.get("keywords", []))
+    match_keywords = set(skill.get("match_keywords", []).split(", "))
 
-    # 1. 关键词精确匹配（权重0.5）
-    for keyword in intent.keywords:
-        if keyword in skill.match_keywords:
-            match_score += 0.5
+    # 1. 关键词精确匹配（权重0.5，对应匹配词数）
+    keyword_matches = keywords & match_keywords
+    keyword_score = len(keyword_matches) * 0.5
 
     # 2. 领域匹配（权重0.3）
-    if intent.domain in skill.core_ability:
-        match_score += 0.3
+    domain_score = 0.3 if intent.get("domain", "") in skill.get("core_ability", "") else 0.0
 
     # 3. 操作类型匹配（权重0.2）
-    if intent.action in skill.match_keywords:
-        match_score += 0.2
+    action_score = 0.2 if intent.get("action", "") in skill.get("match_keywords", "") else 0.0
 
-    # 归一化到 [0, 1]
-    max_score = 0.5 * len(intent.keywords) + 0.3 + 0.2
-    return match_score / max_score if max_score > 0 else 0
-```
+    total_score = keyword_score + domain_score + action_score
 
-### 3.2 匹配结果判定
+    # 归一化
+    max_possible = len(keywords) * 0.5 + 0.3 + 0.2
+    return total_score / max_possible if max_possible > 0 else 0.0
 
-```python
-def match_main_skill(intent, skills_register):
+
+def match_main_skill(intent: dict, skills_register: list) -> tuple:
+    """
+    匹配主skill
+
+    Returns:
+        (matched_skills, match_type)
+        - match_type: "no_match" | "unique" | "multiple" | "combo"
+        - matched_skills: None | 单个skill | [skill1, skill2] 列表
+    """
     candidates = []
-
     for skill in skills_register:
-        if skill.status != "启用":
+        if skill.get("status") != "启用":
             continue
-
         score = calculate_match_score(intent, skill)
-        if score >= 0.4:
-            candidates.append({
-                "skill": skill,
-                "score": score
-            })
+        if score >= 0.4:  # 最低匹配分数
+            candidates.append({"skill": skill, "score": score})
 
-    # 按分数排序
     candidates.sort(key=lambda x: x["score"], reverse=True)
 
-    if len(candidates) == 0:
+    if not candidates:
         return None, "no_match"
     elif len(candidates) == 1:
         return candidates[0]["skill"], "unique"
     else:
-        return candidates[:3], "multiple"  # 返回Top 3
+        return [c["skill"] for c in candidates[:3]], "multiple"
+
+
+def detect_skill_combo(intent: dict, matched_skills: list) -> bool:
+    """
+    检测是否需要多skill组合
+    触发条件：复杂度 ≥ 7 或意图涉及多领域
+    """
+    complexity = intent.get("complexity_score", 3)
+    return complexity >= 7 or len(matched_skills) > 1
 ```
 
 ---
 
-## 4. 依赖关系分析算法
-
-### 4.1 DAG构建与循环检测
+## 算法4：DAG构建与循环检测
 
 ```python
-def build_dependency_graph(atomic_skills):
+def build_dependency_graph(atomic_skills: list) -> tuple:
     """
     构建依赖图并检测循环依赖
+
+    Returns:
+        (graph, in_degree, error_msg)
+        - graph: {skill_name: [dependent_skills]}
+        - in_degree: {skill_name: number_of_dependencies}
+        - error_msg: None表示成功，"循环依赖"表示失败
     """
-    graph = {skill.name: [] for skill in atomic_skills}
-    in_degree = {skill.name: 0 for skill in atomic_skills}
+    graph = {s["name"]: [] for s in atomic_skills}
+    in_degree = {s["name"]: 0 for s in atomic_skills}
 
     for skill in atomic_skills:
-        if skill.depend and skill.depend != "无":
-            dependencies = skill.depend.split(", ")
-            for dep in dependencies:
+        dep_str = skill.get("depend", "无")
+        if dep_str and dep_str != "无":
+            for dep in dep_str.split(", "):
+                dep = dep.strip()
                 if dep in graph:
-                    graph[dep].append(skill.name)
-                    in_degree[skill.name] += 1
+                    graph[dep].append(skill["name"])
+                    in_degree[skill["name"]] += 1
+                else:
+                    print(f"[DAG] 警告：技能 {skill['name']} 依赖的 {dep} 不存在")
 
     # 检测循环依赖（DFS）
     visited = set()
@@ -832,144 +418,178 @@ def build_dependency_graph(atomic_skills):
     def has_cycle(node):
         visited.add(node)
         rec_stack.add(node)
-
         for neighbor in graph[node]:
             if neighbor not in visited:
                 if has_cycle(neighbor):
                     return True
             elif neighbor in rec_stack:
                 return True
-
         rec_stack.remove(node)
         return False
 
     for node in graph:
         if node not in visited:
             if has_cycle(node):
-                return None, "检测到循环依赖"
+                return None, None, "检测到循环依赖"
 
-    return graph, in_degree
+    return graph, in_degree, None
+
+
+def get_dependencies(skill_name: str, graph: dict) -> list:
+    """获取某skill的所有依赖（反向查询）"""
+    deps = []
+    for dep, dependents in graph.items():
+        if skill_name in dependents:
+            deps.append(dep)
+    return deps
 ```
 
-### 4.2 拓扑排序（Kahn算法）
+---
+
+## 算法5：Kahn拓扑排序
 
 ```python
-def topological_sort(graph, in_degree):
+def topological_sort(graph: dict, in_degree: dict) -> list:
     """
-    拓扑排序，返回执行顺序
+    Kahn算法拓扑排序，返回顺序执行的skill列表
+
+    Returns:
+        list: 按执行顺序排列的skill名称
+        None: 存在循环依赖
     """
     from collections import deque
 
-    queue = deque([node for node in in_degree if in_degree[node] == 0])
+    queue = deque([n for n in in_degree if in_degree[n] == 0])
     result = []
 
     while queue:
         node = queue.popleft()
         result.append(node)
-
         for neighbor in graph[node]:
             in_degree[neighbor] -= 1
             if in_degree[neighbor] == 0:
                 queue.append(neighbor)
 
     if len(result) != len(in_degree):
-        return None  # 存在循环依赖
+        return None  # 循环依赖
 
     return result
 ```
 
-### 4.3 并行执行识别
+---
+
+## 算法6：并行层识别算法
 
 ```python
-def identify_parallel_skills(sorted_skills, dependencies):
+def identify_parallel_layers(sorted_skills: list,
+                             graph: dict,
+                             max_parallel: int = 2) -> list:
     """
-    识别可并行执行的原子skill
+    识别可并行执行的层
+
+    同一层内的skill满足：所有依赖都已在之前的层中完成
+    跨层之间有依赖关系，必须串行
+
+    Args:
+        sorted_skills: 拓扑排序后的skill列表（执行顺序）
+        graph: 依赖图 {dep: [dependent_skills]}
+        max_parallel: 每层最大并行数（防止资源耗尽）
+
+    Returns:
+        list: [[skill_a, skill_b], [skill_c], [skill_d, skill_e]]
+        即 list of list，每层内部可并行，层间必须串行
     """
+    def get_deps(skill):
+        """获取skill的直接依赖"""
+        return [dep for dep, dependents in graph.items() if skill in dependents]
+
     layers = []
     assigned = set()
+    remaining = list(sorted_skills)
 
-    for skill in sorted_skills:
-        if skill in assigned:
-            continue
+    while remaining:
+        parallel = []
+        for skill in remaining:
+            deps = get_deps(skill)
+            # 所有依赖都已在之前的层中完成
+            if all(dep in assigned for dep in deps):
+                parallel.append(skill)
 
-        # 找出所有依赖已完成的skill
-        parallel_group = []
-        for s in sorted_skills:
-            if s in assigned:
-                continue
+        if not parallel:
+            # 剩下的是循环依赖部分，按原顺序处理
+            parallel = remaining[:1]
+            print(f"[并行识别] 警告：剩余技能 {remaining} 存在循环依赖，强制串行")
 
-            deps = dependencies.get(s, [])
-            if all(d in assigned for d in deps):
-                parallel_group.append(s)
-
-        if parallel_group:
-            layers.append(parallel_group)
-            assigned.update(parallel_group)
+        # 限制每层并行数
+        parallel = parallel[:max_parallel]
+        layers.append(parallel)
+        assigned.update(parallel)
+        remaining = [s for s in remaining if s not in assigned]
 
     return layers
+
+
+def flatten_layers(layers: list) -> list:
+    """将并行层展平为执行顺序列表"""
+    return [skill for layer in layers for skill in layer]
 ```
 
 ---
 
-## 5. 完成标准验证算法
-
-### 5.1 验证类型
+## 算法7：完成标准验证
 
 ```python
-VERIFICATION_TYPES = {
-    "文件存在": lambda path: os.path.exists(path),
-    "代码功能": lambda spec: run_tests(spec),
-    "质量指标": lambda metrics: check_metrics(metrics),
-    "用户确认": lambda checklist: user_confirm(checklist),
-}
+def verify_completion(task_skill: dict, skill_results: dict) -> dict:
+    """
+    验证所有完成标准
 
-def verify_completion(skill, task_context):
+    Args:
+        task_skill: 任务文件内容
+        skill_results: {skill_name: {"status": "completed/failed", "output": {...}}}
+
+    Returns:
+        dict: {
+            "all_passed": bool,
+            "passed_count": int,
+            "total_count": int,
+            "details": [{"criterion": str, "passed": bool, "details": str}, ...]
+        }
     """
-    验证原子skill是否完成
-    """
-    criteria = skill.completion_criteria
+    standards = task_skill.get("completion_standards", [])
     results = []
 
-    for criterion in criteria:
-        vtype = criterion.type
+    for std in standards:
+        criterion = std.get("criterion", "")
+        std_type = std.get("type", "file_exists")  # file_exists | code_function | user_confirm
+        std_path = std.get("path", "")
+        std_value = std.get("expected_value", None)
 
-        if vtype == "文件存在":
-            result = VERIFICATION_TYPES["文件存在"](criterion.path)
-            results.append({
-                "criterion": criterion.description,
-                "passed": result,
-                "details": f"路径: {criterion.path}"
-            })
+        if std_type == "file_exists":
+            import os
+            passed = os.path.exists(std_path)
+            details = f"路径: {std_path}，{'存在' if passed else '不存在'}"
 
-        elif vtype == "代码功能":
-            result = VERIFICATION_TYPES["代码功能"](criterion.test_spec)
-            results.append({
-                "criterion": criterion.description,
-                "passed": result.all_passed,
-                "details": f"通过{result.passed_count}/{result.total_count}项测试"
-            })
+        elif std_type == "code_function":
+            # 运行测试或验证函数
+            actual = skill_results.get(std.get("skill_name", ""), {}).get("output", {}).get(std_value)
+            passed = actual is not None
+            details = f"实际值: {actual}"
 
-        elif vtype == "质量指标":
-            result = VERIFICATION_TYPES["质量指标"](criterion.metrics)
-            passed = all(
-                getattr(result, m.name) >= m.threshold
-                for m in criterion.metrics
-            )
-            results.append({
-                "criterion": criterion.description,
-                "passed": passed,
-                "details": str(result)
-            })
+        elif std_type == "user_confirm":
+            passed = std.get("confirmed", False)
+            details = "用户确认" if passed else "未确认"
 
-        elif vtype == "用户确认":
-            result = VERIFICATION_TYPES["用户确认"](criterion.check_list)
-            results.append({
-                "criterion": criterion.description,
-                "passed": result.confirmed,
-                "details": "用户确认"
-            })
+        else:
+            passed = False
+            details = f"未知标准类型: {std_type}"
 
-    passed_count = sum(r["passed"] for r in results)
+        results.append({
+            "criterion": criterion,
+            "passed": passed,
+            "details": details
+        })
+
+    passed_count = sum(1 for r in results if r["passed"])
     return {
         "all_passed": passed_count == len(results),
         "passed_count": passed_count,
@@ -980,104 +600,113 @@ def verify_completion(skill, task_context):
 
 ---
 
-## 6. 目标偏差评估算法
-
-### 6.1 量化指标计算
+## 算法8：目标偏差量化
 
 ```python
-def calculate_deviation(goal, result):
+def calculate_deviation(goal: dict, verification_result: dict) -> float:
     """
-    计算目标偏差值
+    计算目标偏差值（0.0 ~ 1.0+）
+    < 0.1：优秀；0.1~0.2：合格；≥ 0.2：触发反思
     """
-    deviations = []
+    details = verification_result.get("details", [])
 
-    for standard in goal.standards:
-        if standard.is_quantifiable:
-            expected = standard.target_value
-            actual = result.get(standard.metric_name)
+    if not details:
+        return 1.0  # 无验证结果，视为最大偏差
 
-            if expected > 0:
-                deviation = abs(actual - expected) / expected
-            else:
-                deviation = 1.0 if actual != 0 else 0.0
+    failed_count = sum(1 for d in details if not d["passed"])
+    total_count = len(details)
 
-            deviations.append({
-                "metric": standard.name,
-                "expected": expected,
-                "actual": actual,
-                "deviation": deviation,
-                "weight": standard.weight
-            })
+    # 基础偏差 = 失败率
+    base_deviation = failed_count / total_count if total_count > 0 else 1.0
 
-    # 加权平均
-    total_weight = sum(d["weight"] for d in deviations)
-    weighted_deviation = sum(
-        d["deviation"] * d["weight"]
-        for d in deviations
-    ) / total_weight if total_weight > 0 else 0
+    # 根据goal中的权重调整（如有）
+    weights = goal.get("standard_weights", {})
+    if weights:
+        weighted = 0.0
+        total_weight = 0.0
+        for detail in details:
+            w = weights.get(detail["criterion"], 1.0)
+            weighted += (0 if detail["passed"] else 1) * w
+            total_weight += w
+        deviation = weighted / total_weight if total_weight > 0 else base_deviation
+    else:
+        deviation = base_deviation
 
-    return {
-        "overall_deviation": weighted_deviation,
-        "details": deviations,
-        "trigger_reflection": weighted_deviation >= 0.2
-    }
-```
+    return deviation
 
-### 6.2 偏差等级
 
-```
-偏差值 < 0.1: 优秀
-0.1 ≤ 偏差值 < 0.2: 合格
-偏差值 ≥ 0.2: 触发反思
+def assess_deviation_level(deviation: float) -> str:
+    """评估偏差等级"""
+    if deviation < 0.1:
+        return "优秀"
+    elif deviation < 0.2:
+        return "合格"
+    else:
+        return "不合格（触发反思）"
 ```
 
 ---
 
-## 7. 错误影响判断算法
-
-### 7.1 影响评分模型
+## 算法9：错误影响评估
 
 ```python
-def assess_error_impact(failed_skill, task_context):
+def assess_error_impact(failed_skill: dict,
+                         task_context: dict,
+                         graph: dict) -> dict:
     """
-    评估错误影响
-    """
-    impact_score = 0
+    评估原子skill失败的影响（5维度评分）
 
-    # 1. 依赖关系影响（权重3）
-    dependent_skills = find_dependent_skills(failed_skill, task_context)
+    维度：
+    1. 依赖关系影响（权重3）
+    2. 核心功能影响（权重2）
+    3. 数据一致性影响（权重2）
+    4. 可恢复性（权重-1）
+    5. 用户指定重要性（权重2）
+
+    Returns:
+        dict: {
+            "score": int,
+            "level": "轻微/中等/严重",
+            "action": "continue/pause/stop",
+            "dependent_skills": [list]
+        }
+    """
+    score = 0
+
+    # 1. 依赖关系影响
+    dependent_skills = [
+        name for name, deps in graph.items()
+        if failed_skill["name"] in deps
+    ]
     if dependent_skills:
-        impact_score += 3
+        score += 3
 
-    # 2. 核心功能影响（权重2）
-    if failed_skill.is_core:
-        impact_score += 2
+    # 2. 核心功能影响
+    if failed_skill.get("is_core", False):
+        score += 2
 
-    # 3. 数据一致性影响（权重2）
-    if failed_skill.modifies_shared_data:
-        impact_score += 2
+    # 3. 数据一致性影响
+    if failed_skill.get("modifies_shared_data", False):
+        score += 2
 
-    # 4. 可恢复性（权重-1）
-    if failed_skill.output_reproducible:
-        impact_score -= 1
+    # 4. 可恢复性
+    if failed_skill.get("output_reproducible", True):
+        score -= 1
 
-    # 5. 用户指定重要性（权重2）
-    if failed_skill.user_required:
-        impact_score += 2
+    # 5. 用户指定重要性
+    if failed_skill.get("user_required", False):
+        score += 2
 
-    # 判断影响等级
-    if impact_score >= 5:
-        level = "严重影响"
-        action = "暂停任务"
-    elif impact_score >= 3:
-        level = "中等影响"
-        action = "提示用户选择"
+    # 判断等级
+    if score >= 5:
+        level, action = "严重", "pause"
+    elif score >= 3:
+        level, action = "中等", "prompt_user"
     else:
-        level = "轻微影响"
-        action = "记录并继续"
+        level, action = "轻微", "continue"
 
     return {
-        "score": impact_score,
+        "score": score,
         "level": level,
         "action": action,
         "dependent_skills": dependent_skills
@@ -1086,32 +715,22 @@ def assess_error_impact(failed_skill, task_context):
 
 ---
 
-## 8. 反思重规划算法
-
-### 8.1 反思触发条件
+## 算法10：反思重规划算法
 
 ```python
-def should_trigger_reflection(verification_result, deviation_result):
-    """
-    判断是否触发反思
-    """
-    return (
-        not verification_result["all_passed"] or
-        deviation_result["trigger_reflection"]
-    )
-```
-
-### 8.2 反思分类
-
-```python
-def classify_reflection_issue(task_context):
+def classify_reflection_issue(task_context: dict,
+                              skill_results: dict) -> list:
     """
     分类反思问题
+
+    Returns:
+        list: [{"type": str, "description": str, "solution": str}, ...]
     """
     issues = []
 
     # 1. 执行顺序问题
-    if detect_suboptimal_order(task_context):
+    failed_order = detect_suboptimal_order(task_context, skill_results)
+    if failed_order:
         issues.append({
             "type": "execution_order",
             "description": "执行顺序非最优",
@@ -1119,15 +738,17 @@ def classify_reflection_issue(task_context):
         })
 
     # 2. 技能匹配问题
-    if detect_skill_mismatch(task_context):
+    missing_skills = detect_skill_gaps(task_context, skill_results)
+    if missing_skills:
         issues.append({
             "type": "skill_selection",
-            "description": "存在更合适的原子skill未被使用",
-            "solution": "替换或补充原子skill"
+            "description": f"存在更合适的原子skill未被使用：{missing_skills}",
+            "solution": "补充同类型原子skill"
         })
 
     # 3. 标准设定问题
-    if detect_unrealistic_standards(task_context):
+    unrealistic = detect_unrealistic_standards(task_context, skill_results)
+    if unrealistic:
         issues.append({
             "type": "standard_setting",
             "description": "完成标准过于严格",
@@ -1135,23 +756,121 @@ def classify_reflection_issue(task_context):
         })
 
     return issues
+
+
+def plan_adjustment(task_skill: dict,
+                     issues: list,
+                     max_additional: int = 3) -> dict:
+    """
+    生成调整方案
+
+    Returns:
+        dict: {
+            "adjustments": [{"type": "add" | "remove" | "reorder", "skill": str}, ...],
+            "new_order": [skill_names],
+            "added_skills": [skill_names],
+            "removed_skills": [skill_names]
+        }
+    """
+    adjustments = []
+    added = []
+    removed = []
+
+    for issue in issues:
+        if issue["type"] == "skill_selection":
+            # 补充同类型原子skill（最多3个）
+            suggested = get_similar_skills(issue["solution"], max_additional)
+            for s in suggested:
+                if s not in task_skill["atomic_skills"]:
+                    adjustments.append({"type": "add", "skill": s})
+                    added.append(s)
+        elif issue["type"] == "execution_order":
+            # 调整顺序（不违反依赖）
+            new_order = reorder_skills(task_skill["atomic_skills"])
+            adjustments.append({"type": "reorder", "order": new_order})
+
+    return {
+        "adjustments": adjustments,
+        "new_order": adjustments[0].get("order") if adjustments and "order" in adjustments[0] else None,
+        "added_skills": added,
+        "removed_skills": removed
+    }
+
+
+def reflection_loop(task_skill: dict,
+                     skill_results: dict,
+                     max_attempts: int = 3) -> dict:
+    """
+    反思重规划循环
+
+    Returns:
+        dict: {
+            "success": bool,
+            "attempts": int,
+            "final_deviation": float,
+            "adjustments_history": [adjustments, ...],
+            "reflection_log": str  # 最多300字
+        }
+    """
+    from config import REFLECTION_CONFIG
+
+    adjustments_history = []
+    reflection_log_parts = []
+
+    for attempt in range(1, max_attempts + 1):
+        # 校验
+        verification = verify_completion(task_skill, skill_results)
+        deviation = calculate_deviation(task_skill.get("goal", {}), verification)
+
+        if verification["all_passed"] and deviation < REFLECTION_CONFIG["目标偏差阈值"]:
+            # 反思成功
+            reflection_log = generate_reflection_log(
+                adjustments_history, success=True, deviation=deviation
+            )
+            return {
+                "success": True,
+                "attempts": attempt,
+                "final_deviation": deviation,
+                "adjustments_history": adjustments_history,
+                "reflection_log": reflection_log
+            }
+
+        # 触发反思
+        issues = classify_reflection_issue(task_skill, skill_results)
+        adjustments = plan_adjustment(task_skill, issues)
+
+        adjustments_history.append({
+            "attempt": attempt,
+            "issues": issues,
+            "adjustments": adjustments
+        })
+
+        # 应用调整
+        apply_adjustments(task_skill, adjustments)
+        reflection_log_parts.append(
+            f"第{attempt}次：{', '.join(i['description'] for i in issues)}"
+        )
+
+    # 3次反思后仍不达标
+    reflection_log = generate_reflection_log(
+        adjustments_history, success=False,
+        deviation=deviation,
+        max_length=REFLECTION_CONFIG["反思日志最大长度"]
+    )
+    return {
+        "success": False,
+        "attempts": max_attempts,
+        "final_deviation": deviation,
+        "adjustments_history": adjustments_history,
+        "reflection_log": reflection_log
+    }
 ```
-
-### 8.3 重规划限制
-
-**允许的调整**：
-- 微调原子技能顺序（不违反依赖）
-- 补充同类型原子技能（最多3个）
-- 删除冗余原子技能
-- 优化完成标准（不降低最终目标）
-
-**禁止的调整**：
-- 替换主skill
-- 新增未注册技能
-- 删除已完成的skill记录
-- 降低最终目标
 
 ---
 
-**版本**: 1.0
-**最后更新**: 2026-04-07
+## 版本信息
+
+- **版本**: 1.2
+- **最后更新**: 2026-05-21
+- **算法数量**: 10个核心算法
+- **代码行数**: ~600行伪代码

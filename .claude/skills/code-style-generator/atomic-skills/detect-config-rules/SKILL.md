@@ -1,18 +1,18 @@
 ---
 name: detect-config-rules
-description: 检测项目配置文件，提取代码格式化规则（缩进、引号、分号等）
+description: 检测项目配置文件，提取代码格式化规则（含 TypeScript tsconfig.json 配置）。改进版新增 tsconfig.json 读取，提取 strict/null-checking/moduleResolution 等 TS 特有规则。
 reasoner_instructions: |
-  READ config files (.editorconfig, .prettierrc, eslint.config.js, package.json).
-  EXTRACT formatting rules (indent, quotes, semi, etc).
-  OUTPUT JSON with configRules, configFiles, detectedCount.
+  READ config files (.editorconfig, .prettierrc, eslint.config.js, tsconfig.json).
+  EXTRACT formatting rules (indent, quotes, semi, etc) AND TypeScript config rules (strict, noImplicitAny, etc).
+  OUTPUT JSON with configRules (base + tsconfig), configFiles, detectedCount.
   MARK missing rules as null.
 ---
 
-# detect-config-rules
+# detect-config-rules（改进版 v1.1）
 
 ## 任务定义
 
-你是原子技能 `detect-config-rules`，只负责读取项目的配置文件，提取代码格式化规则。
+你是原子技能 `detect-config-rules`，只负责读取项目的配置文件，提取代码格式化规则和 TypeScript 配置规则。
 
 ## 检测文件列表
 
@@ -21,7 +21,8 @@ reasoner_instructions: |
 1. **.editorconfig** - 编辑器配置
 2. **.prettierrc** / **.prettierrc.json** - Prettier配置
 3. **eslint.config.js** / **.eslintrc.js** - ESLint配置
-4. **package.json** - 可能包含prettier配置
+4. **tsconfig.json** - TypeScript 配置（**新增 v1.1**）
+5. **package.json** - 可能包含prettier/tsconfig配置
 
 ## 提取字段
 
@@ -45,6 +46,19 @@ reasoner_instructions: |
 | brace_style | brace_style | 1tbs / allman / stroustrup | 1tbs (K&R) |
 | space_before_function_paren | spaceBeforeFunctionParen | always / never | always |
 
+### TypeScript 配置规则（**新增 v1.1**）
+
+| 字段名 | tsconfig.json 中的键 | 可能的值 | 默认值 |
+|--------|---------------------|---------|--------|
+| ts_strict | strict | true / false | null |
+| ts_noImplicitAny | noImplicitAny | true / false | null |
+| ts_strictNullChecks | strictNullChecks | true / false | null |
+| ts_esModuleInterop | esModuleInterop | true / false | null |
+| ts_allowSyntheticDefaultImports | allowSyntheticDefaultImports | true / false | null |
+| ts_jsx | jsx | "react-jsx" / "react" / "preserve" / null | null |
+| ts_moduleResolution | moduleResolution | "node" / "bundler" / "node16" | null |
+| ts_target | target | "ES2020" / "ESNext" 等 | null |
+
 ## 执行规则
 
 1. **优先级处理**：多个配置文件中存在相同规则时，按优先级选择
@@ -52,6 +66,7 @@ reasoner_instructions: |
 3. **特殊值处理**：
    - Prettier的 `singleQuote: true` 对应 `quotes: single`
    - ESLint的 `quotes: ['error', 'single']` 对应 `quotes: single`
+   - tsconfig 的 `strict: true` 意味着所有 strict* 规则为 true
 
 ## 输出格式
 
@@ -69,7 +84,15 @@ reasoner_instructions: |
         "end_of_line": "lf",
         "insert_final_newline": true,
         "brace_style": "1tbs",
-        "space_before_function_paren": null
+        "space_before_function_paren": null,
+        "ts_strict": true,
+        "ts_noImplicitAny": true,
+        "ts_strictNullChecks": true,
+        "ts_esModuleInterop": true,
+        "ts_allowSyntheticDefaultImports": true,
+        "ts_jsx": "react-jsx",
+        "ts_moduleResolution": "bundler",
+        "ts_target": "ES2020"
     },
     "configFiles": [
         {
@@ -81,10 +104,21 @@ reasoner_instructions: |
             "file": ".prettierrc.json",
             "exists": true,
             "rules": { ... }
+        },
+        {
+            "file": "tsconfig.json",
+            "exists": true,
+            "rules": {
+                "strict": true,
+                "noImplicitAny": true,
+                "strictNullChecks": true,
+                "target": "ES2020"
+            }
         }
     ],
-    "detectedCount": 8,
-    "inferredCount": 2
+    "detectedCount": 12,
+    "inferredCount": 2,
+    "tsConfigDetected": true
 }
 ```
 
@@ -95,54 +129,7 @@ reasoner_instructions: |
 - 必须记录检测到规则的配置文件路径
 - 输出必须是合法的JSON格式
 - 如果配置文件不存在，输出 `exists: false`
+- 必须检测 tsconfig.json 并提取 TS 特有规则（**新增 v1.1**）
 
-## 示例输入输出
-
-### 输入
-
-项目根目录包含以下文件：
-- `.editorconfig`
-- `.prettierrc.json`
-
-### 输出
-
-```json
-{
-    "configRules": {
-        "indent_style": "space",
-        "indent_size": 4,
-        "quotes": "single",
-        "semi": false,
-        "print_width": null,
-        "trailing_comma": "none",
-        "end_of_line": "lf",
-        "insert_final_newline": true,
-        "brace_style": null,
-        "space_before_function_paren": null
-    },
-    "configFiles": [
-        {
-            "file": ".editorconfig",
-            "exists": true,
-            "rules": {
-                "indent_style": "space",
-                "indent_size": 4,
-                "end_of_line": "lf",
-                "insert_final_newline": true
-            }
-        },
-        {
-            "file": ".prettierrc.json",
-            "exists": true,
-            "rules": {
-                "semi": false,
-                "singleQuote": true,
-                "tabWidth": 4,
-                "trailingComma": "none"
-            }
-        }
-    ],
-    "detectedCount": 8,
-    "inferredCount": 2
-}
-```
+## 版本
+v1.1 - 改进版：新增 TypeScript 配置（tsconfig.json）检测，提取 strict、noImplicitAny、strictNullChecks 等 TS 特有规则

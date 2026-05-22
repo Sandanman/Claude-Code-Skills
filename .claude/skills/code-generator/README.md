@@ -1,320 +1,320 @@
-# Code Generator Skill 使用指南
+# Code Generator v1.2 - 快速使用指南
+
+## 概述
+
+Code Generator 是一个智能代码生成主skill，根据需求文档或需求描述自动生成符合项目规范的代码。**v1.2 新增 multi-scenario-adapter 智能适配器**，自动识别需求类型并选择最优执行路径。
 
 ## 快速开始
 
-当您需要根据需求文档或描述生成代码时，code-generator 会智能区分需求复杂度，自动选择最佳处理路径。
+### 触发方式
 
-### 使用方式
+当用户需要根据需求开发代码、实现功能模块或编写函数时自动触发：
 
-#### 方式1：标准输入（推荐，用于复杂需求）
-```
-执行 requirement-generator → 生成 requirements.json →
-执行 code-generator → 读取 requirements.json → 自动生成代码
-```
+- "根据需求写代码"
+- "实现这个功能"
+- "生成代码"
+- "写一个函数/组件/模块"
+- "按照需求文档开发"
+- "帮我实现"
 
-**适用场景**：
-- 多模块系统（如用户管理系统、会议管理系统）
-- 复杂业务逻辑（如状态机、向导流程）
-- 需要API设计和模块间协调
-- 项目需要标准化和可维护性
+### 基本使用
 
-**优势**：
-- ✅ 复用 requirement-generator 的分析成果，避免重复工作
-- ✅ 需求已标准化，包含完整的模块、API、UI规格
-- ✅ 项目上下文已包含，无需重复扫描项目
-- ✅ 测试用例已定义，可直接验证
-- ✅ 质量评估已继承，可追踪需求质量
+```bash
+# 用户输入需求
+帮我实现一个用户登录组件，包含用户名、密码输入框和登录按钮
 
-#### 方式2：直接处理（推荐，用于简单需求）
-```
-用户输入简单需求 → code-generator直接分析 → 自动生成代码
+# 系统自动执行
+code-generator skill → 分析需求 → 检测技术栈 → 生成代码
 ```
 
-**适用场景**：
-- 单一功能（如"写一个函数，将ISO字符串格式化为YYYY-MM-DD格式"）
-- 单一组件（如"写一个flex布局的盒子，水平居中"）
-- 小修改（如"修改这个布局，从垂直改为水平排列"）
-- 工具函数（如"写一个工具函数，判断两个数组是否相等"）
+---
 
-**优势**：
-- ✅ 无需额外步骤，直接生成代码
-- ✅ 响应迅速，适合快速开发
-- ✅ 自动适配项目技术栈和规范
-- ✅ 生成带注释的可运行代码
+## 文件结构
 
-#### 方式3：复杂需求直接处理（备选）
 ```
-用户输入复杂需求 → code-generator直接分析 → 自动生成代码
-```
-
-**适用场景**：
-- 复杂需求但用户希望直接处理（不标准化）
-- 临时性开发需求
-- 不需要长期维护的代码
-
-**注意**：
-- code-generator 会自动检测需求复杂度
-- 复杂需求会提示用户是否先执行 requirement-generator
-- 用户可选择"是"（标准化）或"否"（直接处理）
-
-### 标准输入优势
-- ✅ 复用 requirement-generator 的分析成果，避免重复工作
-- ✅ 需求已标准化，包含完整的模块、API、UI规格
-- ✅ 项目上下文已包含，无需重复扫描项目
-- ✅ 测试用例已定义，可直接验证
-- ✅ 质量评估已继承，可追踪需求质量
-
-### 示例输入
-
-**示例1：简单需求（直接处理）**
-```
-实现一个函数，将ISO格式的日期字符串（如2026-04-08T10:30:00Z）转换为 'YYYY-MM-DD HH:mm' 格式（如2026-04-08 10:30）
+.claude/skills/code-generator/
+├── SKILL.md                              # 主skill定义（v1.2）
+├── README.md                             # 快速使用指南
+└── atomic-skills/                        # 原子skill目录
+    ├── requirement-reader/               # 需求读取
+    │   └── SKILL.md
+    ├── requirement-analysis/             # 需求分析
+    │   └── SKILL.md
+    ├── tech-stack-detection/             # 技术栈检测
+    │   └── SKILL.md
+    ├── code-design/                      # 代码设计
+    │   └── SKILL.md
+    ├── code-generation/                  # 代码生成
+    │   └── SKILL.md
+    ├── module-integration/              # 模块整合
+    │   └── SKILL.md
+    ├── code-validation/                 # 代码验证
+    │   └── SKILL.md
+    ├── documentation-update/            # 文档更新
+    │   └── SKILL.md
+    └── multi-scenario-adapter/          # 多场景适配器（NEW v1.2）
+        └── SKILL.md
 ```
 
-**示例2：简单需求（直接处理）**
-```
-写一个flex布局的盒子，水平居中，垂直居中，宽300px，高200px，背景色为浅灰色
-```
+---
 
-**示例3：简单需求（直接处理）**
-```
-修改这个布局，将垂直排列改为水平排列，间距改为20px
-```
+## 4种处理场景
 
-**示例4：简单需求（直接处理）**
-```
-写一个工具函数，判断两个数组是否相等（元素和顺序都相同）
-```
+### 场景1：标准输入模式（优先）
 
-**示例5：中等需求（建议标准化）**
+**触发条件**：存在 `requirements.json`（由 requirement-generator 生成）
+
+**执行路径**：
 ```
-创建一个 MeetingCard 组件，显示会议标题、开始时间、结束时间、状态（进行中/已结束），并提供一个加入会议按钮
+requirement-reader → multi-scenario-adapter → tech-stack-detection → code-design →
+code-generation → module-integration（仅多模块）→ code-validation → documentation-update
 ```
 
-**示例6：复杂需求（强烈建议标准化）**
-```
-实现一个用户管理系统，包含三个模块：
-1. 登录模块：用户名、密码输入，登录按钮，登录成功后跳转首页
-2. 注册模块：用户名、邮箱、密码输入，注册按钮，注册成功后自动登录
-3. 权限管理模块：检查用户是否登录，未登录则重定向到登录页
-```
+**特点**：
+- 跳过 requirement-analysis（已在 requirement-generator 完成）
+- 技术栈优先从 requirements.json 的 project_context 读取
+- 直接复用 api_spec 和 ui_components
 
-**示例7：复杂需求（强烈建议标准化）**
-```
-实现会议管理系统，包含会议创建、会议列表展示、查看详情、编辑会议、删除会议功能
-```
-
-## 需求复杂度判断
-
-code-generator 会自动分析需求复杂度，并给出建议：
-
-### 简单需求特征
-- ✅ 单个动词（写、实现、修改）
-- ✅ 单一对象（函数、组件、布局）
-- ✅ 简短描述（少于50字）
-- ✅ 无模块、系统、管理类词汇
-- ✅ 实现需求明确，无歧义
-
-**处理方式**：直接生成代码，无需标准化
-
-### 复杂需求特征
-- ✅ 包含"系统"、"管理"、"模块"等词汇
-- ✅ 包含多个功能点（如"包含以下功能：1... 2... 3..."）
-- ✅ 长描述（超过100字）
-- ✅ 需要多文件或复杂逻辑
-- ✅ 需要API设计和模块间协调
-
-**处理方式**：
-1. 自动检测需求复杂度
-2. 提示用户："这是一个复杂需求，是否需要先执行 requirement-generator 生成标准化文档？"
-3. 用户选择：
-   - **选择"是"**：执行 requirement-generator → 生成 requirements.json → code-generator 读取并生成代码
-   - **选择"否"**：直接执行 code-generator（自由文本模式），快速生成代码
-
-## 执行流程详解
-
-### 1. 需求读取（requirement-reader）
-- 优先读取 requirements.json（由 requirement-generator 生成）
-- 如果不存在，则解析用户提供的文本需求（调用 requirement-analysis）
-- 输出统一结构化的需求数据
-
-### 2. 技术栈检测（tech-stack-detection）
-- 优先从 requirements.json 的 project_context 读取技术栈信息
-- 如果缺失或不完整，则扫描项目文件检测
-- 输出技术栈报告和规范状态
-
-### 3. 代码设计（code-design）
-- 优先使用 requirements.json 中的 api_spec、ui_components、modules、flow
-- 仅在缺失时重新设计
-- 根据技术栈设计具体实现
-- 输出代码设计文档
-
-### 4. 代码生成（code-generation）
-- 根据设计文档生成具体代码
-- 自动添加必要的注释
-- 遵循项目技术栈规范（Vue 3的Composition API等）
-- 使用合适的编程模式（函数式/面向对象）
-- 生成单个或多个文件
-
-### 5. 模块整合（module-integration）**（仅多模块需求执行）**
-- 整合不同模块间的代码
-- 解决模块间依赖关系
-- 统一数据类型和接口定义
-- 配置路由和状态管理
-- 消除重复代码和命名冲突
-- 确保整体逻辑一致性
-
-### 6. 代码验证（code-validation）
-- 验证生成代码的语法正确性
-- 检查代码是否符合技术栈规范
-- 验证模块间调用是否正确
-- 验证 requirements.json 中的 test_cases 是否满足
-- 继承 quality 评估并记录
-- 输出验证结果
-
-### 7. 文档更新（documentation-update）
-- 为生成的代码添加详细注释
-- 添加函数/组件的功能说明
-- 添加参数说明和返回值说明
-- 添加使用示例
-- 继承 quality.recommendations 作为注释建议
-- 确保所有代码都有清晰注释
-
-## 任务文件示例
-
-执行过程中会在 `.claude/skills/tasks/current/task_skill.md` 中记录：
-
-```markdown
-# 任务基础信息
-任务ID：20260408200000_ABC123
-用户意图：实现用户登录功能
-最终目标：生成登录组件和相关函数
-归属主skill：code-generator
-当前状态：执行中
-
-# 子任务列表
-| 原子skill名称 | 状态 | 执行日志 |
-|--------------|------|----------|
-| requirement-analysis | 已完成 | 已识别为单模块需求，功能：登录 |
-| tech-stack-detection | 已完成 | 检测到Vue 3 + TypeScript，未找到CODE_STYLE.md |
-| code-design | 已完成 | 设计了Login.vue组件和loginAPI函数 |
-| code-generation | 执行中 | 正在生成Login.vue和user-api.ts文件 |
-| code-validation | 待执行 | |
-| documentation-update | 待执行 | |
-
-# 执行日志
-2026-04-08 20:00:00：开始执行requirement-analysis
-2026-04-08 20:00:05：requirement-analysis执行成功
-2026-04-08 20:00:10：开始执行tech-stack-detection
-...
+**示例**：
+```json
+// requirements.json 存在
+{
+  "project_context": { "frontend_framework": "vue3", ... },
+  "modules": [...],
+  "api_spec": {...},
+  "ui_components": [...]
+}
 ```
 
-## 多模块需求处理
+---
 
-### 模块识别
-当需求包含多个独立功能时，会自动识别为多模块需求：
-- **登录**、**注册**、**权限** → 3个独立模块
-- **创建会议**、**会议列表**、**会议详情** → 3个独立模块
+### 场景2：简单需求模式
 
-### 模块整合
-module-integration 会：
-- 创建共享类型定义文件（types/meeting.ts）
-- 创建共享API文件（api/meeting-api.ts）
-- 配置路由文件（router/meeting.ts）
-- 统一状态管理（如果使用Vuex/Pinia）
-- 确保所有模块使用相同的工具函数
-- 避免重复代码
+**触发条件**：无 requirements.json，且需求简单（< 50字，单功能点）
 
-### 示例输出结构
+**执行路径**：
 ```
-输入需求："实现会议管理系统（创建、列表、详情）"
-
-输出：
-├── src/views/meeting/Create.vue     # 会议创建模块
-├── src/views/meeting/List.vue      # 会议列表模块
-├── src/views/meeting/Detail.vue    # 会议详情模块
-├── src/router/meeting.ts           # 路由配置（整合）
-├── src/types/meeting.ts            # 共享类型定义（整合）
-└── src/utils/meeting-api.ts        # 共享API（整合）
+requirement-reader → requirement-analysis → tech-stack-detection → code-design →
+code-generation → code-validation → documentation-update
 ```
 
-## 代码规范处理
+**特点**：
+- 快速处理单功能需求
+- 跳过 module-integration（单模块）
+- 扫描项目文件获取技术栈
 
-### CODE_STYLE.md 检测
-- **存在 CODE_STYLE.md**：严格遵循规范生成代码
-- **不存在 CODE_STYLE.md**：
-  - 在 tech-stack-detection 阶段提示用户：
-    "项目中未找到 CODE_STYLE.md 文件，建议创建以统一代码风格。是否需要我帮助您生成一个？"
-  - 生成代码时使用项目常用模式（如Vue的PascalCase、TypeScript的接口命名）
+**示例**：
+- "写一个函数，将 ISO 时间字符串格式化为 YYYY-MM-DD"
+- "实现一个 flex 布局的盒子，水平居中"
+- "写一个工具函数判断两个数组是否相等"
 
-## 重试规则
-- 每个原子skill失败后可重试 **3次**
-- code-generation 失败时，会返回 code-design 重新设计
-- module-integration 失败时，会返回 code-generation 调整
-- code-validation 失败时，会返回 code-generation 修复
-- 最多循环 **2次**
+---
 
-## 特殊情况处理
+### 场景3：复杂/多模块需求模式
 
-### 问题：需求模糊
-如果需求描述不清晰，会主动询问：
-- "能否提供更多关于这个功能的细节？"
-- "这个函数的输入和输出是什么？"
-- "这个组件需要处理哪些边界情况？"
+**触发条件**：无 requirements.json，且需求复杂（> 100字，多功能点或多模块）
 
-### 问题：技术栈不明确
-如果项目中无法确定技术栈，会询问：
-- "这个项目是使用Vue还是React？"
-- "是否使用TypeScript？"
-- "是否有代码规范文档？"
+**执行路径**：
+```
+requirement-reader → requirement-analysis → tech-stack-detection → code-design →
+code-generation → module-integration → code-validation → documentation-update
+```
 
-### 问题：生成代码错误
-如果生成的代码有语法错误，会：
-- 自动分析错误原因
-- 返回 code-design 重新设计
-- 重新生成代码
+**特点**：
+- 必须执行 requirement-analysis 分析多个功能点
+- 必须执行 module-integration 整合多模块
+- 扫描项目文件获取技术栈
 
-## 最佳实践
+**示例**：
+- "实现一个会议管理系统，包含创建、列表、详情三个模块"
+- "实现用户管理系统，支持登录、注册、权限管理"
 
-1. **提供清晰的需求**：包含功能、输入、输出、边界条件
-2. **明确模块边界**：如果是一个系统，说明有哪些模块
-3. **指定技术栈**：如果项目使用特殊框架或库，可以明确说明
-4. **提供示例**：如果有类似功能的代码，可以提供参考
+---
 
-## 输出产物
+### 场景4：复杂需求询问标准化
 
-任务完成后会输出：
-1. **带注释的代码文件**（完整可运行）
-2. **完整执行日志**（所有步骤记录）
+**触发条件**：检测到复杂需求，询问用户是否需要标准化
 
-所有产物会归档到 `.claude/skills/tasks/history/YYYY-MM/` 下
+**执行路径**：
+```
+检测复杂需求 → 询问用户
+    ├─ 选择"是" → 执行 requirement-generator → code-generator（场景1）
+    └─ 选择"否" → code-generator（场景3）
+```
 
-## 常见问题
+**提示示例**：
+```
+检测到这是一个复杂需求，是否需要先执行 requirement-generator 生成标准化文档？
+1. 是 - 执行 requirement-generator 生成 requirements.json
+2. 否 - 直接分析需求（推荐用于临时开发）
+```
 
-**Q: 这个skill能生成所有类型的代码吗？**
-A: 适用于前端（Vue/React）、后端（Node.js）、工具函数、配置文件等。不适用于数据库设计、UI/UX设计等非代码任务。
+---
 
-**Q: 生成的代码能直接运行吗？**
-A: 可以，代码会经过语法验证，确保能通过编译/运行。
+## 示例用法
 
-**Q: 会修改我现有的代码吗？**
-A: 会创建新文件，不会修改现有代码。如果需求是修改现有代码，会提示用户。
+### 示例1：简单需求
 
-**Q: 多模块需求会生成多少文件？**
-A: 每个模块生成一个文件，加上共享文件（类型、API、路由等）。
+**用户输入**：
+```
+帮我实现一个 MeetingCard 组件，显示会议标题、时间、状态，提供加入按钮
+```
 
-**Q: 如果没有 CODE_STYLE.md 会怎样？**
-A: 会提示用户，并按照项目常用模式生成代码。
+**执行流程**：
+1. multi-scenario-adapter 识别为"简单需求"
+2. requirement-reader 检测无 requirements.json
+3. requirement-analysis 快速分析单一功能点
+4. tech-stack-detection 扫描项目获取技术栈
+5. code-design 设计 MeetingCard 组件
+6. code-generation 生成代码
+7. code-validation 验证代码
+8. documentation-update 添加注释
 
-**Q: 可以生成测试代码吗？**
-A: 目前专注于生产代码。测试代码生成是未来扩展方向。
+**输出**：
+```vue
+<!-- MeetingCard.vue -->
+<template>
+  <div class="meeting-card">
+    <h3>{{ meeting.title }}</h3>
+    <div class="meeting-time">{{ formatDate(meeting.startTime) }}</div>
+    <div class="meeting-status">{{ statusText }}</div>
+    <el-button type="primary" @click="handleJoin">加入会议</el-button>
+  </div>
+</template>
+```
 
-**Q: 支持 TypeScript 吗？**
-A: 支持，会自动检测项目是否使用TypeScript并生成类型定义。
+---
 
-**Q: 可以生成Vue 3的Composition API吗？**
-A: 支持，会根据项目检测结果生成合适的API风格。
+### 示例2：复杂需求（需要标准化）
 
-## 技术支持
+**用户输入**：
+```
+实现一个会议管理系统，包含以下功能：
+1. 会议创建：创建会议、设置标题、开始时间、结束时间
+2. 会议列表：展示所有会议，支持按状态筛选
+3. 会议详情：显示会议详情、编辑、删除、加入会议
+```
 
-如有问题或建议，请查看 `.claude/skills/orchestrator/README.md` 或联系项目维护者。
+**执行流程**：
+1. multi-scenario-adapter 识别为"复杂需求/多模块"
+2. 询问用户是否需要标准化
+3. 用户选择"是" → 执行 requirement-generator
+4. requirement-generator 生成 requirements.json
+5. code-generator 读取 requirements.json（场景1）
+6. 自动执行完整流程
+7. module-integration 整合三个模块
+
+**输出**：
+```
+src/views/meeting/Create.vue      # 会议创建
+src/views/meeting/List.vue        # 会议列表
+src/views/meeting/Detail.vue      # 会议详情
+src/api/meeting.js               # API封装
+src/types/meeting.js             # 类型定义
+src/router/meeting.js            # 路由配置
+src/stores/meeting.js            # 状态管理
+```
+
+---
+
+### 示例3：复杂需求（不标准化）
+
+**用户输入**：
+```
+实现会议列表功能，支持分页、筛选、排序
+```
+
+**执行流程**：
+1. multi-scenario-adapter 识别为"复杂需求"
+2. 用户选择"否"（直接处理）
+3. requirement-analysis 分析多个功能点
+4. code-design 重新设计组件
+5. code-generation 生成代码
+6. code-validation 验证代码
+
+---
+
+## 技术栈检测
+
+### 优先读取顺序
+
+1. **requirements.json 的 project_context**（最高优先级）
+2. **project_context.json**（项目根目录）
+3. **扫描项目文件**（兜底）
+
+### project_context.json 示例
+
+```json
+{
+  "frontend_framework": "vue3",
+  "ui_library": {
+    "name": "element-plus",
+    "version": "2.2.31"
+  },
+  "project_structure": {
+    "components_dir": "src/components",
+    "views_dir": "src/views"
+  },
+  "code_style": {
+    "has_style_guide": true,
+    "style_guide_path": "./CODE_STYLE.md"
+  }
+}
+```
+
+---
+
+## 9个原子skill
+
+| 序号 | 名称 | 描述 | 场景 |
+|------|------|------|------|
+| 1 | multi-scenario-adapter | 智能识别需求类型，选择执行路径 | 全部 |
+| 2 | requirement-reader | 读取 requirements.json 或分析文本 | 全部 |
+| 3 | requirement-analysis | 解析需求，提取功能点和模块 | 场景2/3 |
+| 4 | tech-stack-detection | 检测项目技术栈 | 全部 |
+| 5 | code-design | 设计代码结构 | 全部 |
+| 6 | code-generation | 生成代码文件 | 全部 |
+| 7 | module-integration | 整合多模块代码 | 场景3（多模块） |
+| 8 | code-validation | 验证代码正确性 | 全部 |
+| 9 | documentation-update | 添加完整注释 | 全部 |
+
+---
+
+## 与其他skill的协作
+
+### 依赖 requirement-generator
+
+当检测到复杂需求时：
+1. code-generator 提示用户是否执行 requirement-generator
+2. 用户选择"是"后，requirement-generator 生成 requirements.json
+3. code-generator 读取 requirements.json 执行场景1
+
+### 依赖 scan-object-info
+
+技术栈检测时：
+1. 优先读取 requirements.json 的 project_context
+2. 次优先读取 project_context.json（由 scan-object-info 生成）
+3. 兜底扫描项目文件
+
+---
+
+## 注意事项
+
+1. **优先使用 requirements.json**：存在时跳过 requirement-analysis，直接复用
+2. **技术栈优先从 project_context 读取**：避免重复扫描
+3. **智能场景适配**：multi-scenario-adapter 自动选择最优路径
+4. **CODE_STYLE.md**：如果项目存在 CODE_STYLE.md，代码生成会严格遵循
+5. **多模块整合**：多模块需求必须执行 module-integration 确保一致性
+
+---
+
+## 版本信息
+
+- **版本**：1.2
+- **发布日期**：2026-05-21
+- **原子skill数量**：9个（新增 multi-scenario-adapter）
+- **主要改进**：
+  - 新增 multi-scenario-adapter 智能适配器
+  - 4场景智能路由
+  - 改进 tech-stack-detection 从 project_context.json 优先读取
+  - 改进与 requirement-generator 的协作流程

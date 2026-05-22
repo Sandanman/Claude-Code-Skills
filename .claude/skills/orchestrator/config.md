@@ -1,103 +1,58 @@
-# 配置参数与限制
+# Orchestrator v1.2 配置参数
 
-本文档定义 Orchestrator Reasoner 的所有配置参数和系统限制。
+本文档定义 Orchestrator 的所有配置参数和系统限制。
 
 ---
 
-## 0. LLM意图识别配置（新增）
+## 0. LLM意图识别配置
 
 ```python
 LLM_INTENT_CONFIG = {
-    # 启用/禁用LLM意图识别
-    "enabled": True,              # True=优先LLM, False=强制规则算法
+    "enabled": True,                       # True=优先LLM, False=强制规则算法
+    "model": "claude-sonnet-4-20250514",   # LLM模型
+    "max_tokens": 2048,                    # 最大输出token数
+    "temperature": 0.3,                     # 温度（低=确定性，高=创造性）
 
-    # LLM模型配置
-    "model": "claude-sonnet-4-20250514",  # 可选: claude-3-5-sonnet, claude-3-opus 等
-    "max_tokens": 2048,          # 最大输出token数
-    "temperature": 0.3,           # 温度参数（低=更确定性，高=更创造性）
+    "confidence_threshold": 0.6,           # 低于此值时提示用户确认意图
+    "max_retries": 2,                       # LLM调用失败重试次数
+    "timeout_seconds": 30,                  # 单次调用超时
 
-    # 置信度阈值
-    "confidence_threshold": 0.6,  # 低于此值时提示用户确认意图
-
-    # 重试配置
-    "max_retries": 2,             # LLM调用失败重试次数
-    "timeout_seconds": 30,       # 单次调用超时
-
-    # Prompt配置
-    "include_main_skills_in_prompt": True,  # 是否在Prompt中包含已注册技能列表
-    "include_project_context": True,        # 是否在Prompt中包含项目上下文
-    "max_context_length": 2000,   # 项目上下文最大字符数
+    "include_main_skills_in_prompt": True,  # 在Prompt中包含已注册技能列表
+    "include_project_context": True,        # 在Prompt中包含项目上下文
+    "max_context_length": 2000,            # 项目上下文最大字符数
 }
 ```
-
-**说明**：
-- `enabled=True` 时，主方案使用 LLM 识别，规则算法作为 fallback
-- `enabled=False` 时，强制使用规则算法（适用于 LLM 不可用或调试场景）
 
 ---
 
-## 0.5 流式输出配置（新增）
+## 0.5 流式输出配置
 
 ```python
 STREAM_CONFIG = {
-    # 启用/禁用流式输出
-    "enabled": True,              # True=启用流式输出, False=禁用（静默模式）
+    "enabled": True,                        # True=启用流式输出
+    "show_progress_bar": True,             # 显示进度条（▓▓▓▓░░░ 50%）
+    "show_time_estimate": True,             # 显示预计剩余时间
+    "show_confidence": True,                # 显示意图识别置信度
+    "show_complexity": True,                # 显示复杂度标签
+    "color_output": True,                   # 彩色终端输出
+    "show_skill_desc": True,                # 显示技能描述
+    "show_result_summary": True,           # 显示技能结果摘要（截断80字符）
+    "show_duration": True,                  # 显示每个技能耗时
 
-    # 输出内容配置
-    "show_progress_bar": True,    # 显示进度条（▓▓▓▓░░░░ 50%）
-    "show_time_estimate": True,    # 显示预计剩余时间
-    "show_confidence": True,        # 显示意图识别置信度
-    "show_complexity": True,        # 显示复杂度标签
-
-    # 输出格式配置
-    "color_output": True,          # 彩色终端输出（可禁用为纯文本）
-    "show_skill_desc": True,       # 显示技能描述
-    "show_result_summary": True,    # 显示技能结果摘要（截断至80字符）
-    "show_duration": True,          # 显示每个技能耗时
-
-    # 进度输出详细程度
     "verbose_levels": {
-        "task_start": True,        # 显示任务开始
-        "skill_start": True,       # 显示每个技能开始
-        "skill_success": True,      # 显示每个技能成功
-        "skill_fail": True,        # 显示每个技能失败
-        "validation": True,        # 显示校验进度
-        "reflection": True,         # 显示反思重规划
-        "task_summary": True,       # 显示任务总结
+        "task_start": True,
+        "skill_start": True,
+        "skill_success": True,
+        "skill_fail": True,
+        "validation": True,
+        "reflection": True,
+        "task_summary": True,
     },
 
-    # 日志写入配置
-    "write_to_task_file": True,    # 同时写入 task_skill.md 执行日记
-    "log_format": "text",          # 日志格式: text | json
+    "write_to_task_file": True,             # 同时写入 task_skill.md
+    "log_format": "text",                   # 日志格式: text | json
 }
 ```
-
-**说明**：
-- `enabled=False` 时，所有流式输出被静默，任务执行过程不产生任何输出
-- `color_output=False` 时，所有输出为纯文本，适用于日志文件
-- `write_to_task_file=True` 时，流式输出同时追加写入 `task_skill.md` 的执行日记
-
-**使用场景**：
-| 场景 | enabled | color_output | write_to_task_file |
-|------|---------|-------------|-------------------|
-| 正常执行（完整输出）| True | True | True |
-| CI/自动化环境（纯日志）| True | False | True |
-| 调试模式（仅终端）| True | True | False |
-| 静默模式（无输出）| False | - | False |
-- `confidence_threshold=0.6` 时，置信度低于 60% 会提示用户确认意图
-
-**支持的主技能列表（用于LLM上下文）**：
-
-当 `include_main_skills_in_prompt=True` 时，以下技能列表会作为上下文传给LLM：
-
-| name | desc | match_keywords |
-|------|------|----------------|
-| code-style-generator | 自动检测项目代码规范 | 生成代码习惯文档, 检测代码规范, CODE_STYLE |
-| bug-solver | 系统化解决bug | 解决bug, 修复错误, 调试问题, debug |
-| code-optimizer | 系统化优化代码 | 优化代码, 重构, 性能优化, 提高代码质量 |
-| code-generator | 根据需求自动生成代码 | 根据需求写代码, 实现功能, 生成代码 |
-| scan-object-info | 智能扫描前端项目技术信息 | 扫描项目, 分析项目, 技术栈, 项目结构 |
-| requirement-generator | 需求转化为标准需求文档 | 需求分析, 需求文档, 功能规格 |
 
 ---
 
@@ -105,18 +60,19 @@ STREAM_CONFIG = {
 
 ```python
 SIMILARITY_CONFIG = {
-    "历史任务相似度阈值": 0.85,
-    "历史任务召回数量": "3-5",
-    "主skill匹配最低分数": 0.4,
-    "多skill匹配差距阈值": 0.1,
+    "历史任务相似度阈值": 0.85,              # ≥0.85 → 直接复用历史结果
+    "历史任务召回数量": "3-5",             # 召回Top3-5
+    "主skill匹配最低分数": 0.4,             # < 0.4 → 无匹配
+    "多skill匹配差距阈值": 0.1,             # 差值 < 0.1 → 视为同等匹配
+    "多skill组合触发复杂度": 7,             # 复杂度 ≥ 7 → 自动触发多skill组合
 }
 
 SIMILARITY_WEIGHTS = {
     "domain": 0.25,
     "action": 0.20,
-    "keywords": 0.30,  # 最重要
+    "keywords": 0.30,                       # 最重要
     "target_type": 0.15,
-    "tech_stack": 0.10,
+    "complexity": 0.10,
 }
 ```
 
@@ -133,10 +89,11 @@ RETRY_CONFIG = {
 }
 
 REFLECTION_CONFIG = {
-    "目标偏差阈值": 0.2,
+    "目标偏差阈值": 0.2,                     # ≥ 0.2 触发反思
     "优秀偏差范围": "< 0.1",
     "合格偏差范围": "0.1 - 0.2",
-    "反思日志最大长度": 300,  # 字
+    "反思日志最大长度": 300,                 # 字
+    "每次反思最大补充技能数": 3,
 }
 ```
 
@@ -146,13 +103,13 @@ REFLECTION_CONFIG = {
 
 ```python
 TIMEOUT_CONFIG = {
-    "原子skill执行": 30,        # 秒
-    "原子skill重试总时长": 120, # 秒 (3次重试累计)
-    "用户响应等待": 300,       # 秒 (5分钟)
-    "任务总执行时长": 14400,    # 秒 (4小时)
-    "输出生成": 300,           # 秒 (5分钟)
-    "文件锁等待": 30,          # 秒
-    "文件锁超时": 30,          # 秒
+    "原子skill执行": 30,                    # 秒
+    "原子skill重试总时长": 120,             # 秒（3次重试累计）
+    "用户响应等待": 300,                    # 秒（5分钟）
+    "任务总执行时长": 14400,               # 秒（4小时）
+    "输出生成": 300,                        # 秒（5分钟）
+    "文件锁等待": 30,                       # 秒
+    "文件锁超时": 30,                       # 秒
 }
 ```
 
@@ -163,9 +120,9 @@ TIMEOUT_CONFIG = {
 ```python
 TASK_LIMITS = {
     "最大原子skill数量": 20,
-    "单个原子skill输出大小": 10 * 1024 * 1024,  # 10MB
-    "任务上下文总大小": 50 * 1024 * 1024,       # 50MB
-    "并行执行最大数量": 2,
+    "单个原子skill输出大小": 10 * 1024 * 1024,   # 10MB
+    "任务上下文总大小": 50 * 1024 * 1024,          # 50MB
+    "并行执行最大数量": 2,                          # 每层最多并行数
     "每次反思补充技能数": 3,
 }
 ```
@@ -176,12 +133,13 @@ TASK_LIMITS = {
 
 ```python
 FILE_CONFIG = {
-    "历史任务保留天数": 180,          # 6个月
+    "历史任务保留天数": 180,                 # 6个月
     "月度索引最大记录数": 100,
     "历史归档压缩格式": "tar.gz",
     "任务文件路径": "{root}/tasks/current/task_skill.md",
     "历史任务路径": "{root}/tasks/history/{YYYY-MM}/",
     "结果文件路径": "{root}/tasks/current/result_{task_id}.md",
+    "项目上下文路径": "{root}/../project_context.json",
 }
 ```
 
@@ -199,8 +157,8 @@ COMPLEXITY_WEIGHTS = {
 }
 
 COMPLEXITY_THRESHOLDS = {
-    "复杂目标判定": 3.0,  # 加权平均分数
-    "多skill组合触发": 7.0,
+    "简单目标判定": 3.0,                     # 加权平均 ≤ 3 → 简单目标
+    "多skill组合触发": 7.0,                  # 复杂度 ≥ 7 → 多skill组合
 }
 ```
 
@@ -214,7 +172,7 @@ SYNC_CONFIG = {
     "锁内容格式": "{pid}_{timestamp}",
     "备份文件后缀": ".bak",
     "临时文件后缀": ".tmp",
-    "锁检查频率": 2,  # 秒
+    "锁检查频率": 2,                         # 秒
     "锁最大等待次数": 15,
 }
 ```
@@ -229,7 +187,7 @@ USER_INTERACTION_CONFIG = {
         "D1": "未完成任务选择",
         "D2": "多skill匹配",
         "D3": "错误处理",
-        "D4": "反思重规划",
+        "D4": "执行计划调整",
         "D5": "反思失败",
         "D6": "文档固化",
     },
@@ -238,12 +196,12 @@ USER_INTERACTION_CONFIG = {
 }
 
 DEFAULT_BEHAVIORS = {
-    "D1_超时": "开始新任务",
-    "D2_超时": "选择匹配度最高",
-    "D3_超时": "重试",
-    "D4_超时": "继续",
-    "D5_超时": "输出当前结果",
-    "D6_超时": "仅索引",
+    "D1_超时": "开始新任务",                 # 5分钟
+    "D2_超时": "选择匹配度最高",             # 30秒
+    "D3_超时": "重试",                       # 3分钟
+    "D4_超时": "接受调整",                   # 2分钟
+    "D5_超时": "输出当前结果",               # 5分钟
+    "D6_超时": "仅索引",                     # 1分钟
 }
 ```
 
@@ -253,9 +211,9 @@ DEFAULT_BEHAVIORS = {
 
 ```python
 RESOURCE_CONFIG = {
-    "最小可用磁盘空间": 100 * 1024 * 1024,  # 100MB
-    "最小可用内存": 512 * 1024 * 1024,       # 512MB
-    "单skill输出阈值": 10 * 1024 * 1024,     # 10MB
+    "最小可用磁盘空间": 100 * 1024 * 1024,   # 100MB
+    "最小可用内存": 512 * 1024 * 1024,        # 512MB
+    "单skill输出阈值": 10 * 1024 * 1024,      # 10MB
 }
 ```
 
@@ -291,6 +249,7 @@ OUTPUT_CONFIG = {
         "失败信息": True,
         "反思日志": True,
         "建议": True,
+        "Token消耗": True,
     },
 }
 ```
@@ -335,13 +294,14 @@ ERROR_CATEGORIES = {
 
 ```python
 PATH_CONFIG = {
-    "skills_registry": ".skills/orchestrator/skills_register.md",
-    "missing_skills": ".skills/orchestrator/missing_skills.md",
-    "task_template": ".skills/tasks/templates/task_skill_template.md",
-    "monthly_index_template": ".skills/tasks/templates/月度任务索引模版.md",
-    "current_tasks": ".skills/tasks/current/",
-    "history_tasks": ".skills/tasks/history/",
-    "archive_dir": ".skills/tasks/archive/",
+    "skills_registry": ".claude/skills/orchestrator/skills_register.md",
+    "missing_skills": ".claude/skills/orchestrator/missing_skills.md",
+    "task_template": ".claude/skills/tasks/templates/task_skill_template.md",
+    "monthly_index_template": ".claude/skills/tasks/templates/月度任务索引模版.md",
+    "current_tasks": ".claude/skills/tasks/current/",
+    "history_tasks": ".claude/skills/tasks/history/",
+    "archive_dir": ".claude/skills/tasks/archive/",
+    "project_context": ".claude/project_context.json",
 }
 ```
 
@@ -353,7 +313,7 @@ PATH_CONFIG = {
 ID_CONFIG = {
     "格式": "YYYYMMDDHHMMSS_{random6}",
     "时间戳格式": "%Y%m%d%H%M%S",
-    "时区": "Asia/Shanghai",  # UTC+8
+    "时区": "Asia/Shanghai",                # UTC+8
     "随机数范围": (100000, 999999),
 }
 ```
@@ -384,42 +344,58 @@ SKILL_STATUS = {
 
 ---
 
-**版本**: 1.0
-**最后更新**: 2026-04-07
-
----
-
-## 0.6 Token 消耗追踪配置（新增）
+## 0.6 Token消耗追踪配置
 
 ```python
 TOKEN_TRACKING_CONFIG = {
     # 预算配置
-    "session_budget": 1000000,         # 会话级总预算（token）
-    "task_budget": 200000,             # 任务级预算（token）
+    "session_budget": 1000000,             # 会话级总预算（token）
+    "task_budget": 200000,                 # 任务级预算（token）
 
     # 预警阈值
-    "warning_threshold": 0.8,         # 80% 时预警，95% 时严重警告
+    "warning_threshold": 0.8,              # 80% 预警（⚠️）
+    "critical_threshold": 0.95,            # 95% 严重警告（🚨）
 
-    # 成本费率（美元/百万token，当前为 Anthropic Claude Sonnet 4 参考费率）
-    "input_cost_per_1k": 3.0,          # $3.00 / 1M input tokens
-    "output_cost_per_1k": 15.0,       # $15.00 / 1M output tokens
+    # 成本费率（美元/百万token）
+    "input_cost_per_1k": 3.0,              # $3.00 / 1M input tokens
+    "output_cost_per_1k": 15.0,            # $15.00 / 1M output tokens
 
     # 输出配置
-    "show_in_stream": True,            # 在流式输出中显示 token 统计
-    "show_per_skill": True,            # 显示每个技能的 token 消耗
-    "show_cost_estimate": True,       # 显示预估成本
+    "show_in_stream": True,                # 在流式输出中显示token统计
+    "show_per_skill": True,                # 显示每个技能的token消耗
+    "show_cost_estimate": True,             # 显示预估成本
 
     # 记录配置
-    "write_to_task_file": True,        # 写入 task_skill.md 执行日记
-    "log_format": "text",              # text | json
+    "write_to_task_file": True,             # 写入 task_skill.md
+    "log_format": "text",                   # text | json
 }
 ```
 
-**费率参考**（不同模型定价不同）：
-
-| 模型 | 输入 ($/1M) | 输出 ($/1M) | 配置示例 |
-|------|-----------|------------|---------|
-| claude-sonnet-4-20250514 | $3.00 | $15.00 | 基准配置 |
+| 模型 | 输入 ($/1M) | 输出 ($/1M) | 配置 |
+|------|-----------|------------|------|
+| claude-sonnet-4-20250514 | $3.00 | $15.00 | 基准 |
 | claude-3-5-sonnet-latest | $3.00 | $15.00 | 同上 |
 | claude-3-opus-latest | $15.00 | $75.00 | input_cost_per_1k=15.0 |
 | claude-3-haiku-latest | $0.25 | $1.25 | input_cost_per_1k=0.25 |
+
+---
+
+## 16. 意图识别Prompt模板配置
+
+```python
+INTENT_PROMPT_CONFIG = {
+    "system_prompt_template": "...",         # 见 SKILL.md 步骤1
+    "user_prompt_template": "...",          # 见 SKILL.md 步骤1
+
+    "simple_keywords": ["写", "实现", "修改", "添加", "创建一个"],
+    "complex_keywords": ["系统", "管理", "模块", "包含以下", "多个"],
+
+    "simple_max_length": 50,                # 字符数 < 50 → 简单
+    "complex_min_length": 100,              # 字符数 > 100 → 复杂
+}
+```
+
+---
+
+**版本**: 1.2
+**最后更新**: 2026-05-21

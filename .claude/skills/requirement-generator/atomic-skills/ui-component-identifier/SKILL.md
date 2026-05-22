@@ -3,7 +3,7 @@ name: ui-component-identifier
 description: 识别通用UI组件类型（form、input、button、table等），不绑定具体组件库，为code-generator提供组件清单。在功能流程设计后自动执行。
 ---
 
-# UI Component Identifier 原子Skill
+# UI Component Identifier 原子 Skill
 
 ## 概述
 基于需求描述和功能流程，识别所需的通用UI组件类型（非具体库），输出语义化的组件清单（form、input、button、table等），供 code-generator 映射到具体组件库。
@@ -15,8 +15,8 @@ description: 识别通用UI组件类型（form、input、button、table等），
 - 不绑定任何具体UI库
 
 ## 输入
-function-flow-designer输出的流程设计
-requirement-decomposition输出的模块分解
+function-flow-designer 输出的流程设计（含 sub_flow）
+requirement-decomposition 输出的模块分解
 
 ## 输出
 UI组件识别结果，包含以下内容：
@@ -29,25 +29,11 @@ UI组件识别结果，包含以下内容：
       "module": "用户登录",
       "purpose": "用户登录表单",
       "fields": [
-        {
-          "name": "username",
-          "type": "text",
-          "required": true,
-          "label": "用户名"
-        },
-        {
-          "name": "password",
-          "type": "password",
-          "required": true,
-          "label": "密码"
-        }
+        { "name": "username", "type": "text", "required": true, "label": "用户名" },
+        { "name": "password", "type": "password", "required": true, "label": "密码" }
       ],
       "buttons": [
-        {
-          "text": "登录",
-          "type": "primary",
-          "action": "submit"
-        }
+        { "text": "登录", "type": "primary", "action": "submit" }
       ]
     },
     {
@@ -64,15 +50,8 @@ UI组件识别结果，包含以下内容：
       "selection": false
     }
   ],
-  "component_types_summary": {
-    "form": 1,
-    "table": 1,
-    "button": 2
-  },
-  "interactions": [
-    "表单提交",
-    "表格行点击"
-  ]
+  "component_types_summary": { "form": 1, "table": 1, "button": 2 },
+  "interactions": ["表单提交", "表格行点击"]
 }
 ```
 
@@ -93,6 +72,7 @@ UI组件识别结果，包含以下内容：
 | `tree` | 树形控件 | el-tree, <Tree> |
 | `tabs` | 标签页 | el-tabs, <Tabs> |
 | `message` | 消息提示 | ElMessage, message |
+| `pagination` | 分页器 | el-pagination, <Pagination> |
 
 ## 组件识别逻辑
 
@@ -124,38 +104,36 @@ UI组件识别结果，包含以下内容：
 ### 5. Modal/Dialog 弹窗
 **识别关键词**：弹窗、弹出、对话框、提示
 
+### 6. Validation Sub-flow 识别（**新增 v1.1**）
+从 sub_flow 中识别验证相关的 UI 组件需求：
+- validation 子流程 → 表单验证（必填提示、格式错误提示）
+- confirmation 子流程 → 确认弹窗
+- pagination 子流程 → 分页器
+
 ## 执行逻辑
-1. 接收模块分解和流程设计结果
+1. 接收模块分解和流程设计结果（含 sub_flow）
 2. 遍历每个模块的功能点
 3. 根据关键词匹配识别组件类型
-4. 提取组件的字段、按钮、属性
-5. 关联组件与模块
-6. 汇总组件统计
-7. 输出组件清单
+4. **从 sub_flow 中识别验证/确认相关的 UI 组件（新增 v1.1）**
+5. 提取组件的字段、按钮、属性
+6. 关联组件与模块
+7. 汇总组件统计
+8. 输出组件清单
 
 ## 依赖关系
 - 依赖：function-flow-designer + requirement-decomposition
 
 ## 完成标准
-1. ✅ 识别至少1种组件类型
-2. ✅ 为每个组件定义用途和所属模块
-3. ✅ 提取组件的字段或列定义
-4. ✅ 提取按钮的文本和类型
-5. ✅ 输出完整的JSON格式数据
-
-## 错误处理
-- **无法识别**：标记为 `unknown` 类型，记录原因
-- **组件类型冲突**：选择置信度最高的
-- **缺少必要字段**：标记警告，继续处理
+1. 识别至少1种组件类型
+2. 为每个组件定义用途和所属模块
+3. 提取组件的字段或列定义
+4. 提取按钮的文本和类型
+5. **识别 sub_flow 关联的验证/确认组件（新增 v1.1）**
+6. 输出完整的JSON格式数据
 
 ## 示例
 
-**输入**：用户需求"实现登录功能，包含用户名、密码输入，登录按钮"
-
-**处理**：
-1. 关键词：输入、密码、按钮 → 识别为表单组件
-2. 字段：用户名（text）、密码（password）
-3. 按钮：登录（primary，提交动作）
+**输入**：用户需求"实现登录功能，包含用户名、密码输入，登录按钮，系统进行表单验证"
 
 **输出**：
 ```json
@@ -164,20 +142,23 @@ UI组件识别结果，包含以下内容：
     {
       "type": "form",
       "module": "用户登录",
-      "purpose": "用户登录表单",
+      "purpose": "用户登录表单（含表单验证）",
       "fields": [
         { "name": "username", "type": "text", "required": true, "label": "用户名" },
         { "name": "password", "type": "password", "required": true, "label": "密码" }
       ],
       "buttons": [
         { "text": "登录", "type": "primary", "action": "submit" }
-      ]
+      ],
+      "validation": {
+        "inline_validation": true,
+        "error_display": "inline",
+        "required_message": "请输入用户名/密码"
+      }
     }
   ],
-  "component_types_summary": {
-    "form": 1
-  },
-  "interactions": ["表单提交"]
+  "component_types_summary": { "form": 1, "button": 1 },
+  "interactions": ["表单提交", "表单验证"]
 }
 ```
 
@@ -186,6 +167,7 @@ UI组件识别结果，包含以下内容：
 - 具体库的映射由 code-generator 根据 project-context 决定
 - 所有字段、按钮都应包含 label 或 text 属性
 - 按模块组织组件，便于后续生成
+- **validation 子流程对应的验证 UI 应作为 form 的 validation 属性输出（新增 v1.1）**
 
-## 原子skill位置
-./.claude/skills/requirement-generator/atomic-skills/ui-component-identifier/SKILL.md
+## 版本
+v1.1 - 改进版：增强与 sub_flow 的整合，识别验证/确认相关 UI 组件

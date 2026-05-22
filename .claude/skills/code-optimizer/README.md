@@ -1,189 +1,148 @@
-# Code Optimizer Skill 使用指南
+# Code Optimizer
+
+系统化地优化代码，基于代码质量分析和性能分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性。
 
 ## 快速开始
 
-当您希望优化代码质量、性能或可维护性时，只需提供目标代码，code-optimizer会自动帮您系统化地分析、重构并验证优化效果。
-
-### 使用方式
+### 触发方式
+当用户请求代码优化时自动触发：
 
 ```
-用户输入优化请求 → orchestrator识别意图 → code-optimizer接管任务 → 自动执行完整流程
+用户: "优化 src/components/MeetingCard.vue，减少复杂度，提高渲染性能"
 ```
 
-### 示例输入
+### 执行命令
+Claude Code 将按以下7步管道自动执行：
 
-**示例1：Vue组件优化**
 ```
-优化 src/views/Meeting/index.vue，减少复杂度，提高渲染性能
-```
-
-**示例2：JavaScript函数优化**
-```
-改进这个函数的性能，消除重复计算
+code-quality-analysis → pattern-recognition → performance-analysis
+    → improvement-suggestion → code-refactoring
+    → optimization-verification → documentation-update
 ```
 
-**示例3：配置文件优化**
+---
+
+## 文件结构
+
 ```
-简化vite.config.js，移除未使用的配置项
-```
-
-## 执行流程详解
-
-### 1. 代码质量分析（code-quality-analysis）
-- 分析代码复杂度（圈复杂度、认知复杂度）
-- 检测重复代码（代码克隆）
-- 识别代码异味（长函数、大类、过多参数）
-- 检查安全风险（不安全的API使用）
-- 输出结构化质量报告
-
-### 2. 模式识别（pattern-recognition）
-- 识别可优化模式：
-  - 低效算法（O(n²) → O(n)）
-  - 冗余逻辑（重复的if/else）
-  - 不良实践（全局变量、魔数）
-  - 性能瓶颈（频繁的DOM操作、未缓存的计算）
-- 标记具体代码位置
-- 按影响程度排序优化点
-
-### 3. 改进建议（improvement-suggestion）
-为每个优化点提供**三个可选方案**：
-
-#### 方案1：激进优化（推荐）
-- 最大化性能提升
-- 可能改变架构
-- 需要较多测试验证
-
-#### 方案2：保守优化
-- 最小化变更
-- 保持原有结构
-- 安全可靠
-
-#### 方案3：折中优化
-- 平衡性能与可维护性
-- 适度重构
-- 较少风险
-
-每个方案包含：
-- 修改内容
-- 预期收益
-- 潜在风险
-- 实施难度
-
-### 4. 代码重构（code-refactoring）
-- 根据用户选择的方案修改代码
-- 生成 diff 格式对比（显示变更前后）
-- 确保语法正确、无编译错误
-- 保留原始代码备份
-
-### 5. 优化验证（optimization-verification）
-- **功能验证**：确保修改后行为与原代码一致
-- **性能验证**：比较优化前后的执行时间、内存使用
-- **质量验证**：确认圈复杂度、重复率等指标改善
-- 输出验证报告
-
-### 6. 文档更新（documentation-update）
-- 更新函数/组件注释
-- 修改README中的使用示例
-- 更新API文档
-- 保持代码与文档同步
-
-## 任务文件示例
-
-执行过程中会在 `.claude/skills/tasks/current/task_skill.md` 中记录：
-
-```markdown
-# 任务基础信息
-任务ID：20260408190000_ABC123
-用户意图：优化src/views/Meeting/index.vue
-最终目标：提高渲染性能，降低复杂度
-归属主skill：code-optimizer
-当前状态：执行中
-
-# 子任务列表
-| 原子skill名称 | 状态 | 执行日志 |
-|--------------|------|----------|
-| code-quality-analysis | 已完成 | 已分析组件，识别出复杂度高、重复计算等5个问题 |
-| pattern-recognition | 已完成 | 识别出3个优化模式：低效计算、冗余监听、大组件 |
-| improvement-suggestion | 已完成 | 提供了3个优化方案，推荐使用激进方案 |
-| code-refactoring | 执行中 | 正在应用优化方案...
-| optimization-verification | 待执行 | |
-| documentation-update | 待执行 | |
-
-# 执行日志
-2026-04-08 19:00:00：开始执行code-quality-analysis
-2026-04-08 19:00:05：code-quality-analysis执行成功
-2026-04-08 19:00:10：开始执行pattern-recognition
-...
+code-optimizer/
+├── SKILL.md                         # 主skill定义（入口）
+├── README.md                        # 本文件
+└── atomic-skills/
+    ├── code-quality-analysis/      # 静态代码质量分析
+    │   └── SKILL.md
+    ├── pattern-recognition/        # 识别可优化代码模式
+    │   └── SKILL.md
+    ├── performance-analysis/       # 分析性能瓶颈 [NEW]
+    │   └── SKILL.md
+    ├── improvement-suggestion/      # 生成优化建议
+    │   └── SKILL.md
+    ├── code-refactoring/           # 应用代码修改
+    │   └── SKILL.md
+    ├── optimization-verification/   # 验证优化效果
+    │   └── SKILL.md
+    └── documentation-update/        # 更新文档
+        └── SKILL.md
 ```
 
-## 重试规则
-- 每个原子skill失败后可重试 **3次**
-- 如果code-refactoring失败，会暂停任务并通知用户
-- optimization-verification失败时可返回code-refactoring重新优化（最多2次循环）
+---
 
-## 特殊情况处理
+## 质量指标体系
 
-### 问题：无法分析代码
-如果代码格式错误或语法错误：
-- 报告具体错误位置
-- 建议用户先修复语法问题
-- 不会尝试自动修复语法错误
+### 代码质量指标
+| 指标 | 当前值 | 目标值 | 状态 |
+|------|--------|--------|------|
+| 圈复杂度 | - | < 15 | - |
+| 认知复杂度 | - | < 10 | - |
+| 重复代码率 | - | < 5% | - |
+| 代码行数（函数） | - | < 50行 | - |
+| 代码行数（文件） | - | < 300行 | - |
+| 异味数量 | - | < 5 | - |
 
-### 问题：优化影响功能
-如果优化后功能不正确：
-- optimization-verification会检测到
-- 自动返回code-refactoring阶段重新优化
-- 最多循环2次
+### 性能指标
+| 指标 | 目标改善 |
+|------|----------|
+| 渲染时间 | 降低 >= 20% |
+| 内存占用 | 降低 >= 10% |
+| 重渲染次数 | 减少 >= 15% |
+| 计算复杂度 | 关键函数优化 |
+| bundle大小 | 减少 >= 5%（如有）|
 
-### 问题：需要更多信息
-在code-quality-analysis阶段，如果信息不足，会提示用户：
-- "能否提供该文件的完整上下文？"
-- "是否有相关的测试用例？"
-- "这个组件的预期性能指标是什么？"
+---
 
-## 最佳实践
+## 优化方案分级
 
-1. **提供上下文**：说明优化目标（性能、可读性、可维护性）
-2. **明确范围**：指定要优化的文件或目录
-3. **优先级说明**："优先考虑性能"、"优先保持兼容性"等
-4. **接受建议**：code-optimizer提供多个方案，建议选择激进方案以获得最大收益
-5. **审查变更**：应用修改前，仔细阅读diff对比
+每个优化问题提供3个方案供选择：
 
-## 输出产物
+| 方案 | 特点 | 适用场景 |
+|------|------|----------|
+| 激进优化 | 性能最优，可能有破坏性改动 | 需要极致性能、对测试覆盖有信心时 |
+| 折中优化 | 平衡性能和稳定性 | 大多数场景首选 |
+| 保守优化 | 最小改动、风险最低 | 需要快速修复、暂时无法大规模重构时 |
 
-任务完成后会输出：
-1. **质量分析报告**（优化前状态）
-2. **优化方案对比**（激进/保守/折中）
-3. **修改后的代码**（覆盖原文件或生成新版本）
-4. **优化验证报告**（性能对比、功能测试结果）
-5. **更新后的文档**（注释、README、API文档）
-6. **完整执行日志**（所有步骤记录）
+---
 
-所有产物会归档到 `.claude/skills/tasks/history/YYYY-MM/` 下
+## 使用示例
 
-## 常见问题
+### 输入
+```
+优化 src/components/MeetingCard.vue，减少复杂度，提高渲染性能
+```
 
-**Q: 这个skill能优化所有代码吗？**
-A: 适用于JavaScript/TypeScript、Vue/React组件、配置文件。不适用于编译型语言（如C++）、二进制文件或依赖外部服务的代码。
+### 执行流程
 
-**Q: 优化会修改我的原始文件吗？**
-A: 会直接修改您指定的文件。建议在执行前提交当前代码到版本控制系统。
+**Step 1: code-quality-analysis**
+- 分析 MeetingCard.vue 的复杂度指标
+- 检测重复代码、代码异味、安全风险
+- 输出：质量分析报告（5个以上质量点）
 
-**Q: 如果我不同意优化方案怎么办？**
-A: code-optimizer会提供多个方案供您选择，您可以选择保守方案或拒绝优化。
+**Step 2: pattern-recognition**
+- 识别可优化模式（大函数、重复逻辑、嵌套过深）
+- 定位具体代码行和影响范围
+- 输出：模式识别报告（3种以上模式）
 
-**Q: 优化后性能没提升怎么办？**
-A: optimization-verification会检测，如果未提升，会自动回退或尝试其他方案。
+**Step 3: performance-analysis**
+- 分析渲染性能瓶颈（重渲染、DOM操作）
+- 检测计算效率问题（重复计算、大列表）
+- 识别内存泄漏风险（事件监听、定时器）
+- 输出：性能瓶颈报告（3个以上瓶颈）
 
-**Q: 可以优化整个项目吗？**
-A: 可以，指定目录路径即可，code-optimizer会递归分析所有相关文件。
+**Step 4: improvement-suggestion**
+- 基于模式识别 + 性能分析双维度
+- 为每个问题生成3个优化方案（激进/折中/保守）
+- 输出：优化建议报告（含diff代码修改）
 
-**Q: 会不会引入新bug？**
-A: optimization-verification阶段专门检测此问题，确保功能正确性。
+**Step 5: code-refactoring**
+- 应用用户选择的优化方案
+- 生成修改后的代码（保留备份）
+- 输出：重构后的代码 + diff对比
 
-**Q: 优化会改变代码风格吗？**
-A: 不会，code-optimizer不处理代码风格（如缩进、引号），那是code-style-generator的职责。
+**Step 6: optimization-verification**
+- 验证功能正确性（单元测试、集成测试）
+- 对比性能指标（渲染时间、内存占用）
+- 确认质量指标改善（圈复杂度、重复率）
+- 输出：验证报告（全部指标达标）
 
-## 技术支持
+**Step 7: documentation-update**
+- 更新组件注释和JSDoc
+- 更新README使用说明
+- 更新API文档（如有）
+- 输出：文档更新清单
 
-如有问题或建议，请查看 `.claude/skills/orchestrator/README.md` 或联系项目维护者。
+### 输出产物
+- 优化后的代码文件
+- 质量分析报告 + 性能分析报告
+- 代码diff对比
+- 验证报告
+- 更新后的文档
+
+---
+
+## 注意事项
+
+1. **功能优先**：始终优先保证功能正确性，其次才是优化
+2. **多方案选择**：提供多个优化方案，让用户根据实际情况选择
+3. **性能+质量双维度**：improvement-suggestion 同时参考 pattern-recognition 和 performance-analysis 的结果
+4. **并行执行**：pattern-recognition 和 performance-analysis 可并行执行（都依赖 code-quality-analysis）
+5. **备份回滚**：优化前自动备份原始代码，支持回滚
+6. **增量优化**：支持分步优化，每次只优化部分问题
