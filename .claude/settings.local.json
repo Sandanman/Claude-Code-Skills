@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "allow": [
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/missing_skills.md)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/tasks/current/task_skill.md)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/*/*)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/tasks/templates/*)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/*/SKILL.md)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/*)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/*)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9])",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/tasks/templates)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/SKILL.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/README.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/SKILL.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/tasks/current/task_skill.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/月度任务索引.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/missing_skills.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
+      "Edit($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
+      "Edit($CLAUDE_PROJECT_DIR/.claude/skills/tasks/current/task_skill.md)",
+      "Edit($CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/月度任务索引.md)",
+      "Bash(mv $CLAUDE_PROJECT_DIR/.claude/skills/tasks/current/task_skill.md $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/task_skill_*.md)",
+      "Bash(echo \"\" >> $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/月度任务索引.md)",
+      "Bash(echo \"\" >> $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/missing_skills.md)",
+      "Bash(edit $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
+      "Bash(grep -r $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
+      "WebSearch",
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(grep:*)"
+    ]
+  }
+}
