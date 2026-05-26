@@ -1,0 +1,179 @@
+/*
+ * Claude Code 项目级配置
+ *
+ * 此文件为通用模板，可直接复制到任何项目中使用。
+ * 复制后根据项目需要调整注释中标有 [可调整] 的配置项。
+ *
+ * 文档：https://docs.anthropic.com/zh-CN/docs/claude-code/settings-json
+ */
+
+{
+  // ─────────────────────────────────────────────
+  // 模型配置
+  // ─────────────────────────────────────────────
+
+  "model": "sonnet",
+
+  // ─────────────────────────────────────────────
+  // 权限配置
+  // [可调整] 根据项目需求增删权限项
+  // ─────────────────────────────────────────────
+
+  "permissions": {
+    "allow": [
+      // 文件读写
+      "Read",
+      "Write",
+      "Edit",
+      "NotebookEdit",
+      // 任务管理
+      "Task",
+      "TaskCreate",
+      "TaskUpdate",
+      "TaskList",
+      "TaskGet",
+      // Bash — 通用命令
+      "Bash(ls *|cat|head|tail|grep|find|mkdir|rm|cp|mv|touch|chmod)",
+      "Bash(git status|git diff|git log|git branch|git checkout)",
+      "Bash(npm *|yarn *|pnpm *|node *|npx *)",
+      "Bash(eslint *|prettier *|vitest *|jest *)",
+      // 网络访问（根据项目需要调整域名）
+      "WebSearch",
+      "WebFetch"
+    ],
+    "deny": [
+      // 默认禁止危险操作
+      "Bash(rm -rf /|mkfs|format|sudo|passwd|ssh|telnet)",
+      "WebFetch(domain: *://*.internal *)"
+    ]
+  },
+
+  // ─────────────────────────────────────────────
+  // 自动执行钩子
+  // [可调整] 根据项目需要修改检查提示
+  // ─────────────────────────────────────────────
+
+  "hooks": {
+    "pre-tool-use": [
+      {
+        "match": "Bash",
+        "prompt": "执行 Bash 命令前确认：\n1. 命令是只读操作还是会产生变更？\n2. 如果产生变更，确认是否符合项目规范。\n3. 危险的破坏性命令（如 rm -rf、git reset --hard）需先询问用户。"
+      },
+      {
+        "match": "Write|Edit",
+        "prompt": "写入或编辑文件前确认：\n1. 文件路径正确，目标位置符合项目结构。\n2. 内容符合 .claude/rules/ 中的编码规范。\n3. 如果是配置文件，确认格式正确。"
+      }
+    ],
+    "pre-command": [
+      {
+        "match": "git commit",
+        "prompt": "提交前检查：\n1. 变更内容是否符合编码规范（参考 .claude/rules/coding-standards.mdc）\n2. 提交信息是否在 10 字以内，抽象概括核心变更\n3. 是否有未提交的敏感信息（如 token、密钥）\n4. 建议先运行 git status 查看变更范围"
+      },
+      {
+        "match": "git push",
+        "prompt": "推送前检查：\n1. 确认所有变更已提交（git status 无遗漏）\n2. 确认推送的分支和目标仓库正确\n3. 如果是强制推送（--force），需额外确认"
+      },
+      {
+        "match": "Bash(mkdir|touch|rm|mv|cp)",
+        "prompt": "这是一个文件操作命令，确认：\n1. 路径正确，符合项目目录结构\n2. 不会意外覆盖或删除重要文件\n3. 如果是删除操作，确认文件是否已被其他方式备份"
+      }
+    ],
+    "post-command": [
+      {
+        "match": "git commit",
+        "prompt": "提交完成后：建议运行 git log --oneline -3 查看最近的提交记录，确认提交成功。"
+      }
+    ]
+  },
+
+  // ─────────────────────────────────────────────
+  // 规则加载配置
+  // ─────────────────────────────────────────────
+
+  "rules": {
+    // true = rules 目录下的规则会自动加载（alwaysApply: true 的规则始终生效）
+    "alwaysApply": true
+  },
+
+  // ─────────────────────────────────────────────
+  // 自动保存
+  // [可调整] 大型项目可关闭以提升性能
+  // ─────────────────────────────────────────────
+
+  "auto-save": true,
+
+  // ─────────────────────────────────────────────
+  // 对话历史
+  // [可调整] maxSessions 为最大保留会话数
+  // ─────────────────────────────────────────────
+
+  "history": {
+    "maxSessions": 50
+  },
+
+  // ─────────────────────────────────────────────
+  // 诊断配置
+  // [可调整] 根据项目使用的工具链增删 providers
+  // ─────────────────────────────────────────────
+
+  "diagnostics": {
+    "enabled": true,
+    "providers": {
+      "eslint": {
+        "enabled": true,
+        "fix": true
+      },
+      "prettier": {
+        "enabled": true,
+        "formatOnSave": false
+      },
+      "tsconfig": {
+        "enabled": true
+      }
+    }
+  },
+
+  // ─────────────────────────────────────────────
+  // 断点恢复配置
+  // [可调整] resume 命令的默认提示词
+  // ─────────────────────────────────────────────
+
+  "resume": {
+    "prompt": "继续上一个任务。请先回顾之前的对话上下文，恢复到上次离开的位置继续工作。确认当前状态后，简要说明下一步计划。"
+  },
+
+  // ─────────────────────────────────────────────
+  // MCP 服务器配置（可选）
+  // [可调整] 根据项目需要启用，常见：文件系统、GitHub、Slack 等
+  // ─────────────────────────────────────────────
+
+  "mcpServers": {
+    // 文件系统 MCP（提供更安全的文件访问控制）
+    // "filesystem": {
+    //   "command": "npx",
+    //   "args": ["-y", "@modelcontextprotocol/server-filesystem", "./src"]
+    // },
+    // GitHub MCP（集成 GitHub API）
+    // "github": {
+    //   "command": "npx",
+    //   "args": ["-y", "@modelcontextprotocol/server-github"],
+    //   "env": {
+    //     "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+    //   }
+    // }
+  },
+
+  // ─────────────────────────────────────────────
+  // 实验性功能
+  // [可调整] 根据 Claude Code 版本和需求启用
+  // ─────────────────────────────────────────────
+
+  "experimental": {
+    // 预提交检查（自动在 git commit 前运行 lint/test）
+    // "precommit": {
+    //   "enabled": true,
+    //   "commands": ["npm run lint", "npm run test"],
+    //   "failOnError": true
+    // }
+  }
+}

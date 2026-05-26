@@ -39,7 +39,7 @@ Security Report 是安全扫描流程的收尾阶段，负责汇总来自 vulner
 ```json
 {
   "reportTime": "2026-05-21T10:10:00Z",
-  "project": "vue-meeting-app",
+  "project": "{{PROJECT_NAME}}",
   "securityScore": 78,
   "scoreGrade": "B",
   "totalFindings": 11,

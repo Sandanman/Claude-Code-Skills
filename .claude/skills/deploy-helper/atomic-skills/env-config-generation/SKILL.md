@@ -71,7 +71,7 @@ VITE_ENABLE_DEBUG=false
 set -e
 
 # 配置
-APP_NAME="vue-meeting-app"
+APP_NAME="{{PROJECT_NAME}}"
 DEPLOY_ENV="production"
 BACKUP_DIR="/opt/backups/$APP_NAME"
 

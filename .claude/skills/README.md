@@ -20,15 +20,14 @@
 │   ├── technical_implementation.md          # 11个技术实现模块
 │   ├── user_interaction.md                  # 6个决策点交互模板
 │   ├── skills_register.md                   # 技能注册表（13个主skill + 79个原子skill）
-│   └── missing_skills.md                    # 缺失技能记录
-│
-├── atomic-skills/                           # orchestrator的6个原子能力
-│   ├── intent-recognition/                  # LLM意图识别（含rule fallback）
-│   ├── skill-matcher/                       # 主skill匹配（关键词+领域+操作）
-│   ├── task-generator/                      # DAG构建+拓扑排序+并行层识别
-│   ├── execution-controller/                # 流式执行+Token追踪+错误评估
-│   ├── result-validator/                    # 完成标准校验+反思重规划
-│   └── task-archiver/                       # 归档+月度索引更新+可固化检测
+│   ├── missing_skills.md                    # 缺失技能记录
+│   └── atomic-skills/                       # orchestrator的6个原子能力
+│       ├── intent-recognition/              # LLM意图识别（含rule fallback）
+│       ├── skill-matcher/                   # 主skill匹配（关键词+领域+操作）
+│       ├── task-generator/                 # DAG构建+拓扑排序+并行层识别
+│       ├── execution-controller/            # 流式执行+Token追踪+错误评估
+│       ├── result-validator/               # 完成标准校验+反思重规划
+│       └── task-archiver/                   # 归档+月度索引更新+可固化检测
 │
 ├── [13个主Skill]                            # 主技能（协同执行）
 │   ├── code-generator/         [9原子skill]  # 代码生成（+multi-scenario-adapter）
