@@ -1,0 +1,30 @@
+---
+name: task-folding
+description: Task Folding 折叠规则 — 定义何时折叠、如何折叠、保护哪些 skill
+alwaysApply: true
+---
+
+## 一、折叠触发规则
+
+**fold-trigger-001**: 当 τ_remaining < 30% 且任务深度 > 3 时，触发强制折叠
+**fold-trigger-002**: 当连续 3 个原子 skill 的 τ 总和 > 合并后单 skill 的 τ 时，触发折叠
+**fold-trigger-003**: 每个任务最多折叠 2 次（折叠深度限制）
+
+## 二、折叠执行规则
+
+**fold-exec-001**: 折叠前需确认合并后的 skill 存在且完成标准兼容
+**fold-exec-002**: 折叠操作必须记录到执行日记（含折叠原因和 τ 收益估算）
+**fold-exec-003**: 折叠后重新计算 τ 预算分配
+
+## 三、折叠保护规则
+
+**fold-protect-001**: 用户明确要求的 skill 不可折叠（user_required=True）
+**fold-protect-002**: 核心 skill 不可折叠（is_core=True）
+**fold-protect-003**: 涉及不同 domain 的 skill 不可折叠
+**fold-protect-004**: 用户要求"详细分析"时，禁止折叠
+
+## 四、折叠合并候选规则
+
+**fold-merge-001**: 检测连续同 domain skill（如 detect-* 系列）
+**fold-merge-002**: 检测 scan-* 系列可合并为 scan-project-context
+**fold-merge-003**: 合并后 skill 必须在 skills_register.md 中已存在，不新建 skill

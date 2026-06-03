@@ -121,6 +121,16 @@ version: 1.2
   status: 启用
 ```
 
+### git-assistant（新增，τ 增强版）
+```yaml
+- name: git-assistant
+  desc: 智能 Git 操作助手，基于华为韬定律 τ 优化技能选择组合，支持 commit 生成、分支管理、历史分析、冲突解决等
+  path: .claude/skills/git-assistant/SKILL.md
+  core_ability: 意图识别与路由、τ 优化的原子技能选择、Git 命令生成
+  match_keywords: 提交, commit, 分支, branch, 冲突, conflict, stash, 历史, history, blame, tag, 版本, merge, rebase, git操作
+  status: 启用
+```
+
 ### git-helper（新增）
 ```yaml
 - name: git-helper

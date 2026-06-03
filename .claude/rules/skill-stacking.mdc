@@ -1,0 +1,28 @@
+---
+name: skill-stacking
+description: Skill Stacking 规则 — 上下文共享策略、TSV 层读写规范、命中率要求
+alwaysApply: true
+---
+
+## 一、上下文共享规则
+
+**stack-share-001**: 上游 skill 的输出必须写入 task_skill.md 共享上下文区域
+**stack-share-002**: 下游 skill 优先从共享上下文读取，避免重复解析
+**stack-share-003**: 共享上下文读取优先级：task_skill.md → 重新解析
+
+## 二、层间通信规则
+
+**stack-layer-001**: 同层 skill 可并行执行（共享上下文保护锁）
+**stack-layer-002**: 层间依赖通过共享上下文传递，不传递文件句柄
+**stack-layer-003**: 栈叠层级深度最多 4 层（感知/分析/生成/输出）
+
+## 三、堆叠效率规则
+
+**stack-eff-001**: 共享上下文命中率 < 50% 时，触发堆叠效率警告
+**stack-eff-002**: 栈叠后 τ 收益必须 > 10%，否则保持原有结构
+**stack-eff-003**: 每个 skill 必须声明 required_keys（需要从上下文读取的键）和 output_keys（输出到上下文的键）
+
+## 四、命中率计算规则
+
+**stack-hit-001**: 命中率 = 从共享上下文命中的次数 / 总读取尝试次数
+**stack-hit-002**: 未命中时标记为 reparse，下次相同 skill 执行时应预加载
