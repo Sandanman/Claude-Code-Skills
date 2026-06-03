@@ -83,6 +83,91 @@
         "match": "git commit",
         "prompt": "提交完成后：建议运行 git log --oneline -3 查看最近的提交记录，确认提交成功。"
       }
+    ],
+
+    // ─────────────────────────────────────────────
+    // 上下文压缩管理
+    //
+    // 说明：Claude Code 通过 PreCompact/PostCompact 自动管理上下文压缩，
+    // 压缩时机由 Claude Code 内部算法决定（非 90% 显式阈值）。
+    // 此处配置压缩前后的提示行为，以及会话结束时的限制提醒。
+    //
+    // 可见通知策略：
+    //   - 使用 command 类型 echo 保证终端可见
+    //   - 使用 notification 类型（部分客户端支持弹窗）
+    // ─────────────────────────────────────────────
+
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n⚠️  上下文管理提醒：单次会话上下文有限，复杂任务完成后建议新建会话来获得最佳效果。\n    如需压缩上下文，可使用 /compact 命令。\n'"
+          }
+        ]
+      }
+    ],
+
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n🔄  上下文即将超过限制，系统将自动压缩上下文...'"
+          },
+          {
+            "type": "prompt",
+            "prompt": "上下文压缩即将触发。Claude Code 将自动压缩上下文以继续任务。\n压缩前请：\n1. 记住当前任务的关键状态和进度\n2. 记住待完成的关键步骤\n3. 压缩完成后，如需要关键上下文（任务目标、文件路径、待完成步骤），请告知我，我会从项目文件和记忆系统中恢复"
+          }
+        ]
+      }
+    ],
+
+    "PostCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n✅  上下文压缩完成，任务已继续执行。'"
+          },
+          {
+            "type": "prompt",
+            "prompt": "上下文压缩完成。任务继续执行。如果需要恢复关键上下文（任务目标、文件路径、待完成步骤），请告知我，我会从项目文件和记忆系统中恢复。"
+          }
+        ]
+      }
+    ],
+
+    "SessionEnd": [
+      {
+        "matcher": "clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n⚠️  【重要】上下文即将超过最大限制，建议开始新的任务以获得最佳体验。\n    复杂任务建议分阶段执行，每阶段完成后新建会话。'"
+          },
+          {
+            "type": "notification",
+            "notification": "上下文即将超过最大限制，建议开始新的任务"
+          }
+        ]
+      }
+    ],
+
+    // 通知钩子：当 Claude 等待输入且上下文接近限制时显示提醒
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "如果当前上下文使用量已接近最大限制，请在下次回复开始时提示用户：「⚠️  上下文使用量较高，建议使用 /compact 压缩或开始新任务以保持最佳性能。」"
+          }
+        ]
+      }
     ]
   },
 

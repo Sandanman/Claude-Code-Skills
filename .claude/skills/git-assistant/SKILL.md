@@ -3,11 +3,13 @@ name: git-assistant
 description: |
   智能 Git 操作助手。当用户提到以下任何场景时必须触发：
   - 提交代码：提交、commit、提交代码、生成 commit、commit message
-  - 分支操作：创建分支、切换分支、删除分支、分支命名、merge、rebase
+  - 分支操作：创建分支、切换分支、删除分支、分支命名、merge、rebase、分支健康分析
   - Git 历史：history、commit 历史、blame、谁改的、git log、分析变更
   - 冲突解决：冲突、conflict、解决冲突、merge 冲突、rebase 冲突
   - Stash 操作：stash、暂存、临时保存、恢复 stash
-  - 版本标签：tag、标签、版本、release、打标签
+  - 版本标签：tag、标签、版本、release、打标签、生成 CHANGELOG、semver
+  - 提交规范检查：conventional commits、规范检查、合规率、提交规范验证
+  - 分支健康分析：过期分支、长期分支、命名规范、分支策略报告
   - 其他 Git 操作：git命令、git 操作、git status
   即使用户没有明确说"git"，只要提到以上关键词或场景，立即使用此技能。
 ---
@@ -16,6 +18,7 @@ description: |
 
 ## 版本历史
 - v1.0 (2026-06-02): 初始实现，基于华为韬定律 τ 优化技能选择组合
+- v1.1 (2026-06-03): 整合 git-helper 全部功能，新增 commit-spec-check、version-management 原子技能，增强 branch-management（分支健康分析）、commit-generation（规范验证）、conflict-resolution（详细冲突分析）
 
 ---
 
@@ -31,7 +34,6 @@ description: |
 
 **不涉及的职责**：
 - 不直接执行 git 命令（由原子 skill 执行，命令供用户确认）
-- 不管理仓库配置（由 git-helper 负责）
 - 不做代码分析（由其他 skill 负责）
 
 ---
@@ -41,17 +43,21 @@ description: |
 ### 2.1 τ 优化的技能选择
 - **最小组合原则**：只选用户意图所需的技能，不调用多余的
 - **预算感知**：根据 τ 预算动态调整技能组合
-- **效果**：相比全量调用（7 个技能），典型请求节省 50%~70% τ
+- **效果**：相比全量调用（8 个技能），典型请求节省 50%~70% τ
 
 ### 2.2 意图识别增强
-- **关键词模式匹配**：6 大意图类型 × 多语言关键词库
+- **关键词模式匹配**：8 大意图类型 × 多语言关键词库（v1.1 新增 spec-check、version、branch-health）
 - **模糊意图解析**：支持"帮我提交代码"这类简短输入
 - **上下文感知**：结合 git status 自动补充上下文
 
-### 2.3 原子技能专业化
-- **commit-generation**：Conventional Commits 规范自动推断
-- **conflict-resolution**：冲突类型检测 + 三种解决策略
+### 2.3 原子技能专业化（v1.1 整合 git-helper）
+- **commit-generation**：Conventional Commits 规范自动推断 + 生成后自检 + 质量评分
+- **commit-spec-check**：提交规范验证、类型统计、Breaking Change 检测、修正建议（新增）
+- **conflict-resolution**：冲突类型检测 + ours/theirs 详细分析 + 分步解决指南
+- **branch-management**：分支 CRUD + 分支健康分析（过期/长期/命名规范）（增强）
 - **history-analysis**：git blame + 作者统计 + 变更频率
+- **version-management**：Tag 管理 + CHANGELOG 生成 + semver 版本建议（新增）
+- **stash-management**：stash 操作（save/pop/list/drop/apply）
 
 ---
 
@@ -189,17 +195,18 @@ results = {
 ## 5. 文件系统结构
 
 ```
-.gitlab/skills/git-assistant/
+.claude/skills/git-assistant/
 ├── SKILL.md                              ← 本文件，总控入口
 ├── README.md                             ← 使用说明
-├── skills_register.md                    ← 原子技能注册
 └── atomic-skills/
     ├── intent-router/SKILL.md           ← 意图识别与路由（τ=300）
-    ├── commit-generation/SKILL.md        ← Commit 生成（τ=800）
-    ├── branch-management/SKILL.md         ← 分支管理（τ=600）
-    ├── conflict-resolution/SKILL.md      ← 冲突解决（τ=1500）
+    ├── commit-generation/SKILL.md        ← Commit 生成 + 规范验证（τ=800）
+    ├── commit-spec-check/SKILL.md        ← 提交规范检查（τ=600）[v1.1 新增]
+    ├── branch-management/SKILL.md         ← 分支管理 + 健康分析（τ=600/900）
+    ├── conflict-resolution/SKILL.md      ← 冲突解决 + 详细分析（τ=1500）
     ├── stash-management/SKILL.md          ← Stash 管理（τ=500）
-    └── history-analysis/SKILL.md          ← 历史分析（τ=1200）
+    ├── history-analysis/SKILL.md          ← 历史分析（τ=1200）
+    └── version-management/SKILL.md       ← 版本管理 + CHANGELOG（τ=700）[v1.1 新增]
 ```
 
 ---
@@ -217,16 +224,18 @@ Git Assistant (SKILL.md)
 
 Git Assistant → 原子 Skill（通过 SKILL.md 调用）
     ├── intent-router：入口技能，必选
-    ├── commit-generation：分析变更，生成 commit message
-    ├── branch-management：分支创建/切换/删除
+    ├── commit-generation：分析变更，生成 commit message + 规范验证
+    ├── commit-spec-check：提交规范验证，类型统计，修正建议 [v1.1]
+    ├── branch-management：分支 CRUD + 分支健康分析
     ├── history-analysis：git log/blame 分析
-    ├── conflict-resolution：冲突检测和解决策略
-    └── stash-management：stash 操作
+    ├── conflict-resolution：冲突检测和解决策略 + 详细 ours/theirs 分析
+    ├── stash-management：stash 操作
+    └── version-management：Tag 管理，CHANGELOG 生成 [v1.1]
 ```
 
 ---
 
-## 7. 关键规则（v1.0）
+## 7. 关键规则（v1.1）
 
 ### τ 优化规则
 - **最小组合**：只调用用户意图明确要求的技能
@@ -243,15 +252,35 @@ Git Assistant → 原子 Skill（通过 SKILL.md 调用）
 | 原子技能 | τ 估算 | is_core | 说明 |
 |---------|--------|---------|------|
 | intent-router | 300 | true | 入口技能，必选 |
-| commit-generation | 800 | true | 核心功能 |
-| branch-management | 600 | false | 分支操作 |
-| conflict-resolution | 1500 | true | 核心功能 |
+| commit-generation | 1400 | true | 核心功能（生成 + 规范验证，含批量检查） |
+| branch-management | 600/900 | false | 分支操作/健康分析 |
+| conflict-resolution | 1500 | true | 核心功能（详细分析） |
 | stash-management | 500 | false | stash 操作 |
 | history-analysis | 1200 | false | 历史分析 |
+| version-management | 700 | true | 版本管理 + CHANGELOG |
 
 ### 安全规则
 - 有破坏性的操作（branch delete、force push 等）必须确认后才执行
 - commit、stash 默认自动执行（已有变更需要保存）
+
+### 公共常量规范（原子技能应引用此定义，禁止重复定义）
+
+**TYPE_MAP（权威定义）**：所有原子技能统一使用此定义，禁止在其他文件中重复定义。
+
+```python
+TYPE_MAP = {
+    "feat":      "新增功能",
+    "fix":       "修复问题",
+    "docs":      "文档更新",
+    "style":     "代码格式",
+    "refactor":  "重构代码",
+    "test":      "测试相关",
+    "chore":     "构建/工具",
+}
+
+CONVENTIONAL_REGEX = r'^(\w+)(\([\w/-]+\))?: [\S].{1,50}$'
+BREAKING_CHANGE_REGEX = r'BREAKING CHANGE:'
+```
 
 ---
 
@@ -259,30 +288,25 @@ Git Assistant → 原子 Skill（通过 SKILL.md 调用）
 
 ```python
 INTENT_PATTERNS = {
-    "commit":   ["提交", "commit", "提交代码", "创建提交", "生成 commit",
-                 "commit message", "提交信息", "写 commit", "提交改动"],
-    "branch":   ["分支", "branch", "创建分支", "切换分支", "删除分支",
-                 "分支命名", "分支策略", "merge", "rebase", "拉取"],
-    "history":  ["历史", "history", "commit 历史", "查找", "blame",
-                 "分析变更", "谁改的", "什么时候改的", "git log"],
-    "conflict": ["冲突", "conflict", "解决冲突", "合并冲突", "merge conflict",
-                 "rebase 冲突", "手动解决"],
-    "stash":    ["stash", "暂存", "临时保存", "恢复 stash", "stash list"],
-    "tag":      ["tag", "标签", "版本", "release", "发布版本", "打标签"],
+    "commit":       ["提交", "commit", "提交代码", "创建提交", "生成 commit",
+                     "commit message", "提交信息", "写 commit", "提交改动"],
+    "branch":       ["分支", "branch", "创建分支", "切换分支", "删除分支",
+                     "分支命名", "分支策略", "merge", "rebase", "拉取"],
+    "history":      ["历史", "history", "commit 历史", "查找", "blame",
+                     "分析变更", "谁改的", "什么时候改的", "git log"],
+    "conflict":     ["冲突", "conflict", "解决冲突", "合并冲突", "merge conflict",
+                     "rebase 冲突", "手动解决"],
+    "stash":        ["stash", "暂存", "临时保存", "恢复 stash", "stash list"],
+    "version":      ["tag", "标签", "版本", "release", "发布版本", "打标签",
+                     "changelog", "CHANGELOG", "semver", "版本号"],
+    "spec-check":   ["规范检查", "conventional commits", "提交规范", "合规",
+                     "commit 规范", "是否符合规范", "检查提交", "提交信息规范"],
+    "branch-health": ["分支健康", "过期分支", "长期分支", "分支报告",
+                      "stale", "命名规范", "分支策略报告"],
 }
 ```
 
-### Commit Message Type 映射
-
-| type | 说明 | 触发关键词 |
-|------|------|-----------|
-| feat | 新增功能 | 新增、功能、添加 |
-| fix | 修复问题 | 修复、bug、问题 |
-| docs | 文档更新 | 文档、readme、注释 |
-| style | 代码格式 | 格式化、格式 |
-| refactor | 重构代码 | 重构、优化 |
-| test | 测试相关 | 测试、用例 |
-| chore | 构建/工具 | 依赖、工具、配置 |
+> TYPE_MAP 和 CONVENTIONAL_REGEX 权威定义见上方 **7. 关键规则 → 公共常量规范**，禁止在原子技能中重复定义。
 
 ---
 
@@ -294,8 +318,8 @@ INTENT_PATTERNS = {
 
 **τ 流程**：
 ```
-intent (τ=300) → commit-generation (τ=800) → validate (τ=100)
-总 τ = 1200（simple 档位 3000 的 40%）✅
+intent (τ=300) → commit-generation (τ=1400, 含生成+规范验证)
+总 τ = 1700（simple 档位 3000 的 57%）✅
 ```
 
 ### 示例 2：创建分支 + 提交（τ 中等）
@@ -304,8 +328,8 @@ intent (τ=300) → commit-generation (τ=800) → validate (τ=100)
 
 **τ 流程**：
 ```
-intent (τ=300) → branch-management (τ=600) → commit-generation (τ=800)
-总 τ = 1700（moderate 档位 3000 的 57%）✅
+intent (τ=300) → branch-management (τ=600) → commit-generation (τ=1400)
+总 τ = 2300（moderate 档位 3000 的 77%）✅
 ```
 
 ### 示例 3：冲突解决（τ 较高）
@@ -314,23 +338,64 @@ intent (τ=300) → branch-management (τ=600) → commit-generation (τ=800)
 
 **τ 流程**：
 ```
-intent (τ=300) → conflict-resolution (τ=1500) → commit-generation (τ=800)
-总 τ = 2600（complex 档位 5000 的 52%）✅
+intent (τ=300) → conflict-resolution (τ=1500) → commit-generation (τ=1400)
+总 τ = 3200（complex 档位 5000 的 64%）✅
 ```
 
-### 示例 4：分析历史（τ 高但不超）
+### 示例 4：分析历史
 
 **用户**："分析 src/utils/auth.ts 的变更历史"
 
 **τ 流程**：
 ```
-intent (τ=300) → history-analysis (τ=1200) → validate (τ=100)
-总 τ = 1600（moderate 档位 3000 的 53%）✅
+intent (τ=300) → history-analysis (τ=1200)
+总 τ = 1500（moderate 档位 3000 的 50%）✅
+```
+
+### 示例 5：提交规范检查（含批量验证）
+
+**用户**："检查最近的提交是否符合 conventional commits 规范"
+
+**τ 流程**：
+```
+intent (τ=300) → commit-generation (τ=1400, 含批量规范检查)
+总 τ = 1700（moderate 档位 3000 的 57%）✅
+```
+
+### 示例 6：版本发布 + CHANGELOG
+
+**用户**："生成这个项目的 CHANGELOG，并建议下一个版本号"
+
+**τ 流程**：
+```
+intent (τ=300) → version-management (τ=700)
+总 τ = 1000（moderate 档位 3000 的 33%）✅
+```
+
+### 示例 7：分支健康分析
+
+**用户**："生成分支健康报告，清理过期分支"
+
+**τ 流程**：
+```
+intent (τ=300) → branch-management (τ=900, analyze)
+总 τ = 1200（moderate 档位 3000 的 40%）✅
+```
+
+### 示例 8：分支健康分析 [v1.1 新增]
+
+**用户**："生成分支健康报告，清理过期分支"
+
+**τ 流程**：
+```
+intent (τ=300) → branch-management (τ=900, analyze)
+总 τ = 1200（moderate 档位 3000 的 40%）✅
 ```
 
 ---
 
-**版本**: 1.0
-**最后更新**: 2026-06-02
+**版本**: 1.2
+**最后更新**: 2026-06-03
 **驱动框架**: orchestrator-pro (τ 增强)
 **理论基础**: 华为韬定律（何庭波，2026）
+**变更说明**: v1.2 修复 τ 表不一致（统一到主 SKILL.md）、统一版本意图关键词、提取公共 TYPE_MAP、合并 commit-spec-check 入 commit-generation、补全 version-management action 分支、增强 stash-management 和 history-analysis

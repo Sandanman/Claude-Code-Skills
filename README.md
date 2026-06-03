@@ -1,4 +1,4 @@
-# Skills 系统 v1.2.*
+# Skills 系统 v1.2.x
 
 基于意图驱动的多层级 Skill 编排系统，通过 Reasoner 调度器实现复杂任务的自主分解与执行。
 
@@ -67,7 +67,7 @@ Claude-Code-Skills/                        # 项目根目录
         ├── security-scanner/              # 主 Skill：安全扫描
         ├── test-generator/                # 主 Skill：测试生成
         ├── doc-generator/                 # 主 Skill：文档生成
-        ├── git-helper/                   # 主 Skill：Git 辅助
+        ├── git-assistant/               # 主 Skill：Git 操作（τ 优化 + τ 统一 + 7 原子技能）
         └── deploy-helper/                # 主 Skill：部署辅助
 ```
 
@@ -88,7 +88,7 @@ Claude-Code-Skills/                        # 项目根目录
 | `security-scanner` | 漏洞扫描、依赖安全检查、敏感信息检测、安全报告 | 4 |
 | `test-generator` | 测试用例设计、框架检测、测试代码生成、验证 | 4 |
 | `doc-generator` | API 文档提取、组件文档生成、变更日志、格式转换 | 4 |
-| `git-helper` | 分支分析、提交规范检查、冲突分析、版本管理 | 4 |
+| `git-assistant` | 分支管理、提交生成+验证、冲突解决、stash、历史分析、版本管理、提交规范检查（τ 优化 + git-helper 合并） | 7 |
 | `deploy-helper` | Dockerfile 生成、CI/CD 流水线、环境配置、部署验证 | 4 |
 
 ---
@@ -158,6 +158,38 @@ Claude-Code-Skills/                        # 项目根目录
 
 ## 版本历史
 
+### v1.2（2026-06-03）git-assistant 整合 git-helper，τ 表统一
+
+**变更说明：**
+本版本将 `git-helper` 全部功能整合至 `git-assistant`，统一 τ 估算表，消除重复定义，新增功能如下：
+
+**新增主 Skill（合并）：**
+- `git-assistant` 替代 `git-helper`，τ 优化的技能选择（华为韬定律）+ git-helper 全部能力
+
+**新增原子 Skill（整合）：**
+- `commit-spec-check` → 合并入 `commit-generation`（τ: 800→1400）
+- 新增 `version-management` 原子 Skill：Tag 管理 + CHANGELOG 生成 + semver 版本建议
+- 新增 `intent-router` 扩展：spec-check、version、branch-health 三大意图路由
+
+**增强原子 Skill：**
+- `commit-generation`：新增批量规范检查（analyze_commits）、修正建议（suggest_fix）
+- `branch-management`：新增分支健康分析（过期/长期/命名规范/合并建议）
+- `conflict-resolution`：新增详细 ours/theirs 分析、难度评估、分步指南
+- `stash-management`：新增 show/apply/clean 操作、stash 健康分析
+- `history-analysis`：新增 shortlog 排名、提交趋势、分支对比
+- `version-management`：补全 action 分支（list/suggest/create/push/delete/changelog）
+
+**统一修复：**
+- τ 表一致性：主 SKILL.md 与 intent-router/SKILL.md τ 值完全统一
+- TYPE_MAP 集中化：提取至主 SKILL.md 公共常量规范，原子技能不再重复定义
+- 移除重复的 TYPE_MAP 表（section 7/9 重复）
+
+**删除：**
+- `git-helper/` 目录（已合并至 `git-assistant`）
+- `commit-spec-check/` 目录（已合并至 `commit-generation`）
+
+---
+
 ### v1.2（2026-05-21）全面重构
 
 **新增特性：**
@@ -174,7 +206,7 @@ Claude-Code-Skills/                        # 项目根目录
 - `security-scanner` — 安全漏洞扫描
 - `test-generator` — 测试用例自动生成
 - `doc-generator` — API/组件文档自动生成
-- `git-helper` — Git 操作辅助
+- `git-helper` → `git-assistant` — Git 操作辅助（v1.2 2026-06-03 已合并入 git-assistant）
 - `deploy-helper` — 部署辅助
 
 **改进主 Skill：**
@@ -219,6 +251,6 @@ Claude-Code-Skills/                        # 项目根目录
 
 ---
 
-**版本**：1.2
-**最后更新**：2026-05-22
+**版本**：1.2.x
+**最后更新**：2026-06-03
 **维护者**：项目团队
