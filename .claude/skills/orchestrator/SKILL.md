@@ -1,6 +1,12 @@
 # Orchestrator Skill - 智能调度总控
 
+> **⚠️ 已废弃（v1.2.1 起）**：本文件不再作为独立入口。
+> 实际执行已统一由 `orchestrator-pro/SKILL.md` 接管。
+> complexity < 4 时，orchestrator-pro 内部委托本文件的 9 步流程作为轻量路径。
+> 请勿直接使用 `/orchestrator`，应使用 `/orchestrator-pro`。
+
 ## 版本历史
+- **v1.2.1** (2026-06-03): 已废弃，降级为 orchestrator-pro 的轻量 fallback 逻辑参考，atomic-skills/ 目录已清空
 - v1.2 (2026-05-21): 全面重构，引入上下文感知、智能路由、并行执行增强
 
 ---
@@ -479,7 +485,8 @@ def reflection_loop(task_skill, max_attempts=3):
 │   │   ├── config.md                    ← 配置参数（16个配置块）
 │   │   ├── technical_implementation.md  ← 技术实现（11个模块）
 │   │   ├── user_interaction.md          ← 用户交互（6个决策点）
-│   │   ├── skills_register.md           ← 技能注册表（v1.2更新）
+│   │   ├── skills_register.md           ← 主技能索引（v1.2 split）
+│   │   ├── atomic_skills_register.md    ← 原子技能详情（v1.2 split）
 │   │   └── missing_skills.md            ← 缺失技能记录
 │   ├── atomic-skills/                   # orchestrator的原子能力
 │   │   ├── intent-recognition/
@@ -504,10 +511,7 @@ def reflection_loop(task_skill, max_attempts=3):
 │   ├── doc-generator/                   # 新增
 │   ├── git-helper/                      # 新增
 │   └── deploy-helper/                   # 新增
-└── skills/                              # v1.0 原始skill（保持不变）
-    ├── orchestrator/...
-    ├── bug-solver/...
-    └── ...
+└── skills/                              # 注：orchestrator 已废弃，由 orchestrator-pro 接管
 ```
 
 ---
@@ -516,7 +520,8 @@ def reflection_loop(task_skill, max_attempts=3):
 
 ```
 Orchestrator (SKILL.md)
-    ├── 读取 skills_register.md → 主skill列表
+    ├── 读取 skills_register.md → 主skill列表（索引）
+    ├── 读取 atomic_skills_register.md → 原子skill详情（按主skill分组）
     ├── 读取 .claude/project_context.json → 项目上下文
     ├── 读取 tasks/history/YYYY-MM/月度任务索引.md → 历史检索
     ├── 读取 tasks/current/task_skill.md → 任务恢复
@@ -557,9 +562,11 @@ Orchestrator (SKILL.md)
 
 ## 8. 版本与维护
 
-- **版本**：1.2
-- **最后更新**：2026-05-21
+- **版本**：1.2.1（已废弃）
+- **最后更新**：2026-06-03
 - **维护者**：项目团队
+- **状态**：已废弃，作为 orchestrator-pro 的轻量 fallback 逻辑参考，不再独立维护
 - **更新记录**：
   - v1.0：初始设计，9步流程，5个主skill
   - v1.2：全面重构，上下文感知，多skill组合，Token追踪增强，并行层识别，智能fallback
+  - v1.2.1：已废弃，降级为 orchestrator-pro 轻量路径，atomic-skills/ 清空

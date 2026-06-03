@@ -1,6 +1,7 @@
 ---
 name: pattern-miner
 description: Pattern Mining 模式挖掘 — 从任务历史中提取和复用成熟模式，与历史检索并行执行
+impl_status: design_spec  # 设计规范文档，预留实现。未包含可执行代码，待后续工程化落地
 ---
 
 # Pattern Miner 原子 Skill

@@ -2,7 +2,59 @@
 
 ## 版本历史
 
+- **v1.1** (2026-06-03): 新增复杂度分流入口，简单任务（complexity < 4）自动降级到 orchestrator 轻量逻辑；复杂任务（complexity ≥ 4）使用完整 τ 优化路径
 - **v1.0** (2026-06-02): 集成华为韬定律，τ 为核心性能指标，性能 ∝ 1/τ
+
+---
+
+## 0. 复杂度分流入口（v1.1 新增）
+
+**Orchestrator Pro 是所有任务的唯一入口**，内部根据复杂度自动选择路径：
+
+```
+用户输入
+    ↓
+orchestrator-pro（本文件）
+    ↓
+复杂度判断（步骤 1 意图识别后）
+    ├── complexity < 4 → 【轻量路径】直接委托 orchestrator 9步流程
+    └── complexity ≥ 4 → 【τ 优化路径】完整执行 9步 + τ增强
+```
+
+### 路由逻辑
+
+```python
+def route_by_complexity(complexity_assessment: dict) -> str:
+    """
+    complexity < 4：轻量路径（orchestrator 逻辑）
+    complexity ≥ 4：τ 优化路径（orchestrator-pro 逻辑）
+    """
+    score = complexity_assessment.get("complexity_score", 0)
+
+    if score < 4:
+        return "lightweight"   # 委托 orchestrator/SKILL.md 的 9步轻量逻辑
+    else:
+        return "tau_optimized"  # 使用下方完整的 τ 增强 9步流程
+```
+
+### 两条路径的差异
+
+| 维度 | 轻量路径（orchestrator）| τ 优化路径（orchestrator-pro）|
+|------|----------------------|---------------------------|
+| 触发条件 | complexity < 4 | complexity ≥ 4 |
+| 执行逻辑 | 9步流程，Token追踪 | 9步流程 + τ测量 + Task Folding + Pattern Mining |
+| Task Folding | 无 | τ_remaining < 30% 且 depth > 3 时触发 |
+| Pattern Mining | 无 | 步骤2双轨并行，相似度≥0.6复用子步骤 |
+| Skill Stacking | 基础共享上下文 | 命中率追踪，<50% 警告 |
+| Co-Design | 无显式记录 | 每步记录 Model/Rules/Skills 贡献度 |
+| τ 报告 | 无 | 步骤8输出 τ 分解报告 |
+| 适用场景 | 简单修复、单函数生成、配置修改 | 多模块开发、Bug修复、性能优化 |
+
+### 轻量路径说明
+
+complexity < 4 时，orchestrator-pro 委托 `orchestrator/SKILL.md` 的标准 9 步流程执行，不进行 τ 测量和折叠操作。轻量路径本身也是 orchestrator 的完整实现，足以高质量完成简单任务，避免不必要的复杂度和延迟。
+
+**与 orchestrator 的关系**：orchestrator 已降级为"轻量 fallback 逻辑参考"，不再作为独立入口。当 `/orchestrator` 被调用时，实际由 orchestrator-pro 接管并判断走轻量路径。
 
 ---
 
@@ -21,6 +73,7 @@
 
 ### 核心改进点
 
+- v1.1 复杂度分流：complexity < 4 自动降级轻量路径，complexity ≥ 4 完整 τ 优化
 - τ 全链路度量：每步精确测量 duration × 0.5 + tokens × 0.001
 - τ 预算三档：simple(5,000) / moderate(15,000) / complex(50,000)
 - τ 驱动的 Task Folding：τ 不足时自动折叠任务路径
@@ -65,25 +118,33 @@
 1. 读取 project_context.json（如存在）
 2. 读取 skills_register.md 主 skill 列表
 3. LLM 意图分析（v1.2 完整逻辑保留）
-4. **τ 增强**：复杂度判断后，初始化 τ-Controller
+4. 复杂度评分（complexity_assessment.complexity_score）
+5. **复杂度分流（v1.1 新增）**
 
 ```python
-# ===== τ 增强 =====
+# ===== 复杂度分流（v1.1 新增）=====
+route = route_by_complexity(complexity_assessment)
+
+if route == "lightweight":
+    # complexity < 4：委托 orchestrator 轻量路径
+    return execute_lightweight_path(intent)
+    # → end
+
+# complexity ≥ 4：继续执行 τ 优化路径（下方逻辑）
+# ===== 以下为 τ 增强路径 =====
 from tau_controller import TauController
 from config import TAU_BUDGETS
 
-# 复杂度判断后初始化 τ 预算
 tau_controller = TauController(
     complexity_score=complexity_assessment.complexity_score
 )
 tau_controller.allocate_budget()  # simple/moderate/complex 三档
 
-# Co-Design 贡献度记录
 co_design["intent"] = {"model": 0.7, "rules": 0.2, "skills": 0.1}
 ```
 
-**复杂度 ≤ 3**：简单任务，token 追踪，**直接执行原子 skill → end**
-**复杂度 > 3**：进入步骤 2
+**复杂度 < 4**：轻量路径，直接委托 orchestrator 9步流程 → **【end】**
+**复杂度 ≥ 4**：进入步骤 2（完整 τ 优化路径）
 
 ---
 
@@ -426,9 +487,10 @@ if validation_report.get("all_passed") and validation_report.get("deviation", 1.
 
 ## 4. 关键增强点汇总
 
-| 步骤 | v1.2 功能 | τ 增强点 |
-|------|---------|---------|
-| 1 | 意图识别 | τ 预算初始化 + Co-Design |
+| 步骤 | v1.2 功能 | τ 增强点 | v1.1 新增 |
+|------|---------|---------|---------|
+| 0 | — | — | 复杂度分流（< 4 降级轻量路径）|
+| 1 | 意图识别 | τ 预算初始化 + Co-Design | +复杂度分流路由 |
 | 2 | 历史检索 | **双轨并行**：+Pattern Mining ≥ 0.6 |
 | 3 | 技能匹配 | τ 效率加权 + Co-Design 显式化 |
 | 4 | 任务生成 | **+Task Folding 折叠** |
@@ -513,14 +575,22 @@ if validation_report.get("all_passed") and validation_report.get("deviation", 1.
 
 ---
 
-## 8. 与 v1.2 的关系
+## 8. 与 orchestrator 的关系（v1.1 新增说明）
 
-**完全继承**：v1.2 的 9 步流程、6 个原子 skill、10 个算法、文件锁、流式输出等所有功能
-**叠加增强**：τ 测量、Task Folding、Pattern Mining、Skill Stacking、Co-Design 均以**叠加**方式实现，不破坏已有逻辑
+**入口统一**：orchestrator-pro 是所有任务的唯一入口（`/orchestrator-pro` 和 `/orchestrator` 均路由至此）。
+
+**复杂度分流（v1.1）**：
+- complexity < 4：委托 `orchestrator/SKILL.md` 的 9 步轻量逻辑（无 τ 测量）
+- complexity ≥ 4：使用完整 τ 增强 9 步流程（Task Folding + Pattern Mining + Skill Stacking + Co-Design）
+
+**完全继承**：orchestrator v1.2 的 9 步流程、Token 追踪、文件锁、流式输出等所有功能
+**叠加增强**：τ 测量、Task Folding、Pattern Mining、Skill Stacking、Co-Design 均以**叠加**方式实现，不破坏轻量路径
+
+**orchestrator 降级说明**：`orchestrator/` 不再作为独立入口，仅保留作为轻量 fallback 逻辑参考（complexity < 4 时由 orchestrator-pro 委托使用）。其 `atomic-skills/` 目录已清空，不再维护。
 
 ---
 
-**版本**: 1.0
-**最后更新**: 2026-06-02
+**版本**: 1.1
+**最后更新**: 2026-06-03
 **理论基础**: 华为韬定律（何庭波，2026）
 **父版本**: Orchestrator v1.2

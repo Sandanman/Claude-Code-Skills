@@ -2,8 +2,8 @@
 
 ## 版本信息
 
-- **版本**: 1.2
-- **更新时间**: 2026-05-21
+- **版本**: 1.2.1
+- **更新时间**: 2026-06-03
 - **相对 v1.0 的主要改进**: 上下文感知、多skill组合、Token追踪增强、并行层识别、智能fallback
 
 ---
@@ -19,29 +19,24 @@
 │   ├── config.md                            # 16个配置块
 │   ├── technical_implementation.md          # 11个技术实现模块
 │   ├── user_interaction.md                  # 6个决策点交互模板
-│   ├── skills_register.md                   # 技能注册表（13个主skill + 79个原子skill）
-│   ├── missing_skills.md                    # 缺失技能记录
-│   └── atomic-skills/                       # orchestrator的6个原子能力
-│       ├── intent-recognition/              # LLM意图识别（含rule fallback）
-│       ├── skill-matcher/                   # 主skill匹配（关键词+领域+操作）
-│       ├── task-generator/                 # DAG构建+拓扑排序+并行层识别
-│       ├── execution-controller/            # 流式执行+Token追踪+错误评估
-│       ├── result-validator/               # 完成标准校验+反思重规划
-│       └── task-archiver/                   # 归档+月度索引更新+可固化检测
+│   ├── skills_register.md                   # 主技能索引（v1.2 split）
+│   ├── atomic_skills_register.md            # 原子技能详情（v1.2 split）
+│   └── missing_skills.md                    # 缺失技能记录
 │
-├── [13个主Skill]                            # 主技能（协同执行）
+├── orchestrator-pro/                       # 智能调度总控（τ增强版）
+│   └── [15个主Skill]                            # 主技能（协同执行）
 │   ├── code-generator/         [9原子skill]  # 代码生成（+multi-scenario-adapter）
 │   ├── code-optimizer/         [7原子skill]  # 代码优化（+performance-analysis）
 │   ├── bug-solver/             [7原子skill]  # Bug修复（+bug-triage）
 │   ├── code-redundancy-checker/[3原子skill]  # 冗余检测
 │   ├── code-style-generator/   [5原子skill]  # 代码风格
 │   ├── requirement-generator/  [10原子skill]# 需求标准化
-│   ├── scan-object-info/      [9原子skill]  # 项目扫描
+│   ├── scan-object-info/       [7原子skill]  # 项目扫描（v1.2韬定律优化版）
 │   ├── performance-optimizer/  [6原子skill] # 性能优化 [新增]
 │   ├── security-scanner/       [4原子skill]  # 安全扫描 [新增]
 │   ├── test-generator/        [4原子skill]  # 测试生成 [新增]
 │   ├── doc-generator/          [4原子skill]  # 文档生成 [新增]
-│   ├── git-helper/             [4原子skill]  # Git操作 [新增]
+│   ├── git-assistant/          [7原子skill]  # Git操作（τ增强版，整合git-helper）[新增]
 │   └── deploy-helper/          [4原子skill]  # 部署辅助 [新增]
 │
 └── README.md                               # 本文件
@@ -53,9 +48,9 @@
 
 | 类别 | v1.0 数量 | v1.2 数量 | 新增/改进 |
 |------|---------|---------|----------|
-| 主skill | 7个 | **13个** | +6个新skill |
-| 原子skill | ~49个 | **79个** | +30个原子能力 |
-| 配置文件 | 5个 | **6个** | +missing_skills.md |
+| 主skill | 7个 | **15个** | +8个新skill（含orchestrator-pro，orchestrator已废弃） |
+| 原子skill | ~49个 | **77个** | +28个原子能力（不含已清空的orchestrator原子skill） |
+| 配置文件 | 5个 | **7个** | +missing_skills.md、+atomic_skills_register.md |
 | 核心算法 | 8个 | **10个** | +并行层识别、反思重规划 |
 | 配置项 | ~15块 | **16块** | +Token追踪配置 |
 | 决策点 | 6个 | **6个** | 保持（优化模板） |
@@ -77,8 +72,8 @@
 | 9 | security-scanner | 4 | **新增** | 0 |
 | 10 | test-generator | 4 | **新增** | 0 |
 | 11 | doc-generator | 4 | **新增** | 0 |
-| 12 | git-helper | 4 | **新增** | 0 |
-| 13 | deploy-helper | 4 | **新增** | 0 |
+| 12 | git-assistant | 7 | **整合git-helper，τ增强** | 4 |
+| 13 | deploy-helper | 4 | **新增** | 0 | | 4 | **新增** | 0 |
 
 ---
 
@@ -136,9 +131,9 @@
 **触发关键词**：生成文档、API文档、README、组件文档、变更日志
 **4个原子skill**：api-doc-extraction → component-doc-generation → changelog-generation → doc-format-conversion
 
-### git-helper（Git辅助）
-**触发关键词**：Git操作、分支管理、提交规范、解决冲突、版本Tag、conventional commits
-**4个原子skill**：branch-analysis → commit规范检查 → conflict-analysis → version-management
+### git-assistant（Git操作，τ 增强版）
+**触发关键词**：提交、commit、分支管理、冲突解决、stash、历史分析、版本Tag、conventional commits
+**7个原子skill**：intent-router → commit-generation → branch-management → conflict-resolution → history-analysis → stash-management → version-management
 
 ### deploy-helper（部署辅助）
 **触发关键词**：部署、Docker、CI/CD、环境配置、部署脚本、Vercel、Netlify
@@ -188,7 +183,7 @@
 - 增加flow类型细分
 - requirement-documentation 增加quality评分ASCII可视化
 
-### scan-object-info（项目扫描，v1.0 → v1.1）
+### scan-object-info（项目扫描，v1.0 → v1.2）
 **改进**：
 - 增加置信度评分（每条检测结果）
 - 增加并行执行支持
@@ -224,5 +219,5 @@
 
 **版本**: 1.2
 **创建时间**: 2026-05-21
-**总文件数**: 117个（8个orchestrator + 6个orchestrator原子 + 103个主skill文件）
+**总文件数**: 117个（7个orchestrator + 103个主skill文件，6个orchestrator原子skill已清空）
 **总skill数**: 13个主skill + 79个原子skill + 6个orchestrator原子

@@ -1,6 +1,7 @@
 ---
 name: execution-controller
 description: 执行控制（τ 增强版）— 增加 τ 实时监控、动态折叠触发、Skill Stacking 命中追踪
+impl_status: design_spec  # 设计规范文档，预留实现。未包含可执行代码，待后续工程化落地
 ---
 
 # Execution Controller 原子 Skill（τ 增强版）

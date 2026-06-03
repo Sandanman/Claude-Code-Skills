@@ -1,6 +1,7 @@
 ---
 name: skill-matcher
 description: 技能匹配（τ 增强版）— 增加 Co-Design 贡献度标注和 τ 效率评分
+impl_status: design_spec  # 设计规范文档，预留实现。未包含可执行代码，待后续工程化落地
 ---
 
 # Skill Matcher 原子 Skill（τ 增强版）

@@ -1,249 +1,342 @@
 ---
 name: scan-object-info
-description: 智能扫描并分析前端项目的各种技术信息（框架、UI库、状态管理、请求方案、配置文件、项目结构、路由方案、环境变量等），根据用户需求选择性调用相关原子技能并输出结构化结果。改进版新增智能技能选择、并行执行支持、confidence scores、project-summary 和 suggested follow-up actions。
+description: 智能扫描并分析前端项目的技术栈信息，基于韬定律K1 Task Folding（9→7技能合并）、K2 Skill Stacking（共享上下文）、K3 Co-Design（规则/LLM协同）、K4 Pattern Mining（模式库），τ节省33%。v1.2版本。
 ---
 
-# scan-object-info（改进版 v1.1）
+# scan-object-info（韬定律优化版 v1.2）
 
-## 任务定义
-
-你是主技能 `scan_object_info`，负责理解用户的扫描需求并调度相应的原子技能来完成信息的提取和分析。
-
-## 改进点（v1.0 -> v1.1）
-
-1. **新增智能技能选择逻辑**：基于用户意图的关键词分析和依赖图优化，自动选择最小必要技能集
-2. **新增并行执行支持**：根据依赖关系图，自动识别可并行执行的技能组合
-3. **新增 confidence scores**：每个检测结果标注置信度（high/medium/low）
-4. **新增 project-summary**：全面扫描后自动生成项目摘要（含技术栈特征、技术债务提示）
-5. **改进错误处理**：缺失文件时提供明确的错误信息和降级策略
-6. **新增 suggested follow-up actions**：根据扫描结果推荐后续操作
-
-## 工作流程
-
-### 1. 理解用户意图
-
-分析用户输入，识别需要提取的信息类型（使用**关键词分析 + 意图推断**）：
-
-| 意图类型 | 关键词 | 需要的原子技能 |
-|---------|--------|--------------|
-| 全面分析 | 全面、完整、所有、分析 | 全部9个原子技能 |
-| 技术栈 | 技术栈、框架、用什么 | scan_package_json + detect_framework + detect_ui_library + detect_state_manage |
-| 打包配置 | 打包、构建、vite、webpack | scan_config_files + scan_package_json |
-| UI技术 | UI库、样式、组件库 | detect_ui_library + scan_config_files |
-| 路由 | 路由、router | detect_router_solution |
-| 环境变量 | 环境变量、.env、配置 | scan_env_variables |
-| 状态管理 | 状态、store、redux、pinia | detect_state_manage |
-| 请求方案 | 请求、api、axios、fetch | detect_request_scheme |
-| 项目结构 | 结构、目录、入口 | scan_project_structure + scan_package_json |
-
-### 2. 智能技能选择（**新增 v1.1**）
+## τ_agent 公式
 
 ```
-意图分析 → 关键词匹配 → 最小技能集 → 依赖图分析 → 执行计划（串行/并行）
+τ_agent = τ_intent + τ_match + τ_plan + τ_exec + τ_validate
+
+性能 ∝ 1 / τ_agent
+目标：通过K1-K4压缩τ，而不是堆叠更多技能
 ```
 
-**技能依赖图**：
-```
-scan_package_json (基础，always first)
-    │
-    ├───→ scan_project_structure
-    │       │
-    │       ├───→ detect_framework
-    │       │       │
-    │       │       ├───→ detect_router_solution
-    │       │       └───→ scan_env_variables
-    │       │
-    │       └───→ detect_state_manage
-    │
-    ├───→ scan_config_files
-    │       │
-    │       ├───→ detect_ui_library
-    │       └───→ scan_env_variables
-    │
-    └───→ detect_request_scheme
-```
+## τ 估算表
 
-### 3. 并行执行支持（**新增 v1.1**）
+| 原子技能 | τ 值 | 说明 |
+|---------|------|------|
+| pattern-matcher | 150 | 项目模式匹配（K4：命中成熟模式 τ×0.3）|
+| scan-package-json | 200 | 解析 package.json（基础技能） |
+| scan-project-structure | 300 | 扫描目录结构 |
+| detect-tech-stack | 600 | 检测框架+UI库+状态管理（K1合并） |
+| scan-config-context | 400 | 扫描配置文件+环境变量（K1合并） |
+| detect-net-router | 500 | 检测请求方案+路由方案（K1合并） |
+| skill-stack-context | 50 | 上下文写入共享层（K2 TSV通道） |
 
-识别无依赖或依赖已满足的技能，自动并行执行：
+**τ 预算阈值**：simple=5000 / moderate=15000 / complex=50000
+**预警线**：80% warning / 95% critical / 100% abort
 
-```
-并行组1：scan_package_json, scan_project_structure, scan_config_files
-并行组2：detect_framework（依赖 scan_package_json + scan_project_structure）
-并行组3：detect_ui_library（依赖 scan_config_files）
-并行组4：detect_router_solution（依赖 detect_framework）
-并行组5：detect_state_manage, detect_request_scheme（依赖 scan_package_json + scan_project_structure）
-```
+---
 
-### 4. 执行顺序
+## 改进点（v1.1 → v1.2）
 
-当需要调用多个原子技能时，按以下顺序执行以确保信息依赖关系：
+1. **K1 Task Folding**：9个原子技能合并为7个，减少τ_exec
+2. **K2 Skill Stacking**：统一共享上下文格式，TSV通道减少重复读取
+3. **K3 Co-Design**：规则处理确定性检测，LLM处理边缘情况
+4. **K4 Pattern Mining**：项目类型模式库，成熟模式 τ 折扣 70%
+5. **τ 控制体系**：预算分配、预警、折叠触发全链路控制
+
+---
+
+## K1：Task Folding — 技能折叠合并
+
+### 合并方案
 
 ```
-1. scan_package_json  (基础依赖信息，其他技能可能需要)
-2. scan_project_structure + scan_config_files  (可并行)
-3. detect_framework  (基于 1 & 2)
-4. detect_ui_library  (基于 1 & 3)
-5. detect_state_manage + detect_request_scheme  (基于 1 & 2，可并行)
-6. detect_router_solution  (基于 1 & 4)
-7. scan_env_variables  (基于 1 & 3 & 4)
+原9技能                            → 新7技能
+detect_framework                   → detect_tech_stack（合并）
++ detect_ui_library
++ detect_state_manage
+
+scan_config_files                  → scan_config_context（合并）
++ scan_env_variables
+
+detect_request_scheme              → detect_net_router（合并）
++ detect_router_solution
+
+scan_package_json（保留）
+scan_project_structure（保留）
+pattern-matcher（新增）
+skill-stack-context（新增）
 ```
 
-### 5. 整合输出
+### 合并规则
 
-收集所有原子技能的输出，按照逻辑分组整理，输出结构化结果（含 confidence scores 和 project-summary）。
+```
+fold-001: 多个技能共享相同的输入（package.json）且输出存在重叠 → 合并
+fold-002: 合并后 τ_merged < Στ_individual × 0.8 时执行合并
+fold-003: 合并技能的原子能力仍可独立调用（向后兼容）
+fold-004: τ_remaining < 30% 且 depth > 3 时，强制折叠触发
+```
 
-### 6. 生成 Project Summary（**新增 v1.1**）
+### detect_tech_stack 设计
 
-全面扫描后自动生成：
-- 技术栈特征一句话总结
-- 检测到的关键技术（框架、UI库、状态管理、请求方案）
-- 技术债务提示（如：未使用 TS、未配置 eslint、依赖版本过旧等）
-- **Suggested Follow-up Actions**（推荐后续操作）
+```
+输入：package.json, 项目结构, 配置文件
+输出：{ framework, ui_library, state_manage, ts_usage, render_mode }
+输出格式：
+- 框架：`xxx` (confidence: high/medium/low)
+  - 依据：`package.json` 中的 `关键依赖@版本`
+- UI库：`xxx@版本` (confidence: high/medium/low)
+- 状态管理：`xxx@版本` (confidence: high/medium/low)
+- TS：`是/否` (confidence: high/medium/low)
+- 渲染模式：`CSR/SSR/SSG/ISR` (confidence: high/medium/low)
+```
+
+### scan_config_context 设计
+
+```
+输入：配置文件目录, .env文件
+输出：{ config_files, env_variables, style_solution }
+输出格式：
+- 配置文件清单：[文件名, 用途, 关键配置项]
+- 环境变量清单：[键名, 用途, 是否敏感]
+- 样式方案：`SCSS/Less/CSS Modules/Tailwind` (confidence: high/medium/low)
+```
+
+### detect_net_router 设计
+
+```
+输入：package.json, 项目结构, 路由文件
+输出：{ request_scheme, request_wrapper, router_solution, router_type, router_file }
+输出格式：
+- 请求方案：`Axios/Fetch/SWR/React Query` (confidence: high/medium/low)
+- 路由方案：`Vue-Router/React Router` (confidence: high/medium/low)
+- 路由类型：`配置式/声明式`
+- 关键文件：`src/router/index.ts`
+```
+
+---
+
+## K2：Skill Stacking — 上下文共享
+
+### 共享上下文格式（写入 task_skill.md）
+
+```markdown
+## scan-object-info 执行上下文
+
+### 项目基础信息
+- 项目名称：xxx
+- 项目类型：浏览器/Node
+- 包管理器：npm/yarn/pnpm/bun
+- 主框架：xxx@版本
+
+### 技术栈上下文（detect_tech_stack 输出）
+- 框架：xxx
+- 框架版本：xxx
+- TS：是/否
+- 渲染模式：CSR/SSR/SSG/ISR
+- UI库：xxx@版本
+- 状态管理：xxx@版本
+
+### 配置上下文（scan_config_context 输出）
+- 配置文件：[...]
+- 环境变量：[...]
+- 样式方案：xxx
+
+### 网络上下文（detect_net_router 输出）
+- 请求方案：xxx
+- 路由方案：xxx
+- 路由文件：xxx
+
+### τ 执行记录
+- scan-package-json：✓ τ=200
+- scan-project-structure：✓ τ=300
+- detect-tech-stack：✓ τ=600
+- ...
+```
+
+### TSV 直传规则
+
+```
+stack-001: 上游技能的输出必须写入 task_skill.md 共享上下文
+stack-002: 下游技能优先从共享上下文读取，避免重新读取文件
+stack-003: 共享上下文命中率 < 50% 时触发警告
+stack-004: skill-stack-context 每次扫描后更新共享上下文（τ=50）
+```
+
+---
+
+## K3：Co-Design — 规则与LLM协同
+
+### 决策矩阵
+
+| 任务环节 | 规则分配 | LLM分配 | 说明 |
+|---------|---------|--------|------|
+| 意图识别 | 关键词匹配 | 模糊意图推断 | 规则优先，兜底用LLM |
+| 技能选择 | 固定依赖图 | 按需动态调整 | 规则保证不遗漏，LLM优化最小集 |
+| 框架检测 | 包名正则匹配 | 版本范围解析 | 规则处理确定情况 |
+| UI库检测 | 已知库正则 | 未知库兜底 | 规则覆盖90%常见库 |
+| 状态管理检测 | 包名+目录 | 目录结构推断 | 规则处理标准结构 |
+| 路由检测 | 文件名正则 | 目录结构推断 | 规则处理标准命名 |
+| 置信度标注 | 基础规则 | 上下文调整 | 规则+LLM综合 |
+| 项目摘要 | 模板填充 | 上下文补充 | 规则生成框架，LLM润色 |
+
+### Co-Design 规则
+
+```
+codesign-001: 简单任务（复杂度≤3）规则覆盖率目标 ≥ 80%
+codesign-002: 复杂任务（复杂度>7）模型主控，覆盖率目标 ≥ 50%
+codesign-003: τ_remaining < 30% 时，强制使用规则路径（跳过LLM推断）
+```
+
+---
+
+## K4：Pattern Mining — 模式复用
+
+### 项目类型模式库
+
+```
+.claude/skills/scan-object-info/patterns/
+├── vue3-element-plus/     # Vue3 + Element Plus 模式（成熟，τ×0.3）
+│   └── pattern.md
+├── react-antd/           # React + Ant Design 模式（成熟，τ×0.3）
+│   └── pattern.md
+├── next-app-router/       # Next.js App Router 模式（成长，τ×0.6）
+│   └── pattern.md
+├── vite-vue3/             # Vite + Vue3 通用模式（成熟，τ×0.3）
+│   └── pattern.md
+└── nuxt3/                 # Nuxt3 模式（成长，τ×0.6）
+    └── pattern.md
+```
+
+### 模式匹配流程
+
+```
+1. 从 package.json 提取主框架 + 包名特征
+2. 与模式库匹配（关键词匹配 + Jaccard 相似度）
+3. 相似度 ≥ 0.6 时，命中成熟模式
+4. 命中模式 → 直接复用上下文，跳过重复扫描（节省 τ）
+```
+
+### Pattern Mining 规则
+
+```
+pattern-001: 相似度 ≥ 0.6 时，命中成熟模式，τ 折扣 70%
+pattern-002: 相似度 ≥ 0.4 时，命中成长模式，τ 折扣 40%
+pattern-003: 无历史模式时，新建模式（τ 无折扣）
+pattern-004: 命中模式后，仅扫描变化的部分（增量扫描）
+```
+
+---
+
+## 原子技能列表（v1.2）
+
+| 原子技能 | τ | 职责 | 并行组 |
+|---------|---|------|-------|
+| pattern-matcher | 150 | 项目模式匹配，跳过已知模式 | 0（预处理）|
+| scan-package-json | 200 | 解析 package.json | 1（并行）|
+| scan-project-structure | 300 | 扫描目录结构 | 1（并行）|
+| scan-config-context | 400 | 扫描配置+环境变量 | 1（并行）|
+| detect-tech-stack | 600 | 检测框架+UI+状态管理 | 2（并行）|
+| detect-net-router | 500 | 检测请求+路由方案 | 2（并行）|
+| skill-stack-context | 50 | 写入共享上下文 | 任意（最后）|
+
+### 执行计划（并行优化）
+
+```
+预处理：pattern-matcher（τ=150）
+并行组1：scan-package-json + scan-project-structure + scan-config-context
+并行组2：detect-tech-stack + detect-net-router（依赖组1）
+串行：skill-stack-context（更新共享上下文）
+```
+
+---
 
 ## 输出格式
 
-按照信息类型分组输出，每组包含 confidence scores：
+### 完整输出（所有技能）
 
 ```markdown
-# 项目扫描结果 v1.1
+# 项目扫描结果 v1.2（韬定律优化版）
 
-## 项目摘要（**新增**）
-[一句话总结：Vue3 + TypeScript + Element Plus + Pinia + Axios + Vue Router]
+## 项目摘要
+[基于detect_tech_stack + scan_config_context + detect_net_router综合输出]
 
-## 1. 项目基本信息
-[来自 scan_package_json 的输出]
+## τ 执行报告
+- τ 总消耗：xxx（预算：xxx）
+- τ 节省：pattern-matcher 命中模式，跳过 scan-config-context（-400）
+- τ 分配：intent=10% / match=15% / exec=65% / validate=10%
 
-## 2. 项目结构
-[来自 scan_project_structure 的输出]
+## 1. 项目基本信息（scan-package-json）
+[输出内容]
 
-## 3. 配置文件
-[来自 scan_config_files 的输出]
+## 2. 项目结构（scan-project-structure）
+[输出内容]
 
-## 4. 框架与技术栈
-[来自 detect_framework 的输出，含 confidence scores]
+## 3. 配置文件（scan-config-context）
+[输出内容]
 
-## 5. UI 库与样式方案
-[来自 detect_ui_library 的输出，含 confidence scores]
+## 4. 技术栈（detect-tech-stack）
+[输出内容]
 
-## 6. 状态管理方案
-[来自 detect_state_manage 的输出，含 confidence scores]
+## 5. 网络与路由（detect-net-router）
+[输出内容]
 
-## 7. 网络请求方案
-[来自 detect_request_scheme 的输出，含 confidence scores]
+## 技术债务提示
+[基于检测结果的自动分析]
 
-## 8. 路由方案
-[来自 detect_router_solution 的输出，含 confidence scores]
-
-## 9. 环境变量
-[来自 scan_env_variables 的输出]
-
-## 技术债务提示（**新增**）
-- 项目未使用 TypeScript，建议迁移
-- pinia 版本过旧，建议升级
-- 缺少 ESLint 配置
-
-## 建议后续操作（**新增**）
-1. 执行 `requirement-generator` 生成需求文档
-2. 执行 `code-style-generator` 生成代码规范
-3. 执行 `code-redundancy-checker` 检查代码冗余
+## 建议后续操作
+[基于检测结果的自动化推荐]
 ```
 
-**注意**：只输出被调用的原子技能对应的部分，未调用的部分不显示。
+### 智能裁剪（按需调用）
 
-## 置信度标注（**新增 v1.1**）
+当用户指定具体需求时，只输出对应部分：
 
-每个检测结果标注 confidence score：
-- **high**：基于明确的文件内容和配置，置信度 > 90%
-- **medium**：基于间接证据或部分匹配，置信度 60-90%
-- **low**：基于推测或弱信号，置信度 < 60%
+| 用户意图 | 触发技能 | 输出范围 |
+|---------|---------|---------|
+| 技术栈分析 | pattern-matcher + scan-package-json + detect-tech-stack | 1 + 4 |
+| 路由检测 | scan-package-json + detect-net-router | 1 + 5 |
+| 环境变量 | scan-config-context | 3 |
+| 全面分析 | 全部7技能 | 完整报告 |
 
-示例：
+---
+
+## 置信度标注（v1.2）
+
+- **high**：有明确的包依赖声明和配置文件证据
+- **medium**：仅有依赖声明，但无配置文件佐证
+- **low**：基于间接信号推测（如文件后缀），未直接检测到依赖
+
+每个检测结果必须标注 confidence score，无例外。
+
+---
+
+## 错误处理
+
+**文件缺失时**：
 ```markdown
-- 框架：`Vue3` (confidence: high)
-  - 依据：`package.json` 中检测到 `vue@^3.5.0`
-- 样式方案：`SCSS` (confidence: medium)
-  - 依据：`package.json` 中存在 `sass` 依赖，但未检测到 scss 文件
-```
+⚠️ 错误：未找到 package.json 文件
 
-## 错误处理（改进版）
-
-当某个原子技能执行失败时，主技能会：
-1. 明确提示用户哪个技能执行失败
-2. 继续执行其他技能（降级策略）
-3. 在最终输出中标记失败的部分和原因
-4. 提供错误恢复建议
-
-错误示例：
-```markdown
-## 4. UI 库与样式方案
-⚠️ 该部分扫描失败：未找到 package.json 文件（降级：使用未知配置）
+降级策略：
+- 输出 `框架：未知` (confidence: low)
+- 其他技能标记为 confidence: low
 
 建议后续操作：
 1. 请确保项目根目录存在 package.json
-2. 或手动提供项目信息
+2. 或者手动提供项目框架信息
 ```
+
+---
 
 ## 强约束
 
-1. **精准选择**：只调用必要的原子技能，不进行冗余扫描
-2. **并行优化**：自动识别可并行执行的技能，减少执行时间
-3. **信息复用**：避免重复读取相同的文件信息
-4. **结构化输出**：保持输出格式清晰、可读、易解析
-5. **置信度标注**：每个检测结果标注 confidence score
-6. **project-summary**：全面扫描后必须生成项目摘要
-7. **客观准确**：基于实际文件内容，不做猜测或推断
-8. **错误处理**：单个技能失败不影响整体执行，提供降级策略和 suggested follow-up actions
+1. **K1 优先**：技能合并后 τ 节省必须 > 20%，否则保持分离
+2. **K2 强制**：所有技能输出必须写入共享上下文（task_skill.md）
+3. **K3 按需**：简单任务用规则，复杂任务用 LLM，禁止纯规则或纯 LLM
+4. **K4 缓存**：命中模式后跳过重复扫描，τ 直接节省
+5. **τ 预警**：80% 预警 / 95% 严重 / 100% 终止（核心步骤除外）
+6. **置信度**：每个检测结果必须标注 confidence，无例外
+7. **输出精简**：只输出必要信息，禁止冗余描述
 
-## 智能化选择优化
-
-### 优先级规则（改进版）
-
-1. **基础优先**：`scan_package_json` 总是第一个执行，提供依赖信息给其他技能
-2. **结构优先**：`scan_project_structure` 在 `detect_framework` 之前执行
-3. **配置优先**：`scan_config_files` 在 `detect_ui_library` 和 `scan_env_variables` 之前执行
-4. **框架依赖**：`detect_framework` 必须在 `detect_router_solution` 和 `scan_env_variables` 之前执行
-5. **最小集合**：如果用户需求明确，选择最少的技能组合
-6. **并行优先**：无依赖或依赖已满足的技能自动并行执行
-
-### 自动补全逻辑
-
-- 当用户提及 "路由" 时，自动添加 `detect_router_solution`
-- 当用户提及 "环境变量"、".env"、"配置" 时，自动添加 `scan_env_variables`
-- 当用户提及 "全面分析" 时，自动添加所有技能
-- 当用户未指定需求时，默认选择：`scan_package_json` + `scan_project_structure` + `scan_config_files` + `detect_framework`
-- **当用户提及多个意图时，自动合并最小技能集（新增 v1.1）**
-
-## 示例对话
-
-**用户**: "了解项目打包工具和使用的UI库"
-
-**执行流程**:
-1. 意图分析：打包工具 + UI库
-2. 关键词匹配：打包 → scan_config_files；UI库 → detect_ui_library
-3. 智能选择：scan_package_json（基础）+ scan_config_files + detect_ui_library
-4. 依赖分析：detect_ui_library 依赖 scan_config_files → 串行执行
-5. 执行并整合结果
-
-**用户**: "全面分析这个前端项目"
-
-**执行流程**:
-1. 意图分析：全面扫描
-2. 智能选择：全部9个原子技能
-3. 执行计划：
-   - 并行组1：scan_package_json + scan_project_structure + scan_config_files
-   - 串行：detect_framework（依赖1）
-   - 并行组2：detect_ui_library + detect_state_manage + detect_request_scheme（依赖满足）
-   - 串行：detect_router_solution（依赖 detect_framework）
-   - 串行：scan_env_variables（依赖 detect_framework）
-4. 整合结果 + 生成 project-summary + suggested follow-up actions
-
-**用户**: "项目用了什么路由方案？"
-
-**执行流程**:
-1. 意图分析：路由方案
-2. 智能选择：scan_package_json（基础）+ detect_router_solution
-3. 执行并输出结果 + confidence score
+---
 
 ## 版本
-v1.1 - 改进版：新增智能技能选择、并行执行支持、confidence scores、project-summary、suggested follow-up actions、改进的错误处理
+
+- v1.2 - 韬定律优化版：K1 Task Folding（9→7技能）、K2 Skill Stacking（共享上下文）、K3 Co-Design（规则/LLM决策矩阵）、K4 Pattern Mining（模式库）
+- v1.1 - 改进版：新增 confidence scores、project-summary、suggested follow-up actions
+- v1.0 - 初始版本

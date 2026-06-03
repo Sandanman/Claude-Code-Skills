@@ -1,0 +1,33 @@
+{
+  "projectName": "",
+  "projectDescription": "",
+  "techStack": {
+    "framework": "",
+    "frameworkVersion": "",
+    "uiLibrary": "",
+    "uiLibraryVersion": "",
+    "stateManagement": "",
+    "stateManagementVersion": "",
+    "routing": "",
+    "requestLibrary": "",
+    "buildTool": "",
+    "typescript": false,
+    "renderMode": "CSR"
+  },
+  "codeStyleNotes": "",
+  "commonPatterns": [],
+  "projectStructure": {
+    "srcDir": "src",
+    "componentsDir": "",
+    "apiDir": "",
+    "utilsDir": "",
+    "routerDir": ""
+  },
+  "envVariables": {
+    "hasEnvFiles": true,
+    "envExampleFile": ".env.example",
+    "criticalVars": []
+  },
+  "lastUpdated": "",
+  "notes": ""
+}

@@ -1,6 +1,7 @@
 ---
 name: tau-controller
 description: τ 控制核心 — 预算分配、τ 测量、折叠决策、效率评分。贯穿 Orchestrator Pro 全程的横切控制器
+impl_status: design_spec  # 设计规范文档，预留实现。未包含可执行代码，待后续工程化落地
 ---
 
 # Tau Controller 原子 Skill

@@ -1,6 +1,7 @@
 ---
 name: intent-recognition
 description: 意图识别（τ 增强版）— 将用户自然语言转化为结构化意图，增加 τ 测量嵌入
+impl_status: design_spec  # 设计规范文档，预留实现。未包含可执行代码，待后续工程化落地
 ---
 
 # Intent Recognition 原子 Skill（τ 增强版）

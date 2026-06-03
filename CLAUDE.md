@@ -25,29 +25,47 @@
 ```
 .claude/
 ├── rules/                          # 行为规则（alwaysApply: true）
-│   ├── coding-standards.mdc         # 编码规范
-│   └── language-chinese.mdc         # 语言规则
-├── settings.json                   # Claude Code 配置（钩子、权限、规则加载）
-├── skills/                         # 技能系统
-│   ├── orchestrator/               # 智能调度总控
-│   ├── code-generator/              # 代码生成
-│   ├── code-optimizer/             # 代码优化
-│   ├── bug-solver/                 # Bug 修复
-│   ├── requirement-generator/      # 需求生成
-│   ├── scan-object-info/           # 项目信息扫描
-│   ├── performance-optimizer/      # 性能优化
-│   ├── security-scanner/           # 安全扫描
-│   ├── test-generator/             # 测试生成
-│   ├── doc-generator/              # 文档生成
-│   ├── git-helper/                 # Git 辅助
-│   └── deploy-helper/              # 部署辅助
-└── skills/tasks/                   # 任务历史记录
-    ├── current/                    # 当前进行中的任务
-    └── history/                    # 历史任务归档
+│   ├── coding-standards.mdc        # 编码规范
+│   ├── language-chinese.mdc        # 语言规则
+│   ├── pattern-mining.mdc         # 模式挖掘
+│   ├── skill-stacking.mdc         # 技能叠加
+│   ├── task-folding.mdc           # 任务折叠
+│   └── tau-control.mdc            # τ 控制流
+├── project_context.json          # 项目上下文模板（框架/UI库/代码风格等，供 orchestrator 读取）
+├── settings.json                  # Claude Code 主配置（钩子、权限、规则加载、14个 slash commands）
+├── settings.local.json            # 本地配置（不提交到版本控制）
+├── history/                       # 历史归档
+│   ├── skills_v.1.0.zip
+│   └── v.1.2.2.zip
+└── skills/                        # 技能系统
+    ├── orchestrator/              # 智能调度总控（已废弃，降级为轻量 fallback，由 orchestrator-pro 接管）
+    │   ├── skills_register.md      # 主技能索引（供 Reasoner 读取）
+    │   └── atomic_skills_register.md  # 原子技能详情（按主技能分组）
+    ├── orchestrator-pro/          # 智能调度总控（τ 增强版，唯一入口）
+    ├── code-generator/            # 代码生成
+    ├── code-optimizer/           # 代码优化
+    ├── code-redundancy-checker/   # 冗余代码检测
+    ├── code-style-generator/      # 代码风格生成
+    ├── bug-solver/               # Bug 修复
+    ├── requirement-generator/    # 需求文档生成
+    ├── scan-object-info/         # 前端项目扫描
+    ├── performance-optimizer/     # 性能优化
+    ├── security-scanner/         # 安全扫描
+    ├── test-generator/           # 测试用例生成
+    ├── doc-generator/           # 文档生成
+    ├── git-assistant/           # Git 辅助
+    ├── deploy-helper/           # 部署辅助
+    └── tao-theory-design.md     # τ 理论设计文档
+    └── tasks/                   # 任务历史记录
+        ├── current/             # 当前进行中的任务
+        ├── history/             # 历史任务归档
+        └── templates/           # 任务模板
 
 根目录/
-├── CLAUDE.md                       # 本文件
-└── .claude/                        # Claude Code 配置
+├── CLAUDE.md                      # 项目上下文配置（本文件）
+├── README.md                      # 项目说明
+├── .git/                          # Git 仓库
+└── .gitignore
 ```
 
 ---
@@ -58,11 +76,13 @@
 
 `orchestrator` 是所有任务的唯一入口 Reasoner，执行 9 步流程：意图识别 → 历史检索 → Skill 匹配 → 任务生成 → 执行控制 → 任务恢复 → 结果校验 → 结果输出 → 任务归档。
 
-### 可用主 Skill
+### 可用 Skill（详细说明见各 Skill 目录下的 SKILL.md）
+
+所有任务统一通过 `orchestrator` 调度入口，详情见 `.claude/skills/orchestrator/SKILL.md`。
 
 | Skill | 说明 | 触发方式 |
 |-------|------|---------|
-| `orchestrator` | 智能调度总控 | 默认自动触发 |
+| `orchestrator` / `orchestrator-pro` | 智能调度总控（τ 增强版）| 默认自动触发 |
 | `code-generator` | 代码生成 | 用户请求时触发 |
 | `bug-solver` | 系统化 Bug 修复 | 用户报告 Bug 时触发 |
 | `code-optimizer` | 代码优化 | 用户请求时触发 |
@@ -73,21 +93,29 @@
 | `security-scanner` | 安全扫描 | 用户请求时触发 |
 | `test-generator` | 测试用例生成 | 用户请求时触发 |
 | `doc-generator` | 文档生成 | 用户请求时触发 |
-| `git-helper` | Git 辅助操作 | 用户请求时触发 |
+| `git-helper` / `git-assistant` | Git 辅助操作 | 用户请求时触发 |
 | `deploy-helper` | 部署辅助 | 用户请求时触发 |
 
-### 手动触发（Slash Commands）
+查看完整 Skill：`ls .claude/skills/`
 
-以下 Skill 可通过 `/<skill-name>` 手动调用：
+### Slash Commands（已注册在 `settings.json` 的 `commands` 配置中）
 
-```
-/memory          读取/写入记忆文件
-/tasks           查看任务列表
-/commit          执行 Git 提交（需配合 git-helper）
-/schedule        管理定时任务
-/bug-solver      直接进入 Bug 修复流程
-/code-generator  直接进入代码生成
-```
+| 命令 | 触发 Skill | 说明 |
+|------|-----------|------|
+| `/bug-solver` | bug-solver | 系统化 Bug 修复（7 步流程）|
+| `/code-generator` | code-generator | 代码生成（多场景适配）|
+| `/code-optimizer` | code-optimizer | 代码质量优化（重构 + 验证）|
+| `/code-redundancy-checker` | code-redundancy-checker | 代码冗余检测（重复/死代码）|
+| `/code-style-generator` | code-style-generator | 代码风格探测，生成 CODE_STYLE.md |
+| `/scan-object-info` | scan-object-info | 前端项目技术栈扫描（韬定律优化版）|
+| `/requirement-generator` | requirement-generator | 需求标准化，生成 requirements.json |
+| `/performance-optimizer` | performance-optimizer | 性能优化与基准测试 |
+| `/security-scanner` | security-scanner | 安全漏洞扫描（XSS/CSRF/依赖安全）|
+| `/test-generator` | test-generator | 测试用例自动生成 |
+| `/doc-generator` | doc-generator | API/组件文档自动生成 |
+| `/git-assistant` | git-assistant | Git 智能操作（τ 优化版）|
+| `/deploy-helper` | deploy-helper | Docker / CI/CD / 部署配置 |
+| `/orchestrator-pro` | orchestrator-pro | 智能调度总控（τ 增强版）|
 
 ---
 
@@ -102,11 +130,13 @@
 
 ### 编码规范快速索引
 
+> 完整规范见 `.claude/rules/coding-standards.mdc`（alwaysApply）
+
 | 类别 | 核心要求 |
 |------|---------|
 | 格式化 | 4 空格缩进 / 无分号 / 单引号 / 行长度 ≤200 / LF 换行 |
 | 命名 | PascalCase 组件 / camelCase 变量 / UPPER_SNAKE_CASE 常量 / kebab-case 类名 |
-| 组件结构 | Vue 13 步顺序；React Hooks 顺序（useState → useNavigate → useMemo → useEffect → useCallback） |
+| 组件结构 | Vue 13 步顺序；React Hooks 顺序（useState → useNavigate → useMemo → useEffect → useCallback）|
 | async/await | 必须 try-catch；禁止裸 await |
 | 错误处理 | console.error + 用户提示；定时器在 onBeforeUnmount 中清理 |
 | 样式 | scoped；Less 嵌套 ≤3 层；BEM 命名 |
@@ -134,11 +164,8 @@ claude --help       # 查看帮助
 claude /help        # 查看 Slash Commands
 
 # Skill 管理
-ls .claude/skills/  # 查看可用技能
-
-# 项目命令（根据实际项目补充）
-# npm install
-# npm run build
+ls .claude/skills/  # 查看所有可用技能
+cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 ```
 
 ---

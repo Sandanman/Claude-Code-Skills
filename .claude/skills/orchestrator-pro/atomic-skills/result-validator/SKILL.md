@@ -1,6 +1,7 @@
 ---
 name: result-validator
 description: 结果校验（τ 增强版）— 增加 τ 效率评分、Co-Design 贡献度报告
+impl_status: design_spec  # 设计规范文档，预留实现。未包含可执行代码，待后续工程化落地
 ---
 
 # Result Validator 原子 Skill（τ 增强版）
