@@ -188,19 +188,15 @@
   "commands": [
     {
       "name": "bug-solver",
-      "description": "系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证"
+      "description": "系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证（v1.3 τ 增强版，整合 Task Folding、Skill Stacking、Pattern Mining）"
     },
     {
       "name": "code-generator",
-      "description": "根据需求文档或需求描述自动生成符合项目规范的代码"
+      "description": "根据需求文档或需求描述自动生成符合项目规范的代码（v1.3 τ 增强版，整合 Task Folding、Skill Stacking、Pattern Mining）"
     },
     {
       "name": "code-optimizer",
-      "description": "系统化地优化代码，基于代码质量分析识别改进点，提供可执行的优化方案"
-    },
-    {
-      "name": "code-redundancy-checker",
-      "description": "独立检测代码冗余，识别重复代码、死代码、冗余导入等"
+      "description": "系统化地优化代码（v2.0 τ 增强版），整合代码质量分析、性能优化和冗余检测，通过 τ-Agent 监控（Task Folding、Skill Stacking、Pattern Mining）提升优化效率"
     },
     {
       "name": "code-style-generator",
@@ -213,10 +209,6 @@
     {
       "name": "requirement-generator",
       "description": "将用户自然语言需求转化为标准化、可执行的机器需求文档（requirements.json）"
-    },
-    {
-      "name": "performance-optimizer",
-      "description": "专注于前端性能优化，通过性能分析、基准测试生成和优化验证提升应用性能"
     },
     {
       "name": "security-scanner",

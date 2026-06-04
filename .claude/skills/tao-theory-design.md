@@ -371,7 +371,7 @@ class SkillStacker:
         3. 下游技能直接从共享上下文读取，而非重新解析
         """
         # 层级 1: 感知层（scan-object-info）
-        # 层级 2: 分析层（code-optimizer, code-redundancy-checker）
+        # 层级 2: 分析层（code-optimizer, security-scanner）
         # 层级 3: 生成层（code-generator, test-generator）
         # 层级 4: 输出层（doc-generator）
 

@@ -1,6 +1,6 @@
-# Orchestrator Pro 技能注册表 v1.0
+# Orchestrator Pro 技能注册表 v1.1
 
-version: 1.0
+version: 1.1
 说明：
 1. 本注册表管理 orchestrator-pro 的编排能力，包括 8 个原子 skill
 2. orchestrator-pro 集成华为韬定律，τ 为核心性能指标
@@ -141,6 +141,6 @@ version: 1.0
 
 ---
 
-**版本**: 1.0
-**最后更新**: 2026-06-02
-**父版本**: Orchestrator v1.2 skills_register.md
+**版本**: 1.1
+**最后更新**: 2026-06-04
+**父版本**: Orchestrator v1.3 skills_register.md

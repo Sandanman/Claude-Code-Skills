@@ -1,9 +1,13 @@
 ---
 name: bug-triage
-description: 对用户报告的bug进行分类（类型：frontend/backend/config/logic，优先级：critical/high/medium/low），并制定处理策略。是整个bug解决流程的第一步，在收集详细问题描述之前执行
+description: 对用户报告的bug进行分类（类型：frontend/backend/config/logic，优先级：critical/high/medium/low），并制定处理策略。是整个bug解决流程的第一步，在收集详细问题描述之前执行。v1.3 整合韬定律（τ 控制、技能栈叠）。
 ---
 
-# Bug Triage 原子Skill
+# Bug Triage 原子Skill v1.3（τ 增强版）
+
+## 版本历史
+- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注
+- v1.0（初始版本）
 
 ## 概述
 对用户报告的bug进行分类，确定bug类型和优先级，并制定处理策略。是整个bug解决流程的第一步，决定了后续的处理方式。
@@ -157,3 +161,27 @@ Bug分类报告：
 
 ## 原子skill位置
 ./.claude/skills/bug-solver/atomic-skills/bug-triage/SKILL.md
+
+---
+
+## Skill Stacking & τ-Weight（v1.3）
+
+### τ-Weight
+从 bug-solver 主 SKILL.md 的 7步 τ 分配表继承。
+| 复杂度 | τ-Weight |
+|--------|----------|
+| simple | 15% |
+| moderate | 12% |
+| complex | 10% |
+
+### Skill Stacking 上下文键
+| 键名 | 类型 | 说明 |
+|------|------|------|
+| 无 | required_keys | 起点，无需上游输入 |
+| `triage_result` | output_keys | 分类结果：type + priority + strategy |
+
+### 执行日记写入（必须）
+本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
+
+### 折叠标记
+[核心·不折叠] - bug-triage 是 bug-solver 流程的起点，必须展开执行，不可折叠。

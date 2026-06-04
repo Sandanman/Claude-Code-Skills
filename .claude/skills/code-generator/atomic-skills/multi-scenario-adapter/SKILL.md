@@ -1,9 +1,9 @@
 ---
 name: multi-scenario-adapter
-description: 智能适配器，根据需求类型（标准输入/简单需求/复杂需求/多模块）自动适配执行流程，决定后续使用哪些原子skill。作为 code-generator 的第一个原子skill执行，是 v1.2 新增的核心组件。
+description: 智能适配器，根据需求类型（标准输入/简单需求/复杂需求/多模块）自动适配执行流程，决定后续使用哪些原子skill。作为 code-generator 的第一个原子skill执行，是 v1.2 新增的核心组件。v1.3 整合韬定律（τ 控制、技能栈叠）。
 ---
 
-# Multi-Scenario Adapter 原子Skill v1.2（NEW）
+# Multi-Scenario Adapter 原子Skill v1.3（τ 增强版）
 
 ## 概述
 
@@ -362,3 +362,31 @@ multi-scenario-adapter（决策）
 ## 原子skill位置
 
 `.claude/skills/code-generator/atomic-skills/multi-scenario-adapter/SKILL.md`
+
+## 版本历史
+- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注、Task Folding 折叠组标注
+- v1.2 (2026-05-21 新增)
+- v1.0（初始版本）
+
+---
+
+## Skill Stacking & τ-Weight（v1.3）
+
+### τ-Weight
+| 场景 | τ-Weight |
+|------|----------|
+| 场景1（标准输入） | 8% |
+| 场景2（简单需求） | 8% |
+| 场景3（复杂需求） | 5% |
+
+### Skill Stacking 上下文键
+| 键名 | 类型 | 说明 |
+|------|------|------|
+| - | required_keys | 无（起点，任务启动时无上游输入） |
+| scenario_decision | output_keys | 场景类型 + 路由理由 + τ 预算分配 |
+
+### 执行日记写入（必须）
+本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
+
+### Task Folding 标记
+**[核心·不折叠]** — 本 skill 为代码生成的决策起点，无论 τ_remaining 多少都不折叠，必须单独执行以确保场景路由正确。

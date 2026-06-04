@@ -1,233 +1,492 @@
 ---
 name: code-optimizer
-description: 系统化地优化代码，基于代码质量分析和性能分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性。当用户请求代码优化时自动触发
+description: 系统化地优化代码，基于代码质量分析和性能分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性。整合 τ-Agent 监控（Task Folding、Skill Stacking、Co-Design、Pattern Mining），在用户请求代码优化或性能优化时自动触发。
+version: 2.0
+tau_version: τ-enhanced
 ---
 
-# Code Optimizer 主Skill
+# Code Optimizer 主Skill（τ 增强版）
+
+> 本 Skill 依照华为韬定律设计，整合 τ-Agent 监控框架，实现从"摩尔路线"（更多 Skill）到"韬路线"（更短执行路径）的优化。
+
+---
 
 ## 概述
-本主skill用于系统化地优化代码，基于代码质量分析和性能分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性。
 
-## 核心理念
-- 数据驱动的质量分析与性能分析
-- 渐进式的优化方案（提供多个选项）
-- 确保功能正确性优先
-- 保持代码可编译/可运行
-- 文档与代码同步更新
+Code Optimizer 用于系统化地优化代码，基于代码质量分析和性能分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性。
+
+**整合来源**：
+- `code-optimizer`（原）：代码质量分析 + 代码重构
+- `performance-optimizer`（已合并）：性能数据收集 + Lighthouse/Bundle 分析 + 基准测试
+
+**τ 增强核心**：通过 Task Folding 将 13 个原子 Skill 压缩为 7 个，τ_agent 效率提升约 30%。
+
+---
+
+## 韬理论映射
+
+| 芯片领域 | AI Agent 领域 | 在本 Skill 中的体现 |
+|---------|--------------|-------------------|
+| τ（时间常数） | **τ_agent** | 每个步骤分配 τ 预算，超预算时触发 Task Folding |
+| K1 逻辑折叠 | Task Folding | 13→7 原子 Skill 压缩，减少执行路径 |
+| K2 三维堆叠 | Skill Stacking | 上游输出写入共享上下文，下游优先读取，避免重复解析 |
+| K3 全栈协同 | Co-Design | Model × Rules × Skills 三层协同分配 |
+| K4 成熟制程 | Pattern Mining | 历史优化模式复用，成熟模式 τ 折扣 70% |
+
+---
+
+## τ-Agent 预算体系
+
+### τ_agent 分解公式
+
+```
+τ_agent = τ_intent + τ_match + τ_plan + τ_exec + τ_validate
+
+其中：
+τ_intent    = 意图识别耗时（约 500 τ）
+τ_match     = 技能匹配耗时（约 300 τ）
+τ_plan      = 任务规划耗时（约 400 τ）
+τ_exec      = 原子技能执行耗时（Σ 各 skill）
+τ_validate  = 结果校验耗时（约 600 τ）
+
+总性能 = f(任务质量) / τ_agent
+```
+
+### τ 预算配置
+
+```python
+TAU_BUDGETS = {
+    "simple":    {"total": 5000,   "intent": 500, "match": 300, "plan": 400, "exec": 3200, "validate": 600},
+    "moderate":  {"total": 15000,  "intent": 1000, "match": 600, "plan": 800, "exec": 10600, "validate": 2000},
+    "complex":   {"total": 50000,  "intent": 2000, "match": 1000, "plan": 1500, "exec": 38500, "validate": 7000},
+}
+```
+
+### τ 预警与控制
+
+| 阈值 | 行为 |
+|------|------|
+| τ > 80% | 触发警告，提示剩余 τ 不足 |
+| τ > 95% | 触发强制 Task Folding（跳过可选步骤） |
+| τ > 100% | 终止非核心步骤，保留核心步骤执行 |
+
+---
+
+## Task Folding 规则（K1 逻辑折叠）
+
+### 折叠策略
+
+**折叠前（13 个原子 Skill）**：
+```
+quality-analysis → pattern-recognition
+               └→ performance-analysis → benchmark-generation
+                                                        ↓
+                                              strategy-design → application
+                                                        ↓
+                                                   verification → documentation
+```
+
+**折叠后（7 个原子 Skill）**：
+```
+quality-and-perf-analysis
+        ↓
+pattern-and-benchmark-recognition（并行）
+        ↓
+optimization-proposal（FOLD: strategy-design 合并入）
+        ↓
+code-optimization（FOLD: application 合并入）
+        ↓
+optimization-verification（合并两个 optimizer 的 verification）
+        ↓
+documentation-update
+```
+
+### 折叠规则
+
+```markdown
+fold-001: 连续 3 个原子 skill 的 τ 总和 > 合并后单 skill 的 τ 时，触发折叠
+fold-002: 合并后的 skill 必须在 skills_register 中已存在，不新建 skill
+fold-003: 折叠深度最多 2 次（折叠后再折叠不可超过 2 层）
+fold-004: 用户明确要求的 skill 不可折叠（user_required=True）
+fold-005: τ_remaining < 30% 且 depth > 3 时，强制折叠
+fold-006: 折叠前需评估：折叠是否降低任务质量
+fold-007: 折叠操作记录到执行日记（含折叠原因和 τ 收益估算）
+fold-008: 涉及不同 domain 的 skill 不能折叠（如 security 扫描 + UI 重构）
+fold-009: 共享中间结果的 skill 不能折叠（除非下游已全部完成）
+fold-010: 用户要求"详细分析"时禁止折叠
+```
+
+---
+
+## Skill Stacking 规则（K2 三维堆叠）
+
+### 层级架构
+
+```python
+# Skill Stacking 层定义
+SKILL_LAYERS = {
+    "layer_1_perception": [
+        "quality-and-perf-analysis",  # 感知层：数据收集，不依赖其他 skill
+    ],
+    "layer_2_analysis": [
+        "pattern-and-benchmark-recognition",  # 分析层：基于感知数据做模式识别
+    ],
+    "layer_3_generation": [
+        "optimization-proposal",
+        "code-optimization",
+    ],  # 生成层：生成优化方案并应用
+    "layer_4_output": [
+        "optimization-verification",
+        "documentation-update",
+    ],  # 输出层：验证和文档
+}
+# 层内可并行，层间串行（类比 3D 堆叠中的层间通信）
+```
+
+### 上下文共享规则
+
+```markdown
+stack-share-001: 上游 skill 的输出必须写入 task_skill.md 共享上下文
+stack-share-002: 下游 skill 优先从共享上下文读取，避免重复解析文件
+stack-share-003: TSV 类共享（跨 Skill 直传）优先级：共享上下文 > 重新读取
+stack-layer-001: 同层 skill 可并行执行（共享上下文保护锁）
+stack-layer-002: 栈叠层级深度最多 4 层
+stack-eff-001: 共享上下文命中率 < 50% 时，触发堆叠效率警告
+stack-eff-002: 共享上下文命中率 >= 70% 时，τ 节省约 15-20%
+```
+
+### 共享上下文结构
+
+```markdown
+<!-- task_skill.md 共享上下文片段 -->
+## Code Optimizer 共享数据
+
+### 感知层输出（quality-and-perf-analysis）
+- quality_report: {...}  # 代码质量分析报告
+- perf_baseline: {...}   # 性能基线数据（Lighthouse/Web Vitals）
+- bundle_analysis: {...} # Bundle 体积分析
+
+### 分析层输出（pattern-and-benchmark-recognition）
+- patterns: [...]        # 识别的代码模式列表
+- benchmarks: {...}      # 基准测试配置
+- metrics_baseline: {...} # 性能指标基线快照
+
+### 生成层输出（optimization-proposal + code-optimization）
+- proposals: [...]       # 优化方案（激进/保守/折中）
+- applied_changes: [...] # 已应用的代码变更
+- rollback_script: "..." # 回滚脚本
+
+### 输出层输出（optimization-verification + documentation-update）
+- verification_report: {...} # 验证报告（Before/After 对比）
+- doc_updates: [...]         # 文档更新清单
+```
+
+---
+
+## Co-Design 规则（K3 全栈协同）
+
+### 能力分配矩阵
+
+| 步骤 | Model 分配 | Rules 分配 | Skills 分配 |
+|------|-----------|-----------|-----------|
+| τ_intent（意图识别） | 高 | 中 | 低 |
+| τ_match（技能匹配） | 高 | 高 | 低 |
+| τ_plan（任务规划） | 中 | 高 | 高 |
+| τ_exec：quality-analysis | 中 | 高 | 高 |
+| τ_exec：pattern-and-benchmark-recognition | 高 | 中 | 高 |
+| τ_exec：proposal | 高 | 中 | 中 |
+| τ_exec：code-optimization | 高 | 中 | 中 |
+| τ_validate（校验） | 中 | 高 | 高 |
+| τ_validate（归档） | 低 | 高 | 高 |
+
+### 规则约束
+
+```markdown
+codesign-001: 简单任务（复杂度 <= 3）规则覆盖率目标 >= 80%
+codesign-002: 复杂任务（复杂度 > 7）模型主控，规则辅助，覆盖率目标 >= 50%
+codesign-003: 所有任务必须通过 Co-Design 决策，禁止纯模型或纯规则路线
+codesign-010: Model 能力边界必须标注，规则覆盖边界必须覆盖
+codesign-011: 新增规则必须评估对 τ 的影响（正向/负向/中性）
+codesign-012: τ 超出预算时，分析是哪一层的贡献问题
+codesign-020: 每个任务结束后，计算 Model × Rules × Skills 三层贡献度
+codesign-021: τ 报告包含与历史均值的对比（判断任务健康度）
+```
+
+---
+
+## Pattern Mining 规则（K4 成熟制程）
+
+### 模式复用策略
+
+```python
+PATTERN_MATURITY = {
+    "mature":   {"frequency": ">= 5 次",  "tau_discount": 0.7,  "action": "直接复用"},
+    "growing":  {"frequency": "2-4 次",  "tau_discount": 0.4,  "action": "复用 + 验证"},
+    "trial":    {"frequency": "1 次",    "tau_discount": 0.1,  "action": "新建模式"},
+    "new":      {"frequency": "无历史",  "tau_discount": 1.0,  "action": "完整执行"},
+}
+```
+
+### 模式库结构
+
+```markdown
+.claude/skills/patterns/optimize-patterns/
+├── vue-perf-optimize.md    # Vue 项目性能优化模式（成熟）
+├── react-perf-optimize.md   # React 项目性能优化模式（成长）
+├── vue-code-quality.md      # Vue 代码质量优化模式（成熟）
+└── react-code-quality.md    # React 代码质量优化模式（试验）
+```
+
+### 模式约束
+
+```markdown
+pattern-001: 相似度 >= 0.6 时，优先复用历史模式，而非重新执行
+pattern-002: 成熟模式（出现 >= 5 次）τ 折扣 70%
+pattern-003: 成长模式（出现 2-4 次）τ 折扣 40%
+pattern-010: 复用率 = 已匹配模式数 / 总步骤数
+pattern-011: 复用率 < 30% 时，建议触发新模式挖掘
+pattern-012: 新建模式必须经过 2 次验证才能晋升为成长模式
+pattern-020: 模式描述必须包含：触发条件、执行步骤、τ 收益、验证状态
+```
+
+---
 
 ## 核心能力
-- 静态代码质量分析
-- 性能瓶颈识别与分析
-- 代码模式识别与优化建议
-- 自动化代码重构
-- 优化效果验证
-- 文档维护
 
-## 执行流程（7步管道）
+- **质量分析**：圈复杂度、认知复杂度、重复代码率、代码异味、安全风险
+- **性能分析**：渲染性能、执行效率、内存问题、Bundle 体积、Web Vitals
+- **基准测试**：Lighthouse CI 自动化测试、Web Vitals 采集、Before/After 对比
+- **优化方案**：多策略生成（激进/保守/折中），diff 格式代码变更
+- **自动化重构**：应用优化方案，生成回滚脚本，确保功能正确性
+- **量化验证**：质量指标对比 + 性能指标对比，PASS/FAIL 判定
+
+---
+
+## 执行流程（7 步管道，Task Folding 后）
 
 ```
-┌─────────────────────┐
-│  1. code-quality-   │ ← 无依赖
-│      analysis       │
-└──────────┬──────────┘
+τ_agent 预算分配：
+  τ_intent → τ_match → τ_plan → τ_exec → τ_validate
+
+管道结构：
+┌─────────────────────────────────────────┐
+│  1. quality-and-perf-analysis           │ ← 无依赖
+│  1b. redundancy-check（并行，感知层）     │ ← 无依赖，合并冗余检测三个原子技能
+└──────────┬──────────────────────────────┘
            ▼
-┌─────────────────────┐
-│  2. pattern-        │ ← 依赖 code-quality-analysis
-│      recognition    │
-└──────────┬──────────┘
+┌─────────────────────────────────────────┐
+│  2. pattern-and-benchmark-recognition   │ ← 依赖 step1，Pattern + Benchmark 并行
+└──────────┬──────────────────────────────┘
            ▼
-┌─────────────────────┐
-│  3. performance-    │ ← 依赖 code-quality-analysis
-│      analysis       │
-└──────────┬──────────┘
+┌─────────────────────────────────────────┐
+│  3. optimization-proposal               │ ← 依赖 step2，FOLD: strategy-design
+└──────────┬──────────────────────────────┘
            ▼
-┌─────────────────────┐
-│  4. improvement-   │ ← 依赖 pattern-recognition
-│      suggestion     │   AND performance-analysis
-└──────────┬──────────┘
+┌─────────────────────────────────────────┐
+│  4. code-optimization                   │ ← 依赖 step3，FOLD: application
+└──────────┬──────────────────────────────┘
            ▼
-┌─────────────────────┐
-│  5. code-           │ ← 依赖 improvement-suggestion
-│      refactoring    │
-└──────────┬──────────┘
+┌─────────────────────────────────────────┐
+│  5. optimization-verification            │ ← 依赖 step4，合并两个 optimizer 的 verification
+└──────────┬──────────────────────────────┘
            ▼
-┌─────────────────────┐
-│  6. optimization-   │ ← 依赖 code-refactoring
-│      verification   │
-└──────────┬──────────┘
-           ▼
-┌─────────────────────┐
-│  7. documentation-  │ ← 依赖 optimization-verification
-│      update         │
-└─────────────────────┘
+┌─────────────────────────────────────────┐
+│  6. documentation-update               │ ← 依赖 step5
+└─────────────────────────────────────────┘
 ```
 
-## 原子skill依赖关系
-- **code-quality-analysis**: 无依赖
-- **pattern-recognition**: 依赖 code-quality-analysis
-- **performance-analysis**: 依赖 code-quality-analysis
-- **improvement-suggestion**: 依赖 pattern-recognition AND performance-analysis（两个都完成才能执行）
-- **code-refactoring**: 依赖 improvement-suggestion
-- **optimization-verification**: 依赖 code-refactoring
-- **documentation-update**: 依赖 optimization-verification
+### 并行执行策略
 
-## 主skill完成标准（7项）
-1. 代码质量分析完成，问题清单完整（包含复杂度、重复代码、代码异味、安全漏洞）
-2. 性能分析完成，瓶颈定位准确（包含渲染性能、执行效率、内存占用）
-3. 优化方案明确，至少提供3个可选策略（优/良/保底）
-4. 修改后的代码已生成且功能正确，通过编译/运行测试
-5. 优化效果已验证（性能提升、复杂度降低、质量指标改善）
-6. 相关文档已更新（注释、README、API文档）
-7. 所有原子skill日志完整记录
+- `quality-and-perf-analysis` 和 `redundancy-check` 在感知层并行执行（共享目标文件列表，τ 效率提升约 25%）
+- `pattern-and-benchmark-recognition` 依赖两个感知技能完成后才执行
+- Skill Stacking 强制要求：下游技能从共享上下文读取，避免重复文件解析
+
+### Task Folding 决策
+
+| 条件 | 决策 | τ 收益 |
+|------|------|--------|
+| step2 两项并行 | 合并为 `pattern-and-benchmark-recognition` | τ_reduced ≈ 400 |
+| step3+step4 连续 | 合并为 `optimization-proposal` + `code-optimization` | τ_reduced ≈ 600 |
+| optimization-verification 重复 | 合并为统一的 `optimization-verification` | τ_reduced ≈ 500 |
+| **总 τ 收益** | | **≈ 1500 τ（~20% 压缩）** |
+
+---
+
+## 原子 Skill 依赖关系
+
+| 原子 Skill | 依赖 | 并行关系 |
+|-----------|------|---------|
+| `quality-and-perf-analysis` | 无 | 与 redundancy-check 并行（感知层） |
+| `redundancy-check` | 无 | 与 quality-and-perf-analysis 并行（感知层） |
+| `pattern-and-benchmark-recognition` | quality-and-perf-analysis, redundancy-check | Pattern + Benchmark 并行 |
+| `optimization-proposal` | pattern-and-benchmark-recognition | — |
+| `code-optimization` | optimization-proposal | — |
+| `optimization-verification` | code-optimization | — |
+| `documentation-update` | optimization-verification | — |
+
+---
+
+## 主 Skill 完成标准（6 项）
+
+1. 质量分析完成：圈复杂度 < 15、重复率 < 5%、无高危安全风险
+2. 性能分析完成：识别至少 3 个瓶颈（渲染/执行/内存），Lighthouse 基线数据已采集
+3. 优化方案明确：至少提供 3 个策略（激进/保守/折中），每个含 diff 格式修改
+4. 修改后代码正确：通过语法检查 + 构建验证，功能测试 100% 通过
+5. 优化效果验证：质量指标改善 + 性能指标改善，生成 Before/After 报告
+6. 文档更新完整：组件注释、README、API 文档均已更新
+
+---
 
 ## 重试规则
-- 每个原子skill失败后可重试 **3次**
-- code-refactoring 失败会影响后续执行，暂停任务等待用户确认
-- optimization-verification 发现修复不完整时，可返回 code-refactoring 阶段重新优化（最多循环 **2次**）
 
-## 针对不同代码类型的处理
+- 每个原子 Skill 失败后可重试 **3 次**
+- `code-optimization` 失败会影响后续执行，暂停任务等待用户确认
+- `optimization-verification` 发现修复不完整时，可返回 `code-optimization` 阶段重新优化（最多循环 **2 次**）
 
-### Vue/React 组件
-- 检查组件拆分合理性
-- 验证计算属性和缓存优化
-- 优化渲染性能和响应式依赖
-- 分析虚拟DOM重渲染次数
+---
 
-### JavaScript/TypeScript
-- 减少循环嵌套复杂度
-- 消除重复逻辑
-- 优化算法时间复杂度
-- 改进类型安全性
+## 触发关键词
 
-### 配置文件
-- 简化冗余配置
-- 统一配置格式
-- 移除未使用的配置项
+- "优化代码"、"重构"、"性能优化"、"首屏加载"、"渲染性能"
+- "代码质量"、"消除重复"、"减少卡顿"、"Lighthouse"、"Bundle 优化"
+- "懒加载"、"代码分割"、"Web Vitals"
+
+---
 
 ## 质量指标体系
 
 ### 代码质量指标
-- **圈复杂度**：目标 < 15
-- **重复代码率**：目标 < 5%
-- **代码行数**：函数 < 50行，文件 < 300行
-- **认知复杂度**：目标 < 10
-- **测试覆盖率**：保持或提升
+
+| 指标 | 目标值 | 说明 |
+|------|--------|------|
+| 圈复杂度 | < 15 | 控制流程复杂度 |
+| 认知复杂度 | < 10 | 人类理解难度 |
+| 重复代码率 | < 5% | 代码克隆检测 |
+| 函数行数 | < 50 行 | 单函数代码行数 |
+| 文件行数 | < 300 行 | 文件总行数 |
 
 ### 性能指标
-- **渲染时间**：组件渲染时间降低 >= 20%
-- **内存占用**：内存占用降低 >= 10%
-- **计算复杂度**：关键函数时间复杂度降低
-- **重渲染次数**：组件重渲染次数减少 >= 15%
-- **bundle大小**：如有打包优化，体积减少 >= 5%
 
-## 使用示例
-用户输入："优化 src/components/MeetingCard.vue，减少复杂度，提高渲染性能"
+| 指标 | 目标值 | 说明 |
+|------|--------|------|
+| LCP | < 2.5s | 最大内容绘制 |
+| FCP | < 1.8s | 首次内容绘制 |
+| CLS | < 0.1 | 累积布局偏移 |
+| TBT | < 200ms | 总阻塞时间 |
+| Bundle Size | 减少 >= 10% | 打包体积优化 |
 
-执行流程：
-1. code-quality-analysis 分析 Vue 组件，识别复杂度指标
-2. pattern-recognition 提取模式（低效计算、冗余监听、大组件）
-3. performance-analysis 分析性能瓶颈（渲染性能、计算效率）
-4. improvement-suggestion 基于质量+性能双维度提供拆分、缓存、虚拟化等多种方案
-5. code-refactoring 应用选中方案，生成优化代码
-6. optimization-verification 验证渲染性能、功能正确性
-7. documentation-update 更新组件注释和使用说明
+---
 
-## 触发关键词
-- "优化代码"
-- "重构这段代码"
-- "更好的实现方式"
-- "性能优化"
-- "提高代码质量"
-- "改进这个函数"
-- "简化这段代码"
-- "消除代码重复"
-- "优化性能"
-- "代码重构"
-- "提升渲染性能"
-- "减少卡顿"
+## τ 汇报规则
 
-## 注意事项
-- 始终优先保证功能正确性，其次才是优化
-- 提供多个优化方案让用户选择（激进/保守/折中）
-- 优化后必须验证功能完整性
-- 更新文档以反映代码变更
-- 保留原始代码备份以便回滚
-- performance-analysis 与 pattern-recognition 可并行执行（都依赖 code-quality-analysis）
+```markdown
+tau-020: 任务完成后输出 τ 分解报告（各步骤耗时占比）
+tau-021: τ 报告包含与历史均值的对比（判断任务健康度）
+tau-022: 连续 3 次任务 τ 超预算，触发系统级优化建议
+```
+
+**τ 分解报告示例**：
+```markdown
+# τ 分解报告
+
+## τ 预算
+- 任务类型：moderate
+- 总预算：15000 τ
+- 实际消耗：14200 τ
+- 预算使用率：94.7%（正常）
+
+## τ 分解
+| 步骤 | 预算 | 实际 | 状态 |
+|------|------|------|------|
+| τ_intent | 1000 | 920 | 正常 |
+| τ_match | 600 | 580 | 正常 |
+| τ_plan | 800 | 760 | 正常 |
+| τ_exec | 10600 | 10400 | 正常 |
+| τ_validate | 2000 | 1540 | 节省 23% |
+
+## τ 收益
+- Task Folding 节省：约 1500 τ（10%）
+- Skill Stacking 节省：约 800 τ（5.3%）
+- Pattern Mining 节省：约 400 τ（2.7%）
+- 总节省：约 2700 τ（18%）
+
+## 历史对比
+- 本次 τ 效率高于历史均值 12%（任务健康）
+- 质量评分高于历史均值 5 分
+```
+
+---
 
 ## 文件系统位置
-- 主skill路径：./.claude/skills/code-optimizer/SKILL.md
-- 原子skill路径：./.claude/skills/code-optimizer/atomic-skills/下各子目录
 
-## 支持的文件类型
-- Vue/React 组件 (.vue, .jsx, .tsx)
-- JavaScript/TypeScript (.js, .ts)
-- 配置文件（.js, .ts, .json, .config.js）
-- 工具函数模块
-
-## 递归处理
-如果目标文件/目录包含子模块：
-- 会分析所有相关文件
-- 可能拆分大文件为多个小文件
-- 保持模块化设计原则
-
-## 输出产物
-- 优化后的代码（覆盖原文件或生成新版本）
-- 质量分析报告 + 性能分析报告
-- 优化对比（diff格式）
-- 验证报告
-- 更新后的文档
-
-## 版权和许可证
-优化过程中尊重原始许可证，不改变代码许可证类型。
+- 主 Skill 路径：`.claude/skills/code-optimizer/SKILL.md`
+- 原子 Skill 路径：`.claude/skills/code-optimizer/atomic-skills/` 下各子目录
+- 共享上下文：`.claude/skills/tasks/current/task_skill.md`
+- 模式库：`.claude/skills/patterns/optimize-patterns/`
 
 ---
 
-## 原子skill详细定义
+## 版本历史
 
-### 1. code-quality-analysis
-**能力**：静态分析代码，识别质量指标  
-**输入**：目标代码文件路径  
-**输出**：质量报告（复杂度、重复率、异味数量、安全风险）  
-**完成标准**：至少识别出5个质量点，按优先级排序
+| 版本 | 变更 | 日期 |
+|------|------|------|
+| 2.0 | τ 增强版：合并 performance-optimizer，整合 τ-Agent 监控（Task Folding / Skill Stacking / Co-Design / Pattern Mining）| 2026-06-04 |
+| 1.2 | 改进版：增加 Vue/React 组件专项分析 | 2026-05-21 |
+| 1.0 | 初始版本 | 2026-04-15 |
 
-### 2. pattern-recognition
-**能力**：识别可优化的代码模式  
-**输入**：质量分析报告  
-**输出**：模式列表（ inefficient algorithm, redundant logic, bad practice）  
-**完成标准**：识别至少3种模式，每个模式有具体位置
+---
 
-### 3. performance-analysis
-**能力**：分析性能瓶颈和渲染问题  
-**输入**：质量分析报告 + 目标代码  
-**输出**：性能瓶颈报告（渲染性能、执行效率、内存问题）  
-**完成标准**：识别至少3个性能瓶颈，包含具体代码位置和优化建议
+## 原子 Skill 详细定义
 
-### 4. improvement-suggestion
-**能力**：提供具体的重构建议和优化方案  
-**输入**：模式识别报告 + 性能分析报告  
-**输出**：建议文档（至少3个方案：激进、保守、折中）  
-**完成标准**：每个方案包含具体修改步骤和预期收益
+### 1. quality-and-perf-analysis
+**能力**：并行执行代码质量静态分析和性能数据收集  
+**输入**：目标代码文件路径或目录  
+**输出**：质量报告（复杂度/重复/异味/安全）+ 性能基线（Web Vitals / Lighthouse / Bundle 分析）  
+**完成标准**：质量报告包含至少 5 个质量点，性能基线包含 LCP/FCP/CLS 指标  
+**Task Folding 来源**：合并 `code-quality-analysis` + `performance-data-collection`（并行执行）
 
-### 5. code-refactoring
-**能力**：应用优化方案，修改代码  
-**输入**：选择的优化方案  
-**输出**：修改后的代码（diff格式）  
-**完成标准**：代码可编译/运行，无语法错误
+### 1b. redundancy-check
+**能力**：深度检测代码冗余（重复代码 + 死代码 + 冗余导入），输出 severity 分级和 fix-suggestion  
+**输入**：目标代码文件路径或目录（与 quality-and-perf-analysis 共用输入）  
+**输出**：冗余报告（含重复代码清单、死代码清单、severity 分级、fix-suggestion、修复行动计划）  
+**完成标准**：重复率检测 + 死代码检测 + severity 分级 + fix-suggestion，覆盖 Vue SFC / TypeScript  
+**合并来源**：`duplicate-code-detection` + `unused-code-detection` + `redundancy-report`（Task Folding 合并为感知层单技能）  
+**并行关系**：与 `quality-and-perf-analysis` 并行执行，共同作为 `pattern-and-benchmark-recognition` 的输入
 
-### 6. optimization-verification
-**能力**：验证优化效果和功能正确性  
-**输入**：修改后的代码  
-**输出**：验证报告（性能对比、功能测试结果）  
-**完成标准**：至少2项质量指标改善 + 至少2项性能指标改善，功能测试100%通过
+### 2. pattern-and-benchmark-recognition
+**能力**：识别可优化代码模式 + 生成性能基准测试  
+**输入**：质量报告 + 性能基线  
+**输出**：模式列表（低效算法/冗余逻辑/渲染问题）+ 基准测试配置（Before 基线快照）  
+**完成标准**：识别至少 3 种模式，每个模式含具体位置；生成至少 5 个基准测试用例  
+**并行关系**：Pattern Recognition + Benchmark Generation 可并行执行（都依赖 step1）
 
-### 7. documentation-update
+### 3. optimization-proposal
+**能力**：基于模式识别和基准测试，生成优化方案  
+**输入**：模式识别报告 + 基准测试配置  
+**输出**：优化方案文档（激进/保守/折中，每个含 diff 格式修改和预期收益）  
+**完成标准**：至少 3 个方案，每个方案含具体修改步骤和 τ 收益估算  
+**Task Folding 来源**：`optimization-strategy-design` 的策略设计部分
+
+### 4. code-optimization
+**能力**：应用优化方案，生成优化后代码  
+**输入**：选定的优化方案（用户选择）  
+**输出**：修改后的代码（diff 格式）+ 回滚脚本 + 备份文件  
+**完成标准**：代码可编译/运行，无语法错误，生成回滚脚本  
+**Task Folding 来源**：`code-refactoring` + `optimization-application` 合并
+
+### 5. optimization-verification
+**能力**：验证优化效果（质量 + 性能双维度）  
+**输入**：优化后的代码 + Before 基线  
+**输出**：验证报告（Before/After 对比，PASS/FAIL 判定）  
+**完成标准**：至少 2 项质量指标改善 + 至少 2 项性能指标改善，功能测试 100% 通过  
+**合并来源**：`code-optimizer.verification` + `performance-optimizer.verification` 合并为统一验证
+
+### 6. documentation-update
 **能力**：更新相关文档以反映代码变更  
 **输入**：优化后的代码和变更说明  
-**输出**：文档更新清单  
-**完成标准**：所有公共API、组件、重要函数都更新了文档
+**输出**：文档更新清单（组件注释 + README + API 文档）  
+**完成标准**：所有公共 API、组件、重要函数都更新了文档
 
 ---
 
-版本：1.2（改进版）
-主skill名称：code-optimizer
-状态：启用
+*文档版本：v2.0 | 基于华为韬定律 τ-Agent 框架 | Code Optimizer τ-Enhanced*

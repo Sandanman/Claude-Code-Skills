@@ -2,6 +2,7 @@
 
 ## 版本历史
 
+- **v1.2** (2026-06-04): 协同更新 bug-solver v1.3 和 code-generator v1.3 的引用，两个主 skill 均已整合 τ 增强体系（Task Folding、Skill Stacking、Co-Design、Pattern Mining）
 - **v1.1** (2026-06-03): 新增复杂度分流入口，简单任务（complexity < 4）自动降级到 orchestrator 轻量逻辑；复杂任务（complexity ≥ 4）使用完整 τ 优化路径
 - **v1.0** (2026-06-02): 集成华为韬定律，τ 为核心性能指标，性能 ∝ 1/τ
 

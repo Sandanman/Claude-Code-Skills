@@ -1,9 +1,9 @@
-# 全局技能注册表（主技能索引）v1.2
+# 全局技能注册表（主技能索引）v1.3
 
 > 本文件是主技能索引，仅列所有已注册的主 Skill 及其基本信息。
 > 原子技能详情请查看 `.claude/skills/orchestrator/atomic_skills_register.md`。
 
-version: 1.2
+version: 1.3
 说明：
 1. 本索引供 Reasoner（orchestrator）读取，用于意图匹配
 2. 原子技能详情在 `atomic_skills_register.md` 中，按主技能分组
@@ -33,24 +33,17 @@ version: 1.2
   is_reasoner: true
 
 - name: code-generator
-  desc: 根据需求文档或需求描述自动生成符合项目规范的代码，支持多种输入形式并自动适配项目技术栈
+  desc: 根据需求文档或需求描述自动生成符合项目规范的代码，支持多种输入形式并自动适配项目技术栈（v1.3 整合韬定律，τ 控制、任务折叠、技能栈叠、协同设计、模式复用）
   path: .claude/skills/code-generator/SKILL.md
-  core_ability: 需求理解、技术栈检测、代码结构设计、代码生成、模块整合、代码验证、文档更新
+  core_ability: 需求理解、技术栈检测、代码结构设计、代码生成、模块整合、代码验证、文档更新、τ 动态预算、Task Folding、Skill Stacking、Pattern Mining
   match_keywords: 根据需求写代码, 实现这个功能, 生成代码, 写一个函数, 实现这个模块, 按照需求文档开发, 帮我实现
   status: 启用
 
 - name: code-optimizer
-  desc: 系统化地优化代码，基于代码质量分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性
+  desc: 系统化地优化代码，基于代码质量分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性（v2.0 τ 增强版，整合性能优化+冗余检测）
   path: .claude/skills/code-optimizer/SKILL.md
-  core_ability: 静态代码质量分析、代码模式识别、性能分析、优化建议、自动化代码重构、优化验证、文档维护
-  match_keywords: 优化代码, 重构代码, 更好的实现方式, 性能优化, 提高代码质量, 改进这个函数, 简化这段代码, 消除代码重复
-  status: 启用
-
-- name: code-redundancy-checker
-  desc: 独立检测代码冗余，识别重复代码、死代码、冗余导入等，为代码优化提供精准的冗余清单
-  path: .claude/skills/code-redundancy-checker/SKILL.md
-  core_ability: 文件内重复代码检测、跨文件重复代码检测、死代码检测、冗余导入检测、冗余报告生成
-  match_keywords: 检查代码冗余, 检测重复代码, 找出死代码, 清理未使用代码, 冗余导入, 代码重复率
+  core_ability: 静态代码质量分析、代码模式识别、性能分析、冗余检测、优化建议、自动化代码重构、优化验证、文档维护
+  match_keywords: 优化代码, 重构代码, 更好的实现方式, 性能优化, 提高代码质量, 改进这个函数, 简化这段代码, 消除代码重复, 检查代码冗余, 检测重复代码, 找出死代码, 清理未使用代码, 冗余导入, 代码重复率
   status: 启用
 
 - name: code-style-generator
@@ -61,9 +54,9 @@ version: 1.2
   status: 启用
 
 - name: bug-solver
-  desc: 系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证，完整记录和追溯整个debug过程
+  desc: 系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证，完整记录和追溯整个debug过程（v1.3 整合韬定律，τ 控制、任务折叠、技能栈叠、协同设计、模式复用）
   path: .claude/skills/bug-solver/SKILL.md
-  core_ability: 问题分类(Bug Triage)、问题识别、代码分析、根因定位、安全修复、修复验证、测试建议
+  core_ability: 问题分类(Bug Triage)、问题识别、代码分析、根因定位、安全修复、修复验证、测试建议、τ 动态预算、Task Folding、Skill Stacking、Pattern Mining
   match_keywords: 解决bug, 修复错误, 调试问题, 定位问题, debug, bug修复, 错误分析
   status: 启用
 
@@ -82,11 +75,11 @@ version: 1.2
   status: 启用
 
 - name: performance-optimizer
-  desc: 专注于前端性能优化，通过性能分析、基准测试生成和优化验证，系统化地提升应用性能（首屏加载、渲染性能、资源体积等）
-  path: .claude/skills/performance-optimizer/SKILL.md
+  desc: "[已合并至 code-optimizer v2.0] 专注于前端性能优化，通过性能分析、基准测试生成和优化验证，系统化地提升应用性能（首屏加载、渲染性能、资源体积等）。功能已整合进 code-optimizer，无需单独使用。"
+  path: .claude/skills/code-optimizer/SKILL.md
   core_ability: 性能数据分析、基准测试生成、优化方案设计、优化方案应用、优化效果验证
   match_keywords: 性能优化, 首屏加载优化, 渲染性能, 资源体积, 加载速度优化, Web Vitals, Lighthouse
-  status: 启用
+  status: 已合并
 
 - name: security-scanner
   desc: 系统化地扫描前端项目中的安全漏洞，包括XSS、CSRF、依赖漏洞、敏感信息泄露等，提供修复建议
@@ -126,13 +119,13 @@ version: 1.2
 
 ---
 
-## 主技能统计（v1.2）
+## 主技能统计（v1.3）
 
 | 类别 | 数量 |
 |------|------|
-| 总主技能数 | 15 |
+| 总主技能数 | 14 |
 | Reasoner（调度器） | 2（orchestrator, orchestrator-pro）|
-| 功能主技能 | 13 |
+| 功能主技能 | 12 |
 
 ---
 
@@ -144,5 +137,5 @@ version: 1.2
 
 ---
 
-**版本**: 1.2
-**最后更新**: 2026-06-03
+**版本**: 1.3
+**最后更新**: 2026-06-04

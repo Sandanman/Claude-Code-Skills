@@ -1,9 +1,13 @@
 ---
 name: root-cause-analysis
-description: 基于代码分析报告和错误日志，定位bug的根本原因，明确导致问题的代码行和逻辑缺陷。在代码分析后执行
+description: 基于代码分析报告和错误日志，定位bug的根本原因，明确导致问题的代码行和逻辑缺陷。在代码分析后执行。v1.3 整合韬定律（τ 控制、技能栈叠）。
 ---
 
-# Root Cause Analysis 原子Skill
+# Root Cause Analysis 原子Skill v1.3（τ 增强版）
+
+## 版本历史
+- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注
+- v1.0（初始版本）
 
 ## 概述
 基于代码分析报告和错误日志，定位bug的根本原因，明确导致问题的代码行和逻辑缺陷。
@@ -85,3 +89,22 @@ code-analysis输出的代码分析报告
 
 ## 原子skill位置
 ./.claude/skills/bug-solver/atomic-skills/root-cause-analysis/SKILL.md
+
+---
+
+## Skill Stacking & τ-Weight（v1.3）
+
+### τ-Weight
+从 bug-solver 主 SKILL.md 的 7步 τ 分配表继承。统一 20%（simple/moderate/complex）。
+
+### Skill Stacking 上下文键
+| 键名 | 类型 | 说明 |
+|------|------|------|
+| `analysis_result` | required_keys | 从 task_skill.md 读取，可疑代码段列表 |
+| `root_cause` | output_keys | 根因 + 证据链 + 代码行 |
+
+### 执行日记写入（必须）
+本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
+
+### 折叠标记
+[可折叠] - 可与 code-analysis 合并（moderate，文件 < 3）。

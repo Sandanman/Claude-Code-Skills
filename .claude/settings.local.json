@@ -29,7 +29,9 @@
       "Bash(grep -r $CLAUDE_PROJECT_DIR/.claude/skills/tasks/history $CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
       "WebSearch",
       "WebFetch(domain:docs.anthropic.com)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(curl -s \"https://meet-dmin.pages.dev/static/js/main.cfaade6b.chunk.js\" -L -o /tmp/sip_main.js)",
+      "Bash(curl -s \"https://meet-dmin.pages.dev/static/js/main.cfaade6b.chunk.js\")"
     ]
   }
 }

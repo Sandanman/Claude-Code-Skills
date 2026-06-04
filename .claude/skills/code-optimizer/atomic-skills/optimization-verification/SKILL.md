@@ -1,21 +1,44 @@
 ---
 name: optimization-verification
-description: 验证代码重构后的优化效果，确保功能正确性，评估性能提升和质量指标改善情况。在代码重构后执行
+description: 验证优化效果（质量 + 性能双维度），对比 Before/After 指标，生成 PASS/FAIL 判定。Task Folding 合并了 code-optimizer.verification 和 performance-optimizer.verification，统一验证代码质量改善和性能指标改善。
+version: 2.0
+merged_from:
+  - optimization-verification (from code-optimizer)
+  - optimization-verification (from performance-optimizer)
+tau_layer: output
 ---
 
 # Optimization Verification 原子Skill
 
+> Task Folding 合并了两个 optimizer 的 verification，统一验证代码质量改善和性能指标改善。
+
 ## 概述
-验证代码重构后的优化效果，确保功能正确性，评估性能提升和质量指标改善情况。
+验证优化后的代码质量改善和性能指标改善，生成 Before/After 对比报告和 PASS/FAIL 判定。覆盖功能正确性验证（来自 code-optimizer）和性能指标对比（来自 performance-optimizer）。
 
 ## 核心能力
-- 功能正确性验证（单元测试、集成测试）
-- 性能对比分析（执行时间、内存占用、渲染性能）
-- 代码质量指标对比（复杂度、重复率）
+**功能正确性验证**：
+- 单元测试和集成测试
 - 回归测试（确保未破坏现有功能）
+- 语法正确性检查（ESLint + 构建测试）
+
+**代码质量对比**：
+- 圈复杂度对比（Before/After）
+- 认知复杂度对比
+- 重复代码率对比
+- 异味数量对比
+- 安全风险检查
+
+**性能指标对比（来自 performance-optimizer）**：
+- Lighthouse Score 对比（Before/After）
+- Web Vitals 对比（LCP/FCP/CLS/TBT）
+- Bundle Size 对比（优化前后体积）
+- 渲染性能对比（DevTools Timeline）
+- PASS/FAIL 判定（基于阈值）
 
 ## 输入
-code-refactoring输出的代码重构报告
+- `code-optimization` 输出的代码重构报告和已应用的变更列表
+- `metrics_baseline` 来自共享上下文的优化前性能基线快照
+- `benchmarks` 基准测试配置（Before 基线快照）
 
 ## 输出
 优化验证报告：
@@ -108,7 +131,7 @@ code-refactoring输出的代码重构报告
 7. 输出完整的验证报告
 
 ## 依赖关系
-- 依赖：code-refactoring（必须有完整的代码重构报告）
+- 依赖：code-optimization（必须有完整的优化方案应用报告）
 - 被依赖：documentation-update
 
 ## 完成标准
@@ -120,7 +143,7 @@ code-refactoring输出的代码重构报告
 6. 输出完整的验证报告
 
 ## 错误处理
-- **功能测试失败**：暂停，提示返回code-refactoring修复
+- **功能测试失败**：暂停，提示返回code-optimization修复
 - **性能未改善**：如实记录，分析原因
 - **质量指标未达标**：如实记录，提示可能需要更多优化
 
@@ -131,4 +154,4 @@ code-refactoring输出的代码重构报告
 - 保持客观，如实记录结果
 
 ## 原子skill位置
-./.claude/skills/code-optimizer/atomic-skills/optimization-verification/SKILL.md
+`.claude/skills/code-optimizer/atomic-skills/optimization-verification/SKILL.md`

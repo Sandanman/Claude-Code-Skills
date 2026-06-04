@@ -1,9 +1,9 @@
-# 全局技能注册表（原子技能详情）v1.2
+# 全局技能注册表（原子技能详情）v1.3
 
-> 本文件按主技能分组，记录各主技能对应的原子技能详情（依赖关系、完成标准等）。
+> 本文件按主技能分组，记录各主技能对应的原子技能详情（依赖关系、完成标准、τ-weight 等）。
 > 主技能索引请查看 `skills_register.md`。
 
-version: 1.2
+version: 1.3
 说明：
 1. 原子技能仅供对应主技能读取，用于生成 task_skill.md
 2. 所有原子技能需在本文件注册，未注册技能不允许被主技能选择和执行
@@ -11,7 +11,7 @@ version: 1.2
 
 ---
 
-## 1. code-generator 原子技能
+## 1. code-generator 原子技能（v1.3 τ 增强版）
 
 ```yaml
 atomic_skills:
@@ -57,41 +57,51 @@ atomic_skills:
 
 ## 2. code-optimizer 原子技能
 
+> τ 增强版（v2.0），通过 Task Folding 将原来 13 个原子技能压缩为 7 个。
+
 ```yaml
 atomic_skills:
-  - name: code-quality-analysis
-    core_ability: 对目标代码进行静态分析，系统化地评估代码质量，识别问题点，为后续优化提供数据基础
+  - name: quality-and-perf-analysis          # Task Folding：合并 code-quality-analysis + performance-data-collection
+    core_ability: 并行执行代码质量静态分析和性能数据收集，统一输出质量报告和性能基线
     depend: 无
     status: 启用
-  - name: pattern-recognition
-    core_ability: 基于代码质量分析报告，识别具体的可优化模式，定位代码中的反模式和低效实现
-    depend: code-quality-analysis
+    tau_layer: perception
+  - name: redundancy-check                   # 感知层冗余检测（三个原子技能 Task Folding 合并）
+    core_ability: 深度检测代码冗余（重复代码 + 死代码 + 冗余导入），输出 severity 分级和 fix-suggestion
+    depend: 无
     status: 启用
-  - name: performance-analysis
-    core_ability: 专门分析代码性能问题，识别性能热点、渲染瓶颈、计算复杂度问题，提供性能优化方向
-    depend: code-quality-analysis
+    tau_layer: perception
+    parallel_with: quality-and-perf-analysis
+  - name: pattern-and-benchmark-recognition  # Task Folding：合并 pattern-recognition + benchmark-generation，并行执行
+    core_ability: 识别可优化代码模式和生成性能基准测试用例
+    depend: quality-and-perf-analysis, redundancy-check
     status: 启用
-  - name: improvement-suggestion
-    core_ability: 为每个优化模式生成具体的重构建议和优化方案，提供多个选择供用户决策
-    depend: pattern-recognition, performance-analysis
+    tau_layer: analysis
+  - name: optimization-proposal              # Task Folding：合并 improvement-suggestion + optimization-strategy-design
+    core_ability: 基于模式识别和基准测试，生成优化方案（激进/保守/折中），含 diff 格式代码修改
+    depend: pattern-and-benchmark-recognition
     status: 启用
-  - name: code-refactoring
-    core_ability: 根据改进建议报告中选择的优化方案，实际修改代码，生成新的代码版本
-    depend: improvement-suggestion
+    tau_layer: generation
+  - name: code-optimization                  # Task Folding：合并 code-refactoring + optimization-application
+    core_ability: 应用优化方案（代码重构 + 构建配置优化），生成回滚脚本
+    depend: optimization-proposal
     status: 启用
-  - name: optimization-verification
-    core_ability: 验证代码重构后的优化效果，确保功能正确性，评估性能提升和质量指标改善情况
-    depend: code-refactoring
+    tau_layer: generation
+  - name: optimization-verification           # 合并：code-optimizer.verification + performance-optimizer.verification
+    core_ability: 验证优化效果（质量 + 性能双维度），生成 Before/After 对比报告和 PASS/FAIL 判定
+    depend: code-optimization
     status: 启用
+    tau_layer: output
   - name: documentation-update
-    core_ability: 根据代码优化结果，更新相关文档（注释、README、API文档），确保文档与代码保持同步
+    core_ability: 更新相关文档（组件注释、README、API 文档），确保文档与代码保持同步
     depend: optimization-verification
     status: 启用
+    tau_layer: output
 ```
 
 ---
 
-## 3. bug-solver 原子技能
+## 3. bug-solver 原子技能（v1.3 τ 增强版）
 
 ```yaml
 atomic_skills:
@@ -122,26 +132,6 @@ atomic_skills:
   - name: test-suggestion
     core_ability: 基于修复验证结果，为修复的bug建议测试用例，覆盖正常路径和异常场景，防止问题再次发生
     depend: fix-verification
-    status: 启用
-```
-
----
-
-## 4. code-redundancy-checker 原子技能
-
-```yaml
-atomic_skills:
-  - name: duplicate-code-detection
-    core_ability: 检测文件内和跨文件的重复代码
-    depend: 无
-    status: 启用
-  - name: unused-code-detection
-    core_ability: 检测死代码（未使用的export、函数、变量、import）
-    depend: 无
-    status: 启用
-  - name: redundancy-report
-    core_ability: 汇总检测结果，生成可操作的冗余报告
-    depend: duplicate-code-detection, unused-code-detection
     status: 启用
 ```
 
@@ -280,32 +270,17 @@ atomic_skills:
 
 ## 8. performance-optimizer 原子技能
 
+> **[已合并至 code-optimizer v2.0]** 以下技能已整合进 code-optimizer，通过 Task Folding 压缩为 6 个原子技能。功能不再单独使用，统一由 code-optimizer 调度。
+
 ```yaml
 atomic_skills:
-  - name: performance-data-collection
-    core_ability: 收集性能数据（Lighthouse、Chrome DevTools指标、Web Vitals）
-    depend: 无
-    status: 启用
-  - name: performance-analysis
-    core_ability: 分析性能数据，识别性能瓶颈（加载、渲染、资源体积）
-    depend: performance-data-collection
-    status: 启用
-  - name: benchmark-generation
-    core_ability: 生成性能基准测试用例，量化优化前后的性能差异
-    depend: performance-analysis
-    status: 启用
-  - name: optimization-strategy-design
-    core_ability: 设计性能优化策略（代码分割、懒加载、缓存、压缩等）
-    depend: performance-analysis, benchmark-generation
-    status: 启用
-  - name: optimization-application
-    core_ability: 应用性能优化策略，生成优化后的代码
-    depend: optimization-strategy-design
-    status: 启用
-  - name: optimization-verification
-    core_ability: 验证优化效果，对比优化前后的性能指标
-    depend: optimization-application
-    status: 启用
+  # 以下已合并（仅作历史记录）:
+  - name: performance-data-collection  → 合并入 quality-and-perf-analysis
+  - name: performance-analysis          → 合并入 quality-and-perf-analysis
+  - name: benchmark-generation          → 合并入 pattern-and-benchmark-recognition
+  - name: optimization-strategy-design  → 合并入 optimization-proposal
+  - name: optimization-application      → 合并入 code-optimization
+  - name: optimization-verification    → 合并入 optimization-verification
 ```
 
 ---
@@ -442,26 +417,40 @@ atomic_skills:
 
 ---
 
-## 原子技能统计（v1.2）
+## 14. code-redundancy-checker 原子技能
 
-| 主技能 | 原子技能数 |
-|--------|----------|
-| code-generator | 9 |
-| code-optimizer | 7 |
-| bug-solver | 7 |
-| code-redundancy-checker | 3 |
-| code-style-generator | 5 |
-| scan-object-info | 7（v1.2 优化版）|
-| requirement-generator | 10 |
-| performance-optimizer | 6 |
-| security-scanner | 4 |
-| test-generator | 4 |
-| doc-generator | 4 |
-| git-assistant | 7（τ 增强版）|
-| deploy-helper | 4 |
-| **合计** | **77** |
+> **[已合并至 code-optimizer v2.0]** 以下技能已整合进 code-optimizer，通过 Task Folding 将原来 3 个原子技能合并。功能不再单独使用，统一由 code-optimizer 调度。
+
+```yaml
+atomic_skills:
+  # 以下已合并（仅作历史记录）:
+  - name: duplicate-code-detection  → 合并入 redundancy-check
+  - name: unused-code-detection     → 合并入 redundancy-check
+  - name: redundancy-report         → 合并入 redundancy-check
+```
 
 ---
 
-**版本**: 1.2
-**最后更新**: 2026-06-03
+## 原子技能统计（v1.3）
+
+| 主技能 | 原子技能数 |
+|--------|----------|
+| code-generator | 9（v1.3 τ 增强版）|
+| code-optimizer | 7（v2.0 τ 增强版，整合 performance-optimizer + 冗余检测）|
+| bug-solver | 7（v1.3 τ 增强版）|
+| code-style-generator | 5 |
+| scan-object-info | 7（v1.2 优化版）|
+| requirement-generator | 10 |
+| performance-optimizer | 0（已合并至 code-optimizer v2.0）|
+| security-scanner | 4 |
+| test-generator | 4 |
+| doc-generator | 4 |
+| git-assistant | 7（τ 增强版，整合 git-helper）|
+| deploy-helper | 4 |
+| code-redundancy-checker | 0（已合并至 code-optimizer v2.0）|
+| **合计** | **61（12 个活跃主技能，2 个已合并）** |
+
+---
+
+**版本**: 1.3
+**最后更新**: 2026-06-04

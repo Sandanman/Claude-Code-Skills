@@ -1,4 +1,4 @@
-# Orchestrator Pro 配置参数（v1.0）
+# Orchestrator Pro 配置参数（v1.1）
 
 本文档定义 τ 增强相关的所有配置参数。配置基于华为韬定律原理，性能 ∝ 1/τ。
 
@@ -126,9 +126,9 @@ FOLD_MERGE_CANDIDATES = {
 ```python
 STACK_LAYERS = {
     1: {"name": "感知层", "skills": ["scan-object-info"]},
-    2: {"name": "分析层", "skills": ["code-optimizer", "code-redundancy-checker", "security-scanner"]},
+    2: {"name": "分析层", "skills": ["code-optimizer", "security-scanner"]},
     3: {"name": "生成层", "skills": ["code-generator", "test-generator", "doc-generator"]},
-    4: {"name": "输出层", "skills": ["git-helper", "deploy-helper"]},
+    4: {"name": "输出层", "skills": ["git-assistant", "deploy-helper"]},
 }
 STACK_MAX_DEPTH = 4
 ```
@@ -275,6 +275,6 @@ TAU_EFFICIENCY_CONFIG = {
 
 ---
 
-**版本**: 1.0
-**最后更新**: 2026-06-02
+**版本**: 1.1
+**最后更新**: 2026-06-04
 **基于**: 华为韬定律 × Orchestrator v1.2

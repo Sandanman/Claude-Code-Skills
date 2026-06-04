@@ -28,11 +28,10 @@
 │   ├── code-generator/         [9原子skill]  # 代码生成（+multi-scenario-adapter）
 │   ├── code-optimizer/         [7原子skill]  # 代码优化（+performance-analysis）
 │   ├── bug-solver/             [7原子skill]  # Bug修复（+bug-triage）
-│   ├── code-redundancy-checker/[3原子skill]  # 冗余检测
 │   ├── code-style-generator/   [5原子skill]  # 代码风格
 │   ├── requirement-generator/  [10原子skill]# 需求标准化
 │   ├── scan-object-info/       [7原子skill]  # 项目扫描（v1.2韬定律优化版）
-│   ├── performance-optimizer/  [6原子skill] # 性能优化 [新增]
+│   ├── performance-optimizer/  [已合并至code-optimizer] # 性能优化（τ增强版）
 │   ├── security-scanner/       [4原子skill]  # 安全扫描 [新增]
 │   ├── test-generator/        [4原子skill]  # 测试生成 [新增]
 │   ├── doc-generator/          [4原子skill]  # 文档生成 [新增]
@@ -62,18 +61,17 @@
 | # | 主Skill | 原子数 | 改进 | v1.0原子数 |
 |---|---------|--------|------|-----------|
 | 1 | code-generator | 9 | +multi-scenario-adapter | 8 |
-| 2 | code-optimizer | 7 | +performance-analysis | 6 |
+| 2 | code-optimizer | 7 | +τ增强+冗余检测合并 | 6 |
 | 3 | bug-solver | 7 | +bug-triage | 6 |
-| 4 | code-redundancy-checker | 3 | 增强severity+fix-suggestion | 3 |
-| 5 | code-style-generator | 5 | +TS/Vue3/React支持 | 5 |
+| 4 | code-style-generator | 5 | +TS/Vue3/React支持 | 5 |
 | 6 | requirement-generator | 10 | 增强quality.score+flow类型 | 10 |
 | 7 | scan-object-info | 9 | +置信度+并行执行 | 9 |
-| 8 | performance-optimizer | 6 | **新增** | 0 |
+| 8 | performance-optimizer | 0 | **已合并至 code-optimizer v2.0** | 0 |
 | 9 | security-scanner | 4 | **新增** | 0 |
 | 10 | test-generator | 4 | **新增** | 0 |
 | 11 | doc-generator | 4 | **新增** | 0 |
 | 12 | git-assistant | 7 | **整合git-helper，τ增强** | 4 |
-| 13 | deploy-helper | 4 | **新增** | 0 | | 4 | **新增** | 0 |
+| 13 | deploy-helper | 4 | **新增** | 0 |
 
 ---
 
@@ -116,8 +114,7 @@
 ## 新增主Skill详情
 
 ### performance-optimizer（性能优化）
-**触发关键词**：性能优化、首屏加载优化、渲染性能、Web Vitals、Lighthouse
-**6个原子skill**：performance-data-collection → performance-analysis → benchmark-generation → optimization-strategy-design → optimization-application → optimization-verification
+> **[已合并至 code-optimizer v2.0]** 功能已整合进 code-optimizer，无需单独使用。通过 Task Folding 压缩为 6 个原子技能，τ 效率提升约 30%。
 
 ### security-scanner（安全扫描）
 **触发关键词**：安全扫描、安全漏洞、XSS、CSRF、依赖安全、敏感信息检测
@@ -163,12 +160,6 @@
 - 7步流程（原6步）
 - bug-identification 依赖 bug-triage（原无依赖）
 - 引入bug分类体系（critical/high/medium/low）
-
-### code-redundancy-checker（冗余检测，v1.0 → v1.1）
-**改进**：
-- 支持Vue SFC三段检测、TypeScript类型重复检测
-- 引入severity等级（HIGH/MEDIUM/LOW）
-- redundancy-report 增加fix-suggestion
 
 ### code-style-generator（风格生成，v1.0 → v1.1）
 **改进**：

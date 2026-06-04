@@ -1,9 +1,9 @@
 ---
 name: code-generation
-description: 根据设计文档和 CODE_STYLE.md 规范，生成具体代码文件，支持 Vue/React/JavaScript/TypeScript 等多种类型。在 code-design 之后执行。
+description: 根据设计文档和 CODE_STYLE.md 规范，生成具体代码文件，支持 Vue/React/JavaScript/TypeScript 等多种类型。在 code-design 之后执行。v1.3 整合韬定律（τ 控制、技能栈叠）。
 ---
 
-# Code Generation 原子Skill v1.2
+# Code Generation 原子Skill v1.3（τ 增强版）
 
 ## 概述
 
@@ -306,3 +306,32 @@ export interface TypeName {
 ## 原子skill位置
 
 `.claude/skills/code-generator/atomic-skills/code-generation/SKILL.md`
+
+## 版本历史
+- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注、Task Folding 折叠组标注
+- v1.2
+- v1.0（初始版本）
+
+---
+
+## Skill Stacking & τ-Weight（v1.3）
+
+### τ-Weight
+| 场景 | τ-Weight |
+|------|----------|
+| 场景1（标准输入） | 30% |
+| 场景2（简单需求） | 22% |
+| 场景3（复杂需求） | 22% |
+
+### Skill Stacking 上下文键
+| 键名 | 类型 | 说明 |
+|------|------|------|
+| code_spec | required_keys | 从 task_skill.md 读取（由 code-design 写入，优先从上下文读取） |
+| tech_stack | required_keys | 从 task_skill.md 读取（由 tech-stack-detection 写入，优先从上下文读取） |
+| generated_code | output_keys | 代码文件列表 + 文件内容摘要 + 注释统计 |
+
+### 执行日记写入（必须）
+本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
+
+### Task Folding 标记
+**[核心·可折叠]** — 本 skill 禁止完全折叠，但可与 code-design 合并为 Group B 折叠组，在 τ_remaining < 40% 且场景1 时合并设计+生成两步。

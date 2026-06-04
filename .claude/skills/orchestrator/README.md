@@ -202,11 +202,11 @@ code-style-generator 执行 5 个原子skill
     ↓
 历史检索 → 无相似任务
     ↓
-匹配主skill → code-optimizer + code-redundancy-checker（多skill组合）
+匹配主skill → code-optimizer（多skill组合）
     ↓
-协同生成 task_skill.md → 11个原子skill（6+3+2）
+协同生成 task_skill.md → 10个原子skill（7+3）
     ↓
-🚀 任务开始 | code-optimizer + code-redundancy-checker | 共11个技能
+🚀 任务开始 | code-optimizer | 共10个技能
     ↓
 执行并行层（duplicate-code-detection 和 code-quality-analysis 可并行）
     ↓

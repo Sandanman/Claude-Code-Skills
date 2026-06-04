@@ -1,9 +1,9 @@
 ---
 name: requirement-reader
-description: 读取和解析标准化的需求文档（requirements.json），智能识别需求复杂度，简单需求直接处理，复杂需求建议先执行 requirement-generator。作为 code-generator 的第二个原子skill执行（在 multi-scenario-adapter 之后）。
+description: 读取和解析标准化的需求文档（requirements.json），智能识别需求复杂度，简单需求直接处理，复杂需求建议先执行 requirement-generator。作为 code-generator 的第二个原子skill执行（在 multi-scenario-adapter 之后）。v1.3 整合韬定律（τ 控制、技能栈叠）。
 ---
 
-# Requirement Reader 原子Skill v1.2
+# Requirement Reader 原子Skill v1.3（τ 增强版）
 
 ## 概述
 
@@ -188,3 +188,31 @@ code-generator → requirement-reader（读取）
 ## 原子skill位置
 
 `.claude/skills/code-generator/atomic-skills/requirement-reader/SKILL.md`
+
+## 版本历史
+- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注、Task Folding 折叠组标注
+- v1.2
+- v1.0（初始版本）
+
+---
+
+## Skill Stacking & τ-Weight（v1.3）
+
+### τ-Weight
+| 场景 | τ-Weight |
+|------|----------|
+| 场景1（标准输入） | 5% |
+| 场景2（简单需求） | 5% |
+| 场景3（复杂需求） | 5% |
+
+### Skill Stacking 上下文键
+| 键名 | 类型 | 说明 |
+|------|------|------|
+| scenario_decision | required_keys | 从 task_skill.md 读取场景类型（由 multi-scenario-adapter 写入） |
+| requirements_data | output_keys | 标准化需求结构（含 modules、flow、ui_components、api_spec） |
+
+### 执行日记写入（必须）
+本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
+
+### Task Folding 标记
+**[核心·不折叠]** — 本 skill 为需求读取起点，禁止折叠，即使 τ_remaining 极低也必须执行以确保数据源正确读取。

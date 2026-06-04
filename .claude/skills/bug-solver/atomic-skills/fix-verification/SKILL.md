@@ -1,9 +1,13 @@
 ---
 name: fix-verification
-description: 验证修复方案是否真正解决了问题，并检查是否引入了新的问题。在修复生成后执行
+description: 验证修复方案是否真正解决了问题，并检查是否引入了新的问题。在修复生成后执行。v1.3 整合韬定律（τ 控制、技能栈叠）。
 ---
 
-# Fix Verification 原子Skill
+# Fix Verification 原子Skill v1.3（τ 增强版）
+
+## 版本历史
+- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注
+- v1.0（初始版本）
 
 ## 概述
 验证修复方案是否真正解决了问题，并检查是否引入了新的问题。
@@ -82,3 +86,27 @@ fix-generation输出的修复方案文档
 
 ## 原子skill位置
 ./.claude/skills/bug-solver/atomic-skills/fix-verification/SKILL.md
+
+---
+
+## Skill Stacking & τ-Weight（v1.3）
+
+### τ-Weight
+从 bug-solver 主 SKILL.md 的 7步 τ 分配表继承。
+| 复杂度 | τ-Weight |
+|--------|----------|
+| simple | 10% |
+| moderate | 12% |
+| complex | 10% |
+
+### Skill Stacking 上下文键
+| 键名 | 类型 | 说明 |
+|------|------|------|
+| `fix_plan` | required_keys | 从 task_skill.md 读取，修复方案列表 |
+| `verification_result` | output_keys | 通过/失败/部分成功 |
+
+### 执行日记写入（必须）
+本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
+
+### 折叠标记
+[核心·不折叠] - fix-verification 是核心验证步骤，禁止折叠，必须独立执行。

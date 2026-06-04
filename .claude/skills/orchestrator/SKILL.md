@@ -501,7 +501,6 @@ def reflection_loop(task_skill, max_attempts=3):
 │   │   └── atomic-skills/...
 │   ├── code-optimizer/                   # 改进：+performance-analysis
 │   ├── bug-solver/                       # 改进：+bug-triage
-│   ├── code-redundancy-checker/
 │   ├── code-style-generator/
 │   ├── requirement-generator/
 │   ├── scan-object-info/

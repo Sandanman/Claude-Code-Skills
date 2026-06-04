@@ -1,9 +1,13 @@
 ---
 name: bug-identification
-description: 收集和整理用户提供的bug信息，基于bug-triage分类结果创建结构化的问题描述文档，为后续分析提供基础。在bug-triage完成后执行
+description: 收集和整理用户提供的bug信息，基于bug-triage分类结果创建结构化的问题描述文档，为后续分析提供基础。在bug-triage完成后执行。v1.3 整合韬定律（τ 控制、技能栈叠）。
 ---
 
-# Bug Identification 原子Skill
+# Bug Identification 原子Skill v1.3（τ 增强版）
+
+## 版本历史
+- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注
+- v1.0（初始版本）
 
 ## 概述
 收集和整理用户提供的bug信息，基于bug-triage分类结果创建结构化的问题描述文档，为后续分析提供基础。
@@ -105,3 +109,22 @@ TypeError: Cannot read property 'login' of undefined
 
 ## 原子skill位置
 ./.claude/skills/bug-solver/atomic-skills/bug-identification/SKILL.md
+
+---
+
+## Skill Stacking & τ-Weight（v1.3）
+
+### τ-Weight
+从 bug-solver 主 SKILL.md 的 7步 τ 分配表继承。统一 15%（simple/moderate/complex）。
+
+### Skill Stacking 上下文键
+| 键名 | 类型 | 说明 |
+|------|------|------|
+| `triage_result` | required_keys | 从 task_skill.md 读取，分类结果 |
+| `bug_report` | output_keys | 结构化问题描述 + 复现步骤 + 期望/实际对比 |
+
+### 执行日记写入（必须）
+本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
+
+### 折叠标记
+[可折叠] - simple 复杂度且错误信息完整时，可折叠进 code-analysis。

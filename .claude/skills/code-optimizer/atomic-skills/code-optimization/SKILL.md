@@ -1,22 +1,40 @@
 ---
-name: code-refactoring
-description: 根据改进建议报告中选择的优化方案，实际修改代码，生成新的代码版本，确保功能正确性和代码可编译性。在改进建议确定后执行
+name: code-optimization
+description: 应用优化方案，生成优化后代码（diff 格式），包含回滚脚本。Task Folding 合并了 code-refactoring（代码重构）和 optimization-application（策略应用），统一执行代码级和构建配置级修改。
+version: 2.0
+merged_from:
+  - code-refactoring (from code-optimizer)
+  - optimization-application (from performance-optimizer)
+tau_layer: generation
 ---
 
-# Code Refactoring 原子Skill
+# Code Optimization 原子Skill
+
+> Task Folding 合并了 `code-refactoring` 和 `optimization-application`，统一执行代码级和构建配置级修改。
 
 ## 概述
-根据改进建议报告中选择的优化方案，实际修改代码，生成新的代码版本，确保功能正确性和代码可编译性。
+根据 `optimization-proposal` 输出的优化方案，统一执行代码重构和构建配置优化，生成优化后的代码，确保功能正确性和构建可用性。
 
 ## 核心能力
-- 应用具体的代码修改建议
-- 生成diff格式的代码变更对比
-- 保留原始代码备份
-- 确保语法正确性
-- 支持多种文件类型
+**代码级修改（来自 code-refactoring）**：
+- 应用具体的代码修改建议（diff 格式）
+- 保留原始代码备份（.bak 文件）
+- 确保语法正确性，支持多种文件类型（Vue/React/TS）
+
+**构建配置修改（来自 optimization-application）**：
+- 构建配置优化（Vite/Webpack：代码分割、Tree-shaking、压缩配置）
+- 路由懒加载（静态 import → 动态 import）
+- 组件懒加载（defineAsyncComponent）
+- 依赖按需引入（全量引入 → 按需引入）
+- 资源优化配置（图片压缩、WebP、字体子集化）
+- 生成回滚脚本（一键撤销所有变更）
 
 ## 输入
-improvement-suggestion输出的改进建议报告，包含用户选择的优化方案
+`optimization-proposal` 输出的优化方案文档，包含：
+- 用户选择的优化方案（激进/保守/折中）
+- 代码修改 diff
+- 构建配置变更清单
+- 预期改善指标
 
 ## 输出
 代码重构报告：
@@ -123,8 +141,8 @@ const props = defineProps({
 8. 输出完整的重构报告
 
 ## 依赖关系
-- 依赖：improvement-suggestion（必须有完整的改进建议报告）
-- 被依赖：optimization-verification
+- 依赖：`optimization-proposal`（必须有完整的优化方案文档）
+- 被依赖：`optimization-verification`
 
 ## 完成标准
 1. 所有选择的优化方案都已应用
@@ -145,4 +163,4 @@ const props = defineProps({
 - 没有引入新依赖
 
 ## 原子skill位置
-./.claude/skills/code-optimizer/atomic-skills/code-refactoring/SKILL.md
+`.claude/skills/code-optimizer/atomic-skills/code-optimization/SKILL.md`

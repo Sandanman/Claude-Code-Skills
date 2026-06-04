@@ -36,7 +36,7 @@ orchestrator-pro（Reasoner，唯一入口）
 用户请求
     ├── "帮我生成代码" / "写一个函数"        → code-generator
     ├── "优化这段代码" / "重构"              → code-optimizer
-    ├── "找出重复代码" / "死代码"            → code-redundancy-checker
+    ├── "找出重复代码" / "死代码"            → code-optimizer（redundancy-check）
     ├── "报错了 / 有 Bug"                   → bug-solver
     ├── "扫描项目技术栈"                    → scan-object-info
     ├── "需求文档 / 需求标准化"              → requirement-generator
@@ -243,7 +243,7 @@ description: <一句话描述>
 
 参考以下现有 Skill 的结构：
 - **简单 Skill（无原子技能）**：`scan-object-info` — 结构清晰，τ 增强字段完整
-- **中等复杂度（3 个原子技能）**：`code-redundancy-checker` — 依赖关系简单
+- **中等复杂度（3 个原子技能）**：`security-scanner` — 依赖关系简单（并行扫描层）
 - **高复杂度（7+ 个原子技能）**：`bug-solver`、`code-generator` — 完整流程图和完成标准
 
 **推荐按复杂度参考对应文件**：
@@ -251,7 +251,7 @@ description: <一句话描述>
 | 复杂度 | 参考文件 | 原子技能数 |
 |--------|---------|-----------|
 | 低（无原子技能） | `scan-object-info/SKILL.md` | 7（含并行设计）|
-| 中（3-5 个原子技能）| `code-redundancy-checker/SKILL.md` | 3 |
+| 中（3-5 个原子技能）| `security-scanner/SKILL.md` | 4 |
 | 高（6+ 个原子技能）| `bug-solver/SKILL.md` | 7 |
 | 最高（多场景路由）| `code-generator/SKILL.md` | 9（含场景路由）|
 
