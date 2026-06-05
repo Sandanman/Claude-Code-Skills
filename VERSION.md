@@ -9,7 +9,7 @@
 
 ### v.1.3.2
 - **日期**: 2026-06-05
-- **提交**: (待提交)
+- **提交**: 7fba0f2
 - **类型**: 小版本升级
 - **变更**:
   - 新增 `personal-code-habits-generator` skill（v1.2 τ 增强版）：从人的角度主动询问用户，生成 CODE_STYLE_PERSONAL.md，与 code-style-generator 形成互补
