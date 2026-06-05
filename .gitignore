@@ -39,3 +39,8 @@ __screenshots__/
 
 test-results/
 playwright-report/
+
+
+# skill文档临时路径
+.claude/skills/requirement-generator/requirement-document
+.claude/skills/skill-analyzer/skill-analyzer-reports
