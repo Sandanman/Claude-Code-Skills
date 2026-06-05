@@ -1,12 +1,15 @@
-# Orchestrator Pro 配置参数（v1.1）
+# Orchestrator Pro 配置参数（v1.4）
 
-本文档定义 τ 增强相关的所有配置参数。配置基于华为韬定律原理，性能 ∝ 1/τ。
+本文档定义 orchestrator-pro v1.4 的所有配置参数。τ 为主标准，Token + Duration 为辅助标准。
+配置基于华为韬定律原理，性能 ∝ 1/τ。
 
 ---
 
-## 1. τ 预算配置
+## 1. 三指标预算配置（v1.4 新增）
 
-### 1.1 三档预算（TAU_BUDGETS）
+### 1.1 τ 预算（主标准）
+
+> τ = duration_ms × 0.5 + tokens × 0.001，用于驱动所有决策。
 
 ```python
 TAU_BUDGETS = {
@@ -40,10 +43,93 @@ TAU_BUDGETS = {
 }
 ```
 
-**τ 档位判断**：
-- `simple`：complexity_score ≤ 3
-- `moderate`：complexity_score 4-6
-- `complex`：complexity_score 7-10
+### 1.2 Token 预算（辅助标准 A，v1.4 新增）
+
+> Token 独立追踪，与成本对齐，用于观测和告警。权重分配与 τ 完全同步。
+> 注意：Token 预算与 LLM API 定价直接对齐，moderate 档约 $0.80。
+
+```python
+TOKEN_BUDGETS = {
+    "simple": {
+        "total":    40000,
+        "intent":   4000,  # 10.0%
+        "match":    6000,  # 15.0%
+        "plan":     2000,  # 5.0%
+        "exec":    24000,  # 60.0%
+        "validate": 2000,  # 5.0%
+        "archive":  2000,  # 5.0%
+        # 预估成本（以 $0.01/1K token 计）
+        "estimated_cost": 0.40,
+    },
+    "moderate": {
+        "total":    80000,
+        "intent":   8000,  # 10.0%
+        "match":   12000,  # 15.0%
+        "plan":     4000,  # 5.0%
+        "exec":    48000,  # 60.0%
+        "validate": 4000,  # 5.0%
+        "archive":  4000,  # 5.0%
+        "estimated_cost": 0.80,
+    },
+    "complex": {
+        "total":   200000,
+        "intent":  20000,  # 10.0%
+        "match":   30000,  # 15.0%
+        "plan":    10000,  # 5.0%
+        "exec":   120000,  # 60.0%
+        "validate": 10000,  # 5.0%
+        "archive":  10000,  # 5.0%
+        "estimated_cost": 2.00,
+    },
+}
+```
+
+### 1.3 Duration 预算（辅助标准 B，v1.4 新增）
+
+> Duration 独立追踪，用于异常检测（死循环、API 阻塞）。权重分配与 τ 完全同步。
+> 注意：执行时间（ms）受网络/模型调度影响，正常范围 < 5ms/token。
+
+```python
+DURATION_BUDGETS = {
+    "simple": {
+        "total":    15000,   # ms
+        "intent":   1500,   # 10.0%
+        "match":    2250,   # 15.0%
+        "plan":     750,    # 5.0%
+        "exec":     9000,   # 60.0%
+        "validate":  750,   # 5.0%
+        "archive":   750,   # 5.0%
+    },
+    "moderate": {
+        "total":    30000,   # ms
+        "intent":   3000,   # 10.0%
+        "match":    4500,   # 15.0%
+        "plan":     1500,   # 5.0%
+        "exec":    18000,   # 60.0%
+        "validate": 1500,   # 5.0%
+        "archive":  1500,   # 5.0%
+    },
+    "complex": {
+        "total":    80000,   # ms
+        "intent":   8000,   # 10.0%
+        "match":   12000,   # 15.0%
+        "plan":     4000,   # 5.0%
+        "exec":    48000,   # 60.0%
+        "validate": 4000,   # 5.0%
+        "archive":  4000,   # 5.0%
+    },
+}
+```
+
+### 1.4 三档判断（统一）
+
+> 档位由 complexity_score 决定，三套预算同步分配。
+
+| 复杂度 | complexity_score | τ 预算 | Token 预算 | Duration 预算 |
+|--------|-----------------|--------|-----------|-------------|
+| simple | ≤ 3 | 5,000 | 40,000 | 15,000ms |
+| moderate | 4-6 | 15,000 | 80,000 | 30,000ms |
+| complex | 7-10 | 50,000 | 200,000 | 80,000ms |
 
 ### 1.2 τ 测量公式
 
@@ -56,12 +142,43 @@ def measure_tau(duration_ms: float, tokens: int) -> float:
     return duration_ms * 0.5 + tokens * 0.001
 ```
 
-### 1.3 τ 预警阈值
+### 1.3 三指标预警阈值（v1.4 新增）
+
+#### τ 预警阈值（主标准，驱动所有决策）
 
 ```python
-TAU_WARNING_THRESHOLD = 0.80   # 80% 预警（⚠️）
+TAU_WARNING_THRESHOLD = 0.80    # 80% 预警（⚠️）
 TAU_CRITICAL_THRESHOLD = 0.95 # 95% 严重警告（🚨）
-TAU_ABORT_THRESHOLD = 1.00    # 100% 终止（⛔）
+TAU_ABORT_THRESHOLD = 1.00     # 100% 终止（⛔）
+```
+
+#### Token 预警阈值（辅助标准 A，观测/告警，不阻断）
+
+```python
+TOKEN_WARNING_THRESHOLD = 0.80    # 80% 预警（⚠️）— 注意上下文窗口限制
+TOKEN_CRITICAL_THRESHOLD = 0.95   # 95% 严重警告（🚨）
+TOKEN_ABORT_THRESHOLD = 1.00      # 100% 终止（⛔）
+# 触发条件：token_consumed / token_budget_total >= threshold
+```
+
+#### Duration 异常检测阈值（辅助标准 B，检测异常延迟）
+
+```python
+DURATION_WARNING_THRESHOLD = 0.80    # 80% 预警
+DURATION_CRITICAL_THRESHOLD = 0.95  # 95% 严重警告
+# ms/token 异常阈值（独立于预算比例）
+LATENCY_WARNING_MSPT = 10.0    # ms/token > 10 → 警告（⚠️）
+LATENCY_CRITICAL_MSPT = 20.0   # ms/token > 20 → 严重（🚨），可能死循环或 API 阻塞
+LATENCY_NORMAL_MSPT = 5.0       # ms/token 正常上限参考值
+# 触发条件：elapsed_ms / tokens >= threshold（tokens > 0 时有效）
+```
+
+#### 综合异常检测（v1.4 新增）
+
+```python
+# τ 充足但 Token/时间偏紧 → 潜在未追踪消耗
+COMPOSITE_ANOMALY_TAU_SUFFICIENT = 0.50  # τ remaining > 50%
+COMPOSITE_ANOMALY_AUX_LOW = 0.30          # token 或 duration remaining < 30%
 ```
 
 ### 1.4 τ 借位优先级
@@ -71,6 +188,7 @@ TAU_BORROW_PRIORITY = ["archive", "validate", "plan", "match", "intent", "exec"]
 # 借位方向：低优先级 → 高优先级
 # validate 可向 exec 借，archive 可向 validate 借
 # exec 不可被借（执行是核心）
+# Token/Duration 不参与借位（独立追踪）
 ```
 
 ---
@@ -263,18 +381,23 @@ TAU_EFFICIENCY_CONFIG = {
 
 ---
 
-## 7. 决策点汇总
+## 7. 决策点汇总（v1.4 新增 D8-D10）
 
-| 决策点 | 触发条件 | 选项数 | 默认行为 |
-|--------|---------|--------|---------|
-| D1 τ 档位 | complexity_score | 3 | 根据复杂度分配 |
-| D2 Task Folding | τ_remaining<30% + depth>3 | 2 | 折叠 |
-| D3 Pattern 复用 | similarity ≥ 0.6 | 2 | 复用 |
-| D4 τ 借位 | step τ 超预算 | 2 | 借位 |
-| D5 紧急折叠 | τ_remaining < skill_tau × 0.5 | 3 | 跳过/降级/继续 |
+| 决策点 | 触发条件 | 选项数 | 默认行为 | 标准类型 |
+|--------|---------|--------|---------|---------|
+| D1 τ 档位 | complexity_score | 3 | 根据复杂度分配 | 主标准（τ）|
+| D2 Task Folding | τ_remaining<30% + depth>3 | 2 | 折叠 | 主标准（τ）|
+| D3 Pattern 复用 | similarity ≥ 0.6 | 2 | 复用 | 主标准（τ）|
+| D4 τ 借位 | step τ 超预算 | 2 | 借位 | 主标准（τ）|
+| D5 紧急折叠 | τ_remaining < skill_tau × 0.5 | 3 | 跳过/降级/继续 | 主标准（τ）|
+| D6 反思失败 | 3次反思后偏差≥0.2 | 3 | 输出当前结果 | — |
+| D7 可固化文档 | 检测到可固化文档 | 3 | 仅索引 | — |
+| D8 Token 紧张（辅助）| token_remaining < 20% | 1 | 告警（不阻断，仅观测）| 辅助标准 A |
+| D9 延迟异常（辅助）| ms/token > 10ms | 1 | 告警（不阻断，仅观测）| 辅助标准 B |
+| D10 综合异常（辅助）| τ>50% 但 token/dur<30% | 1 | 告警（不阻断，仅提示）| 综合检测 |
 
 ---
 
-**版本**: 1.1
-**最后更新**: 2026-06-04
-**基于**: 华为韬定律 × Orchestrator v1.2
+**版本**: 1.4
+**最后更新**: 2026-06-05
+**基于**: 华为韬定律 × Orchestrator v1.2 + 三指标体系（v1.4）

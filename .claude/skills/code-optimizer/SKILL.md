@@ -377,7 +377,86 @@ pattern-020: 模式描述必须包含：触发条件、执行步骤、τ 收益�
 
 ---
 
-## τ 汇报规则
+## ⭐ Skill Stacking 强制读取规则（MUST）
+
+> **背景**：skill-design.md 和 `.claude/rules/skill-stacking.mdc` 明确要求下游 skill 优先从共享上下文读取。
+> 以下规则将设计意图转化为强制执行步骤。
+
+### 执行前：优先从共享上下文读取
+
+**optimizer-context-001**（MUST）：
+在开始执行 code-optimizer 之前，**必须按以下优先级读取信息**：
+
+```
+# 优先级 1：task_skill.md 共享上下文（优先使用，避免重复解析）
+Read tasks/current/task_skill.md
+→ 查找 ## scan-object-info 执行上下文
+→ 读取以下字段（如存在则直接使用）：
+   - 框架类型（framework）
+   - UI 库（ui_library）
+   - 状态管理（state_mgmt）
+   - 样式方案（style_solution）
+   - TypeScript 使用情况（ts_usage）
+   - 渲染模式（render_mode）
+
+# 优先级 2：重新解析项目文件（仅当共享上下文缺失时）
+if 共享上下文中缺少必要字段：
+    Read package.json
+    Read 关键配置文件
+    → 将结果追加写入 task_skill.md 共享上下文（补充缺失字段）
+```
+
+**optimizer-context-002**（MUST）：
+禁止在共享上下文存在对应字段的情况下，重新读取项目文件。
+违反此规则将触发 Skill Stacking 命中率警告。
+
+### 执行中：每个原子 skill 完成后写入上下文
+
+**optimizer-context-003**（MUST）：
+每个原子 skill 完成后，必须将核心输出写入 task_skill.md：
+
+```
+1. Read tasks/current/task_skill.md
+2. Edit 在 ## Code Optimizer 共享数据 区域追加该 skill 的输出
+3. Write tasks/current/task_skill.md
+```
+
+**具体写入映射**：
+
+| 原子 skill | 写入位置 | 写入内容 |
+|-----------|---------|---------|
+| quality-and-perf-analysis | `### 感知层输出` | 质量报告、性能基线 |
+| redundancy-check | `### 感知层输出` | 重复代码清单、死代码清单、severity 分级 |
+| pattern-and-benchmark-recognition | `### 分析层输出` | 代码模式列表、基准测试配置 |
+| optimization-proposal | `### 生成层输出` | 优化方案（激进/保守/折中）|
+| code-optimization | `### 生成层输出` | 已应用的代码变更、回滚脚本 |
+| optimization-verification | `### 输出层输出` | Before/After 验证报告 |
+
+### 命中率记录
+
+**optimizer-context-004**：
+在 `## τ 执行记录` 区域记录上下文读取命中情况：
+```markdown
+### 共享上下文命中率追踪
+- 框架信息 → context_hit: ✓（task_skill.md 中直接读取）
+- 路由方案 → context_hit: ✗（未命中，重新读取路由文件）
+```
+
+**optimizer-context-005**：
+当命中率 < 50% 时，在任务输出中输出警告：
+```
+⚠️ Skill Stacking 命中率警告：{hit_rate:.0%}（< 50%）
+建议：scan-object-info 等上游 skill 输出应完整写入 task_skill.md 共享上下文
+```
+
+### 禁止行为
+
+**optimizer-context-006**（FORBIDDEN）：
+- 禁止直接读取 package.json 而不先检查共享上下文
+- 禁止跳过 task_skill.md 共享上下文直接解析配置文件
+- 违反此规则将导致 Skill Stacking 命中率降至 0%，触发系统警告
+
+---
 
 ```markdown
 tau-020: 任务完成后输出 τ 分解报告（各步骤耗时占比）

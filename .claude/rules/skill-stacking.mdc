@@ -26,3 +26,77 @@ alwaysApply: true
 
 **stack-hit-001**: 命中率 = 从共享上下文命中的次数 / 总读取尝试次数
 **stack-hit-002**: 未命中时标记为 reparse，下次相同 skill 执行时应预加载
+
+## 五、强制行为规则（alwaysApply: true）
+
+> **背景**：skill-design.md 第 4 步要求主 skill 生成 task_skill.md，第 5 步要求 Reasoner 全程更新状态。以下规则将设计意图转化为可强制执行的行为指令。
+
+### 5.1 上游 skill 输出必须写入共享上下文
+
+**stack-action-001**（MUST）：
+当主 skill 生成 task_skill.md 后，**每个原子 skill 执行完毕，必须将其核心输出追加写入** `tasks/current/task_skill.md` 的 `## scan-object-info 执行上下文`（或对应主 skill 区域）。
+
+具体操作：
+1. `Read tasks/current/task_skill.md`（获取当前内容）
+2. 找到对应主 skill 的上下文区域（如 `## scan-object-info 执行上下文`）
+3. `Edit` 替换或追加该区域的输出内容
+
+**示例**：
+```markdown
+<!-- atomic-skill: scan-package-json -->
+## scan-object-info 执行上下文
+
+### 项目基础信息
+- 项目名称：{name}
+- 包管理器：{pm}
+...
+
+<!-- /atomic-skill: scan-package-json -->
+```
+
+### 5.2 下游 skill 优先读取共享上下文
+
+**stack-action-002**（MUST）：
+当某主 skill 的原子 skill 需要读取信息时（如 code-optimizer 读取框架信息），**必须按以下优先级**：
+
+```
+1. Read tasks/current/task_skill.md → 查找对应上下文区域
+2. 如果命中 → 使用该结果（记录 1 次 hit）
+3. 如果未命中 → 才重新读取项目文件（记录 1 次 reparse）
+```
+
+禁止行为：直接读取项目文件而不先查共享上下文。
+
+### 5.3 命中率追踪
+
+**stack-action-003**：
+在 `task_skill.md` 的 `## τ 执行记录` 区域，记录每次上下文读取的命中/未命中：
+
+```markdown
+### 共享上下文命中率追踪
+- scan-package-json → context_hit: ✓（直接复用，跳过重新解析）
+- detect-tech-stack → context_hit: ✗（未命中，重新读取 package.json）
+```
+
+**stack-action-004**：
+当命中率 < 50% 时，在任务输出中输出警告：
+```
+⚠️ Skill Stacking 命中率警告：{hit_rate:.0%}（< 50%）
+建议：上游 skill 输出应完整写入 task_skill.md 共享上下文
+```
+
+### 5.4 写入时机约束
+
+**stack-action-005**（MUST）：
+- **原子 skill 执行完毕后**（状态更新为"已完成"时）→ 写入共享上下文
+- **主 skill 完成所有原子 skill 后** → skill-stack-context 汇总写入（τ=50）
+- 禁止在原子 skill 执行中写入（避免读写冲突）
+- 并行层内同一时间只允许一个 skill 写入（串行写入，流式输出）
+
+---
+
+## 六、优先级规范（强制）
+
+**stack-priority-001**：读取优先级：`tasks/current/task_skill.md` > 重新解析项目文件
+**stack-priority-002**：写入顺序：原子 skill 完成 → 立即追加到 task_skill.md 共享区 → 下一 skill
+**stack-priority-003**：共享区键名必须与原子 skill 名称对应（如 `scan-package-json`、`detect-tech-stack`），下游 skill 按键名查询

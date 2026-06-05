@@ -28,3 +28,104 @@ alwaysApply: true
 **fold-merge-001**: 检测连续同 domain skill（如 detect-* 系列）
 **fold-merge-002**: 检测 scan-* 系列可合并为 scan-project-context
 **fold-merge-003**: 合并后 skill 必须在 skills_register.md 中已存在，不新建 skill
+
+## 五、task_skill.md 生命周期管理规则（alwaysApply: true）
+
+> **背景**：skill-design.md 第 4 步"主 skill 生成 task_skill.md"，第 5 步"Reasoner 全程更新"，第 6 步"恢复未完成任务"，第 9 步"任务归档"。以下规则将设计意图转化为可强制执行的行为指令。
+
+### 5.1 创建时机（fold-life-001, MUST）
+
+**fold-life-001**：
+当主 skill 被选中并开始第 4 步（任务生成）时，**必须执行以下操作**：
+
+```
+1. Read .claude/skills/tasks/templates/task_skill_template.md
+2. 将模板内容中的 {占位符} 替换为具体任务信息
+3. Write .claude/skills/tasks/current/task_skill.md
+```
+
+**fold-life-002**：
+生成的 task_skill.md 必须包含以下区域（按模板顺序）：
+- `# 任务基础信息`（ID、意图、目标、主 skill、状态）
+- `# 子任务（原子 skill）列表`（含状态、依赖、完成标准）
+- `# 主 skill 完成标准`
+- `# 执行日志（实时更新）`（系统日志 + 错误日志）
+- `# 最终结果汇总`
+- `# τ 元数据`（τ 增强版新增，v1.0+）
+- `# 共享上下文`（各主 skill 的上下文写入区域）
+
+**fold-life-003**：
+task_skill.md 文件名固定为 `task_skill.md`，不可更改。
+
+### 5.2 更新时机（fold-life-004, MUST）
+
+**fold-life-004**：
+Reasoner 每执行完一个原子 skill 后，**必须立即更新** `tasks/current/task_skill.md`：
+
+```
+1. Read tasks/current/task_skill.md
+2. Edit 替换该原子 skill 的"状态"列："待执行" → "执行中" → "已完成"/"失败"
+3. Edit 在"执行日志"区域追加：
+   - 原子 skill 状态变更时间
+   - 核心输出（简述）
+   - 是否有错误
+4. Edit 在"共享上下文"区域写入该原子 skill 的核心输出
+```
+
+**fold-life-005**：
+并行层内同一时间只允许一个原子 skill 写入 task_skill.md（串行流式写入，防止读写冲突）。
+
+**fold-life-006**：
+任务异常中断时，task_skill.md 必须已记录"最后一个已完成原子 skill + 当前执行中原子 skill"的状态，以便步骤 6 恢复。
+
+### 5.3 恢复检查（fold-life-007）
+
+**fold-life-007**：
+步骤 2（历史意图检索）时，必须检查 `tasks/current/task_skill.md` 是否存在：
+- 存在且意图相关 → 提示用户选择"继续执行"或"开始新任务"
+- 不存在 → 正常流程继续
+
+**fold-life-008**：
+步骤 6（任务恢复）时，Reasoner 读取 task_skill.md，从最后一个"已完成"原子 skill 之后继续执行。
+
+### 5.4 归档时机（fold-life-009, MUST）
+
+**fold-life-009**：
+步骤 9（任务归档）时，Reasoner **必须执行归档操作**，不可跳过：
+
+```
+1. Read tasks/current/task_skill.md → 获取任务状态
+2. Bash mv tasks/current/task_skill.md tasks/history/YYYY-MM/task_skill_{任务ID}.md
+3. 如果 tasks/history/YYYY-MM/ 不存在 → Bash mkdir -p tasks/history/YYYY-MM/
+4. Read tasks/history/YYYY-MM/月度任务索引.md（如存在）
+5. Edit 在月度任务索引末尾追加新任务条目
+6. 如果月度任务索引不存在 → Read templates/月度任务索引模版.md → Write 新建
+```
+
+**fold-life-010**：
+归档时同时检查是否有"可固化文档"（如 CODE_STYLE.md、.env.example 等），如果有则在输出中提示用户可手动移至项目目录。
+
+**fold-life-010b**（MUST）：
+在归档之前，**必须**将所有固化文件路径记录到 task_skill.md 的"最终结果汇总"区域的 `# 可固化文档` 子区域：
+
+```
+Read tasks/current/task_skill.md
+Edit 在 "## 最终结果汇总" 区域追加或更新：
+### 可固化文档
+- 固化文档清单：[文件名, 绝对路径, 文档类型, 生成时间]
+  - 例：CODE_STYLE.md | /path/to/CODE_STYLE.md | 代码规范文档 | 2026-06-05
+
+# 注意：固化文件路径在归档后永久保存于 history/task_skill_{ID}.md
+#       后续任务可通过读取该文件获取固化文档路径
+Write tasks/current/task_skill.md
+```
+
+**fold-life-010c**：
+固化文档路径在归档后永久保存于 `tasks/history/YYYY-MM/task_skill_{任务ID}.md` 的"最终结果汇总"区域。后续任务如需引用历史固化文档：
+1. 从 `tasks/history/YYYY-MM/` 的月度索引中找到相关任务
+2. Read `tasks/history/YYYY-MM/task_skill_{任务ID}.md`
+3. 在"最终结果汇总 → 可固化文档"区域找到路径
+4. 使用该路径引用固化文档（如复制到当前项目）
+
+**fold-life-011**：
+归档路径固定为 `tasks/history/YYYY-MM/task_skill_{任务ID}.md`，格式不可更改。

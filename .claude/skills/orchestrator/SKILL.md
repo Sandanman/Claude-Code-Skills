@@ -1,11 +1,11 @@
-# Orchestrator Skill - 智能调度总控
+# Orchestrator Skill - 轻量执行模块（Lightweight Execution Module）
 
-> **⚠️ 已废弃（v1.2.1 起）**：本文件不再作为独立入口。
-> 实际执行已统一由 `orchestrator-pro/SKILL.md` 接管。
-> complexity < 4 时，orchestrator-pro 内部委托本文件的 9 步流程作为轻量路径。
+> **角色**：本文件是 orchestrator-pro 的轻量执行模块，不作为独立入口。
+> complexity < 4 时，由 orchestrator-pro 读取并执行本文件的 9 步流程。
 > 请勿直接使用 `/orchestrator`，应使用 `/orchestrator-pro`。
 
 ## 版本历史
+- **v1.2.2** (2026-06-05): 重构为 orchestrator-pro 的轻量执行模块（Lightweight Execution Module），由 orchestrator-pro 显式读取并执行
 - **v1.2.1** (2026-06-03): 已废弃，降级为 orchestrator-pro 的轻量 fallback 逻辑参考，atomic-skills/ 目录已清空
 - v1.2 (2026-05-21): 全面重构，引入上下文感知、智能路由、并行执行增强
 
@@ -561,11 +561,12 @@ Orchestrator (SKILL.md)
 
 ## 8. 版本与维护
 
-- **版本**：1.2.1（已废弃）
-- **最后更新**：2026-06-03
+- **版本**：1.2.2（轻量执行模块）
+- **最后更新**：2026-06-05
 - **维护者**：项目团队
-- **状态**：已废弃，作为 orchestrator-pro 的轻量 fallback 逻辑参考，不再独立维护
+- **状态**：由 orchestrator-pro 读取并执行（Lightweight Execution Module），不作为独立入口
 - **更新记录**：
   - v1.0：初始设计，9步流程，5个主skill
   - v1.2：全面重构，上下文感知，多skill组合，Token追踪增强，并行层识别，智能fallback
   - v1.2.1：已废弃，降级为 orchestrator-pro 轻量路径，atomic-skills/ 清空
+  - v1.2.2（2026-06-05）：重构为 orchestrator-pro 的轻量执行模块（Lightweight Execution Module），由 orchestrator-pro 显式读取并执行

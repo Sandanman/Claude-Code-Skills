@@ -335,6 +335,60 @@ pattern-004: 命中模式后，仅扫描变化的部分（增量扫描）
 
 ---
 
+## ⭐ K2 Skill Stacking 强制执行规则（MUST）
+
+> **背景**：skill-design.md 和 `.claude/rules/skill-stacking.mdc` 明确要求上游 skill 输出写入共享上下文。
+> 以下规则将 K2 设计意图转化为强制执行步骤。
+
+### 执行前：检查共享上下文
+
+**stack-enforce-001**（MUST）：
+在开始执行 scan-object-info 之前，检查 `tasks/current/task_skill.md` 是否存在：
+- 存在 → 继续执行（共享上下文已初始化）
+- 不存在 → 等待 orchestrator-pro 生成 task_skill.md 后继续
+
+### 执行中：每个原子 skill 完成后写入上下文
+
+**stack-enforce-002**（MUST）：
+每个原子 skill 完成后，必须执行：
+```
+1. Read tasks/current/task_skill.md
+2. Edit 在对应主 skill 的"共享上下文"区域写入该 skill 的核心输出
+   （格式：<!-- atomic-skill: {skill_name} -->...<!-- /atomic-skill: {skill_name} -->）
+3. Write tasks/current/task_skill.md
+```
+
+**具体写入映射**：
+
+| 原子 skill | 写入位置 | 写入内容 |
+|-----------|---------|---------|
+| pattern-matcher | `## scan-object-info 执行上下文` | 项目类型（是否命中模式，τ 节省量）|
+| scan-package-json | `### 项目基础信息` | 项目名称、包管理器、主框架 |
+| scan-project-structure | `### 项目结构` | 目录树摘要、关键文件清单 |
+| scan-config-context | `### 配置上下文` | 配置文件清单、环境变量、样式方案 |
+| detect-tech-stack | `### 技术栈上下文` | 框架、UI库、状态管理、TS、渲染模式、置信度 |
+| detect-net-router | `### 网络上下文` | 请求方案、路由方案、关键文件 |
+
+### 执行后：skill-stack-context 汇总写入
+
+**stack-enforce-003**（MUST）：
+所有原子 skill 执行完毕后，必须执行 skill-stack-context（τ=50）：
+```
+1. Read tasks/current/task_skill.md
+2. Edit 在 "## τ 执行记录" 区域追加各 skill 的 τ 消耗
+3. Edit 在 "## 共享上下文命中率追踪" 区域记录命中统计
+4. Write tasks/current/task_skill.md
+```
+
+### 禁止行为
+
+**stack-enforce-004**（FORBIDDEN）：
+- 禁止在不写入 task_skill.md 共享上下文的情况下完成 scan-object-info
+- 禁止在 skill-stack-context 未执行的情况下声称 scan-object-info 已完成
+- 禁止跳过 skill-stack-context（即使 τ 预算紧张，skill-stack-context 是强制步骤）
+
+---
+
 ## 版本
 
 - v1.2 - 韬定律优化版：K1 Task Folding（9→7技能）、K2 Skill Stacking（共享上下文）、K3 Co-Design（规则/LLM决策矩阵）、K4 Pattern Mining（模式库）
