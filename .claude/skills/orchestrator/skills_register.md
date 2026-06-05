@@ -53,11 +53,25 @@ version: 1.3
   match_keywords: 生成代码习惯文档, 创建代码风格规范, 生成CODE_STYLE, 检测代码规范, 代码规范文档
   status: 启用
 
+- name: cheers
+  desc: 首次将 Claude Code Skills 引入项目时的初始化 skill。依次执行：检测/生成 CLAUDE.md → 扫描项目信息 → 生成项目代码风格 → 生成个人代码习惯，最终在 CLAUDE.md 中写入代码生成优先级说明（个人风格优先，项目规范兜底）。τ 增强版（K1 任务折叠、K2 技能栈叠、K4 模式复用）。
+  path: .claude/skills/cheers/SKILL.md
+  core_ability: CLAUDE.md 检测/生成、项目信息扫描、代码风格生成、个人习惯收集、CLAUDE.md 合并更新
+  match_keywords: 初始化项目, 设置项目, 首次配置, 项目引导, cheers, 首次使用, 欢迎使用
+  status: 启用
+
 - name: bug-solver
   desc: 系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证，完整记录和追溯整个debug过程（v1.3 整合韬定律，τ 控制、任务折叠、技能栈叠、协同设计、模式复用）
   path: .claude/skills/bug-solver/SKILL.md
   core_ability: 问题分类(Bug Triage)、问题识别、代码分析、根因定位、安全修复、修复验证、测试建议、τ 动态预算、Task Folding、Skill Stacking、Pattern Mining
   match_keywords: 解决bug, 修复错误, 调试问题, 定位问题, debug, bug修复, 错误分析
+  status: 启用
+
+- name: personal-code-habits-generator
+  desc: 从人的角度主动询问用户，生成个人代码习惯文档 CODE_STYLE_PERSONAL.md（v1.2 整合韬定律，τ 控制、任务折叠、技能栈叠、模式复用）。与 code-style-generator（从代码推断）不同，本 skill 通过主动询问用户来收集个人开发习惯，适合新环境或系统化整理个人习惯。
+  path: .claude/skills/personal-code-habits-generator/SKILL.md
+  core_ability: 对话式习惯收集、分批次提问、τ 预算管理、CODE_STYLE_PERSONAL.md 生成、用户确认与补充
+  match_keywords: 生成我的代码习惯, 生成个人代码规范, 我习惯怎么写代码, 记录我的开发习惯, 我的编码偏好, 生成代码风格, 个人代码习惯
   status: 启用
 
 - name: scan-object-info
@@ -95,6 +109,13 @@ version: 1.3
   match_keywords: 生成测试, 测试用例, 单元测试, 集成测试, E2E测试, 添加测试, 测试覆盖
   status: 启用
 
+- name: skill-analyzer
+  desc: 系统化地解读和分析任意 Skill 的 SKILL.md 文件，生成结构化的分析报告（功能说明、执行流程、输出结果、架构设计、思维方式、优缺点分析、使用建议）。当用户要求"解读"、"分析"、"理解"某个 Skill 时触发。
+  path: .claude/skills/skill-analyzer/SKILL.md
+  core_ability: 8维度 Skill 分析、功能解读、执行流程解析、架构设计推断、优缺点评估、文档生成
+  match_keywords: 解读Skill, 分析Skill, 理解Skill, 解读架构, 分析设计, Skill分析报告, 解读文档
+  status: 启用
+
 - name: doc-generator
   desc: 自动生成代码文档，包括API文档、README、组件文档、变更日志等，支持多种格式（Markdown、API文档、TypeDoc、JSDoc）
   path: .claude/skills/doc-generator/SKILL.md
@@ -119,13 +140,13 @@ version: 1.3
 
 ---
 
-## 主技能统计（v1.3）
+## 主技能统计（v1.5）
 
 | 类别 | 数量 |
 |------|------|
-| 总主技能数 | 14 |
+| 总主技能数 | 16 |
 | Reasoner（调度器） | 2（orchestrator, orchestrator-pro）|
-| 功能主技能 | 12 |
+| 功能主技能 | 14 |
 
 ---
 
@@ -137,5 +158,5 @@ version: 1.3
 
 ---
 
-**版本**: 1.3
-**最后更新**: 2026-06-04
+**版本**: 1.5
+**最后更新**: 2026-06-05

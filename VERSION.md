@@ -7,9 +7,22 @@
 
 ## 版本列表
 
-### v.1.3.1
+### v.1.3.2
 - **日期**: 2026-06-05
 - **提交**: (待提交)
+- **类型**: 小版本升级
+- **变更**:
+  - 新增 `personal-code-habits-generator` skill（v1.2 τ 增强版）：从人的角度主动询问用户，生成 CODE_STYLE_PERSONAL.md，与 code-style-generator 形成互补
+  - 新增 `cheers` skill（v1.0）：项目初始化引导，依次调用 scan-object-info + code-style-generator + personal-code-habits-generator，生成/更新 CLAUDE.md（含代码生成优先级说明）
+  - 更新 `orchestrator/skills_register.md`（v1.5）：注册 personal-code-habits-generator 和 cheers
+  - 更新 `settings.json`：新增 `/cheers` 和 `/personal-code-habits-generator` slash commands（共 15 个）
+  - 新建并整合 `CLAUDE.md`：合并项目概述、常用命令、核心架构、主 skill 体系、编码规范、语言规则、禁止事项
+  - 删除冗余的 `CLAUDE0.md`
+- **归档**: `.claude/history/v.1.3.2.zip`
+
+### v.1.3.1
+- **日期**: 2026-06-05
+- **提交**: 5a53d82
 - **类型**: 小版本升级
 - **变更**:
   - skill-stacking.mdc 新增强制行为规则（5.1-5.4）：上游 skill 输出写入共享上下文、下游 skill 优先读取、命中率追踪、写入时机约束

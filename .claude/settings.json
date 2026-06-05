@@ -191,6 +191,10 @@
       "description": "系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证（v1.3 τ 增强版，整合 Task Folding、Skill Stacking、Pattern Mining）"
     },
     {
+      "name": "cheers",
+      "description": "首次引入 Claude Code Skills 到项目时的初始化引导，生成/更新 CLAUDE.md（含代码生成优先级：个人风格优先，项目规范兜底）"
+    },
+    {
       "name": "code-generator",
       "description": "根据需求文档或需求描述自动生成符合项目规范的代码（v1.3 τ 增强版，整合 Task Folding、Skill Stacking、Pattern Mining）"
     },
@@ -201,6 +205,10 @@
     {
       "name": "code-style-generator",
       "description": "自动检测项目代码规范，生成个人代码习惯文档 CODE_STYLE.md"
+    },
+    {
+      "name": "skill-analyzer",
+      "description": "系统化地解读和分析任意 Skill 的 SKILL.md 文件，生成结构化的分析报告（功能说明、执行流程、架构设计、优缺点分析）"
     },
     {
       "name": "scan-object-info",
@@ -233,6 +241,10 @@
     {
       "name": "orchestrator-pro",
       "description": "智能调度总控（τ 增强版，唯一入口），complexity<4 自动走轻量路径，complexity≥4 走完整 τ 优化路径"
+    },
+    {
+      "name": "personal-code-habits-generator",
+      "description": "从人的角度主动询问用户，生成个人代码习惯文档 CODE_STYLE_PERSONAL.md（v1.2 整合韬定律，τ 控制、任务折叠、技能栈叠、模式复用）"
     }
   ],
 

@@ -1,6 +1,6 @@
-# Claude Code Skills 项目配置
+# CLAUDE.md
 
-> 本文件为项目上下文和快速参考手册。详细编码规范见 `.claude/rules/`，详细 Skill 文档见 `.claude/skills/*/SKILL.md`。
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ---
 
@@ -13,42 +13,7 @@
 | 技术栈 | Node.js / Claude API / Claude Code |
 | 开发入口 | Claude Code CLI（`/help` 查看帮助）|
 
-本项目是一套 Claude Code 的 Skill 系统，通过 Orchestrator（智能调度总控）驱动多个主 Skill 协同工作，覆盖代码生成、优化、测试、部署等全流程。
-
----
-
-## 项目结构
-
-```
-.claude/
-├── rules/                   # 行为规则（alwaysApply: true）
-│   ├── coding-standards.mdc  # 编码规范
-│   ├── language-chinese.mdc  # 语言规则（全程中文）
-│   ├── pattern-mining.mdc    # 模式挖掘
-│   ├── skill-stacking.mdc    # 技能叠加
-│   ├── task-folding.mdc     # 任务折叠
-│   └── tau-control.mdc      # τ 控制流
-├── skills/                  # 技能系统
-│   ├── orchestrator-pro/    # 智能调度总控（唯一入口）
-│   ├── code-generator/      # 代码生成（v1.3 τ 增强版）
-│   ├── code-optimizer/      # 代码优化（v2.0 τ 增强版，整合性能优化）
-│   ├── code-style-generator/     # 代码风格探测
-│   ├── bug-solver/          # Bug 修复（v1.3 τ 增强版）
-│   ├── requirement-generator/    # 需求文档
-│   ├── scan-object-info/    # 技术栈扫描
-│   ├── security-scanner/    # 安全扫描
-│   ├── test-generator/      # 测试用例
-│   ├── doc-generator/       # 文档生成
-│   ├── git-assistant/       # Git 辅助（整合 git-helper）
-│   └── deploy-helper/       # 部署辅助
-├── settings.json            # Claude Code 主配置（13 个 slash commands）
-└── settings.local.json      # 本地配置（不提交版本控制）
-
-根目录/
-├── CLAUDE.md                # 项目上下文配置（本文件）
-├── README.md                # 项目说明
-└── .gitignore
-```
+这是一个 **AI Agent Skills 编排系统**，基于华为韬定律（τ-Law），以 τ（时间常数）为核心性能指标，通过时间缩微而非堆模型参数来提升 Agent 综合表现。所有用户请求统一通过 `orchestrator-pro` 调度。
 
 ---
 
@@ -67,100 +32,109 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 ---
 
-## 技能系统（Skills）
+## 核心架构
 
-所有任务统一通过 `orchestrator-pro`（τ 增强版）调度入口。
+### 调度器（唯一入口）
 
-| Skill | 说明 |
-|-------|------|
-| `orchestrator-pro` | 智能调度总控，唯一入口 |
-| `code-generator` | 代码生成（v1.3 τ 增强版）|
-| `bug-solver` | 系统化 Bug 修复（v1.3 τ 增强版）|
-| `code-optimizer` | 代码优化（v2.0 τ 增强版，整合性能优化+冗余检测）|
-| `requirement-generator` | 需求文档生成 |
-| `scan-object-info` | 前端项目扫描 |
-| `security-scanner` | 安全扫描 |
-| `test-generator` | 测试用例生成 |
-| `doc-generator` | 文档生成 |
-| `git-assistant` | Git 智能操作 |
-| `deploy-helper` | 部署辅助 |
+**orchestrator-pro** 是所有任务的唯一入口，内部按复杂度自动分流：
 
-### Slash Commands
+```
+用户输入 → 意图识别 + complexity 评分
+    ├── complexity < 4  → orchestrator 轻量 9 步
+    └── complexity ≥ 4 → orchestrator-pro τ 增强 9 步
+```
 
-| 命令 | Skill | 说明 |
-|------|-------|------|
-| `/orchestrator-pro` | orchestrator-pro | 智能调度总控（τ 增强版）|
-| `/code-generator` | code-generator | 代码生成 |
-| `/bug-solver` | bug-solver | Bug 修复（7 步流程）|
-| `/code-optimizer` | code-optimizer | 代码优化（v2.0 τ 增强版，整合冗余检测）|
-| `/code-style-generator` | code-style-generator | 代码风格探测 |
-| `/requirement-generator` | requirement-generator | 需求标准化 |
-| `/scan-object-info` | scan-object-info | 技术栈扫描 |
-| `/security-scanner` | security-scanner | 安全扫描 |
-| `/test-generator` | test-generator | 测试用例生成 |
-| `/doc-generator` | doc-generator | 文档生成 |
-| `/git-assistant` | git-assistant | Git 智能操作 |
-| `/deploy-helper` | deploy-helper | Docker / CI/CD |
+τ 优化路径包含：Task Folding + Skill Stacking + Pattern Mining + 三指标报告。
+
+### τ（时间常数）体系
+
+```
+τ = duration_ms × 0.5 + tokens × 0.001（驱动所有决策）
+
+三档预算：simple=5000 / moderate=15000 / complex=50000
+预警：80% 警告 / 95% 严重 / 100% 终止
+```
+
+四大韬定律技术：
+- **K1 Task Folding**：τ 不足时自动折叠可合并的任务链路（节省约 30%）
+- **K2 Skill Stacking**：通过 `task_skill.md` TSV 垂直互联，下游 skill 直读上游结果
+- **K3 Co-Design**：Model × Rules × Skills 三层贡献度显式化
+- **K4 Pattern Mining**：历史相似度 ≥ 0.6 复用子步骤，成熟模式 τ 折扣 70%
+
+### 任务状态管理
+
+所有任务状态写入 `.claude/skills/tasks/current/task_skill.md`（固定文件名），实时更新原子 skill 状态列和执行日记。任务完成后自动归档到 `.claude/skills/tasks/history/YYYY-MM/`。
 
 ---
 
-## 编码规范（详细版见 `.claude/rules/coding-standards.mdc`）
+## 关键文件位置
 
-| 类别 | 核心要求 |
-|------|---------|
-| 格式化 | 4 空格缩进 / 无分号 / 单引号 / 行长度 ≤200 / LF |
-| 命名 | PascalCase 组件 / camelCase 变量 / UPPER_SNAKE_CASE 常量 |
-| 组件结构 | Vue 13 步顺序；React Hooks 顺序 |
-| async/await | 必须 try-catch；禁止裸 await |
-| 错误处理 | console.error + 用户提示；定时器 onBeforeUnmount 清理 |
-| 样式 | scoped；Less 嵌套 ≤3 层；BEM 命名 |
-| 导入顺序 | Vue核心 → 第三方 → 本地组件 → API → 工具 → 配置 |
-| 硬编码 | 禁止硬编码 API URL / token / 密钥，使用环境变量 |
+| 文件 | 作用 |
+|------|------|
+| `.claude/skills/orchestrator-pro/SKILL.md` | τ 增强调度器，完整 9 步流程 |
+| `.claude/skills/orchestrator/skills_register.md` | 主 skill 注册表（意图匹配数据源） |
+| `.claude/skills/tasks/current/task_skill.md` | 当前任务状态文件（执行中实时写入） |
+| `.claude/skills/tasks/templates/task_skill_template.md` | 任务文件模板 |
+| `.claude/rules/*.mdc` | τ 控制、任务折叠、技能栈叠、模式复用规则 |
+| `settings.json` → `commands` | Slash commands（14 个入口） |
+| `skill-design.md` | 完整设计思路文档 |
 
-### 语言规则（详细版见 `.claude/rules/language-chinese.mdc`）
+---
 
-- 思考过程、回答内容、工具说明 → 必须中文
+## 主 Skill 体系（15 个）
+
+所有任务通过 `/orchestrator-pro`（唯一入口）自动调度，也可直接触发 slash command：
+
+| Skill | 触发关键词 |
+|-------|-----------|
+| `/orchestrator-pro` | 唯一入口，complexity 分流自动执行 |
+| `/code-generator` | 实现功能、生成代码、写函数 |
+| `/code-optimizer` | 优化代码、重构、性能优化、冗余检测 |
+| `/code-style-generator` | 检测代码规范、生成 CODE_STYLE |
+| `/personal-code-habits-generator` | 生成我的代码习惯、记录开发习惯 |
+| `/bug-solver` | 解决 bug、修复错误、调试问题 |
+| `/cheers` | 初始化项目、首次配置、项目引导 |
+| `/scan-object-info` | 扫描项目、技术栈、分析项目结构 |
+| `/requirement-generator` | 需求分析、需求标准化 |
+| `/security-scanner` | 安全扫描、XSS、CSRF |
+| `/test-generator` | 生成测试、单元/E2E |
+| `/doc-generator` | API 文档、README |
+| `/git-assistant` | commit、分支、冲突、stash |
+| `/deploy-helper` | Docker、CI/CD、部署脚本 |
+| `/skill-analyzer` | 解读 Skill、分析架构 |
+
+**新增主 skill**：创建目录 → 编写 SKILL.md → 注册到 `orchestrator/skills_register.md` → 添加到 `settings.json` commands。
+
+---
+
+## 语言规则
+
+- 思考过程、回答内容、工具说明 → **必须中文**
 - 文件内容、命令行输出、技术错误信息 → 保留原样
-- 技术术语 → 保留英文，首次出现括号标注中文
+- 技术术语（Skill、τ、Task Folding 等）→ 保留英文
 
 ---
 
-## 开发工作流
+## 编码规范要点
 
-### 新功能开发
+详见 `.claude/rules/coding-standards.mdc`，核心规则：
 
-1. **理解需求** — 确认功能目标和验收标准
-2. **设计** — 复杂功能先设计技术方案
-3. **实现** — 遵守编码规范
-4. **自测** — 运行相关验证
-5. **提交** — 提交信息 10 字以内，抽象概括
-
-### Bug 修复流程
-
-1. **复现** — 读代码理解问题
-2. **定位** — 找到根本原因
-3. **修复** — 应用修复
-4. **验证** — 确认修复有效
-5. **提交** — 提交信息 10 字以内
+- 缩进 4 空格；单引号；无分号；行长度 ≤200；LF
+- 组件 PascalCase；变量 camelCase；常量 UPPER_SNAKE_CASE
+- async/await 必须 try-catch；定时器 onBeforeUnmount 清理
+- Vue 组件样式必须 `scoped`；Less 嵌套 ≤3 层
+- 导入顺序：Vue 核心 → 第三方 → 本地组件 → API → 工具 → 配置
 
 ---
 
 ## 严格禁止事项
 
-| 禁止项 | 正确做法 |
-|--------|---------|
-| `var` 声明变量 | `const` / `let` |
+| 禁止 | 正确做法 |
+|------|---------|
+| `var` 声明 | `const` / `let` |
 | 裸 `await` 无错误处理 | 必须 `try-catch` 包裹 |
-| 无 `scoped` 的组件样式 | 组件样式必须 `scoped` |
-| 超过 3 层的 Less 嵌套 | 重构选择器，减少嵌套 |
+| 无 `scoped` 的 Vue 组件样式 | 组件样式必须 `scoped` |
+| 超过 3 层的 Less 嵌套 | 重构选择器 |
 | 硬编码 API URL / token | 使用环境变量 |
-| 定时器不清理 | 在 `onBeforeUnmount` 中清理 |
+| 定时器不清理 | `onBeforeUnmount` 中清理 |
 | 字符串拼接路径 | 使用 `@/` 路径别名 |
-
----
-
-## 获取帮助
-
-- Claude Code 帮助：`/help`
-- 项目规范：`.claude/rules/*.mdc`
-- Skill 详情：`.claude/skills/<name>/SKILL.md`
