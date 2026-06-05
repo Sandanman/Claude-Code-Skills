@@ -128,8 +128,11 @@ project-context-reader → requirement-documentation
 | 混合输入 | `mixed` | 文本 + 图片 + 代码片段组合 |
 
 ## 输出产物
-1. **requirements.json**：标准机器可读格式，含多维度 quality.score
-2. **requirements.md**：人类可读的详细需求拆解文档（含 quality 可视化）
+
+需求文档统一保存至 `.claude/skills/requirement-generator/requirement-document/` 目录下，文件名带时间戳以区分多次生成。
+
+1. **requirements_{timestamp}.json**：标准机器可读格式，含多维度 quality.score
+2. **requirements_{timestamp}.md**：人类可读的详细需求拆解文档（含 quality 可视化）
 
 ## requirements.json 格式（v1.2 韬理论增强版）
 
