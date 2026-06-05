@@ -129,10 +129,9 @@ project-context-reader → requirement-documentation
 
 ## 输出产物
 
-需求文档统一保存至 `.claude/skills/requirement-generator/requirement-document/` 目录下，文件名带时间戳以区分多次生成。
-
-1. **requirements_{timestamp}.json**：标准机器可读格式，含多维度 quality.score
-2. **requirements_{timestamp}.md**：人类可读的详细需求拆解文档（含 quality 可视化）
+需求文档统一保存至 `.claude/skills/requirement-generator/requirement-document/` 目录下。文件名规则：
+- 用户输入了需求名称 → `requirements_{用户输入名称}.json` / `requirements_{用户输入名称}.md`
+- 用户未输入名称 → `requirements_{timestamp}.json` / `requirements_{timestamp}.md`
 
 ## requirements.json 格式（v1.2 韬理论增强版）
 
