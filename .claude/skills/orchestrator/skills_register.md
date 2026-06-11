@@ -3,7 +3,7 @@
 > 本文件是主技能索引，仅列所有已注册的主 Skill 及其基本信息。
 > 原子技能详情请查看 `.claude/skills/orchestrator/atomic_skills_register.md`。
 
-version: 1.3
+version: 1.8
 说明：
 1. 本索引供 Reasoner（orchestrator）读取，用于意图匹配
 2. 原子技能详情在 `atomic_skills_register.md` 中，按主技能分组
@@ -154,7 +154,7 @@ version: 1.3
 
 ---
 
-## 主技能统计（v1.7）
+## 主技能统计（v1.8）
 
 | 类别 | 数量 |
 |------|------|
@@ -172,5 +172,5 @@ version: 1.3
 
 ---
 
-**版本**: 1.7
-**最后更新**: 2026-06-09
+**版本**: 1.8
+**最后更新**: 2026-06-11

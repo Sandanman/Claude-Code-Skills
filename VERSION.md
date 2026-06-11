@@ -7,6 +7,21 @@
 
 ## 版本列表
 
+### v.1.3.3
+- **日期**: 2026-06-11
+- **提交**: aba2e38
+- **类型**: 小版本升级
+- **变更**:
+  - 新增 `code-structure-analyzer` skill（v1.1 韬定律增强版）：读取项目中代码，分析流程、关键节点、变量和依赖，生成结构化 .md 文档，支持 Mermaid 子元素逻辑
+  - 新增 `product-designer` skill（v1.1 韬定律增强版）：将简单需求扩展为完整产品模块设计，支持 Mermaid 流程图、多角色泳道、业务详细描述
+  - orchestrator-pro 升级至 v1.6：修复步骤 3 未匹配主 skill 时的处理逻辑，新增三分支判断（无匹配/单匹配/多匹配）+ 自主执行兜底
+  - orchestrator/skills_register.md 升级至 v1.8：注册 code-structure-analyzer 和 product-designer，主技能数 18
+  - orchestrator/atomic_skills_register.md 升级至 v1.4：新增两个 skill 的原子技能注册（code-structure-analyzer 5个 + product-designer 10个），原子技能合计 83
+  - 清理冗余文档：删除 SKILL_CREATION_GUIDE.md 和 tao-theory-design.md，重构为 .claude/tao-skill-design/ 目录（TAO_THEORY_DESIGN.md + 5 个分章文件）
+  - 更新 settings.json：新增 /code-structure-analyzer 和 /product-designer slash commands（16 个）
+  - 更新 CLAUDE.md：主 Skill 体系 15→17 个，slash commands 14→16 个
+- **归档**: `.claude/history/v.1.3.3.zip`
+
 ### v.1.3.2
 - **日期**: 2026-06-05
 - **提交**: 7fba0f2
@@ -131,4 +146,4 @@ v.大版本号.小版本.小修改
 
 ---
 
-*最后更新: 2026-06-05*
+*最后更新: 2026-06-11*

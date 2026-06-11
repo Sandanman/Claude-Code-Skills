@@ -13,7 +13,7 @@
 **规范层级关系：**
 
 ```
-.claude/skills/tao-theory-design.md（原始完整版，保留原文件不修改）
+.claude/tao-skill-design/TAO_THEORY_DESIGN.md（原 .claude/skills/tao-theory-design.md 重构拆分版）
     │
     └── 拆分为 .claude/tao-skill-design/（当前指南引用的来源）
             ├── 00-theory.md        → 华为韬定律 + K1-K4 通俗类比
