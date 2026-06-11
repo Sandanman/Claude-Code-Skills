@@ -136,17 +136,31 @@ version: 1.3
   core_ability: Docker配置生成、CI/CD流水线生成、环境配置、部署脚本生成、部署验证
   match_keywords: 部署, Docker, CI/CD, 环境配置, 部署脚本, Vercel, Netlify, 自动化部署
   status: 启用
+
+- name: code-structure-analyzer
+  desc: 读取项目中某个页面、业务模块或流程的代码，分析整体流程、逻辑、关键节点、重要变量和依赖关系，在同目录下生成以分析对象命名的 md 文档（v1.0 整合韬定律，τ 控制、Task Folding、Skill Stacking、Pattern Mining）
+  path: .claude/skills/code-structure-analyzer/SKILL.md
+  core_ability: 代码结构扫描、流程逻辑分析、关键节点识别、变量/依赖提取、依赖关系图生成、文档自动生成
+  match_keywords: 分析代码结构, 代码结构分析, 生成流程图, 流程分析, 提取依赖关系, 依赖分析, 关键节点识别, 节点分析, 变量提取, 状态变量分析
+  status: 启用
+
+- name: product-designer
+  desc: 将用户简单的需求描述扩展为完整的产品模块设计方案，替代产品经理工作。75%围绕需求本身，25%合理发散，不确定部分必须向用户提问而非臆想（v1.0 初始版）
+  path: .claude/skills/product-designer/SKILL.md
+  core_ability: 需求澄清与范围确认、角色矩阵设计、功能树设计、数据实体设计、API接口设计、验收条件设计、非功能需求识别、产品模块文档输出
+  match_keywords: 设计产品模块, 扩展需求, 产品功能设计, 用户故事, 功能规格, 产品模块, 模块设计, 功能点设计, 需求扩展, 产品方案
+  status: 启用
 ```
 
 ---
 
-## 主技能统计（v1.5）
+## 主技能统计（v1.7）
 
 | 类别 | 数量 |
 |------|------|
-| 总主技能数 | 16 |
+| 总主技能数 | 18 |
 | Reasoner（调度器） | 2（orchestrator, orchestrator-pro）|
-| 功能主技能 | 14 |
+| 功能主技能 | 16 |
 
 ---
 
@@ -158,5 +172,5 @@ version: 1.3
 
 ---
 
-**版本**: 1.5
-**最后更新**: 2026-06-05
+**版本**: 1.7
+**最后更新**: 2026-06-09

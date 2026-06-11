@@ -251,7 +251,9 @@ def calculate_match_score(intent, skill):
 ### 步骤4：任务生成（与主skill协同）
 
 **主skill职责**：
-1. 读取自身对应的原子skill列表（从 `skills_register.md` 中读取）
+1. **读取匹配 skill 的 SKILL.md**（路径来自 `skills_register.md` 的 `path` 字段），加载原子skill列表和执行流程定义
+   - 同时读取 `.claude/skills/orchestrator/atomic_skills_register.md` 作为原子skill注册表
+   - 如果 SKILL.md 中定义了 atomic_skills，以 SKILL.md 为准
 2. 与Reasoner协同确定：哪些原子skill需要执行、顺序如何、哪些可并行
 3. 生成 `task_skill.md`，包含：
    - 任务基础信息（ID、意图、目标、主skill、状态）

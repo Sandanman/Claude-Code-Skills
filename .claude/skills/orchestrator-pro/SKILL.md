@@ -1,7 +1,9 @@
-# Orchestrator Pro — 智能调度总控（v1.4 三指标版）
+# Orchestrator Pro — 智能调度总控（v1.6 三指标版）
 
 ## 版本历史
 
+- **v1.6** (2026-06-08): 修复步骤 3 未匹配主 skill 时的处理逻辑：新增三分支判断（无匹配/单匹配/多匹配）。无匹配时记录 missing_skills.md + 尝试自主执行 + 给用户提供清晰的提示和操作建议（对齐 orchestrator 行为）。
+- **v1.5** (2026-06-06): 修复跨项目部署问题：步骤 3 匹配到主 skill 后，必须显式读取该 skill 的 SKILL.md 文件来加载原子 skill 列表和执行逻辑。轻量路径同步增强，明确 orchestrator 步骤 3 后必须读取匹配 skill 的 SKILL.md。
 - **v1.4** (2026-06-05): 三指标体系重构：τ 为主标准，Token + 时间（duration）为辅助标准。τ 驱动所有决策，Token/时间用于观测、告警和成本/性能分析。新增 Token 辅助告警、时间异常检测（ms/token 比值）、三指标并行报告。
 - **v1.3** (2026-06-05): 真正实现轻量路径委托：complexity < 4 时，显式读取并执行 `orchestrator/SKILL.md`，而非内联重复逻辑
 - **v1.2** (2026-06-04): 协同更新 bug-solver v1.3 和 code-generator v1.3 的引用，两个主 skill 均已整合 τ 增强体系（Task Folding、Skill Stacking、Co-Design、Pattern Mining）
@@ -58,8 +60,12 @@ def route_by_complexity(complexity_assessment: dict) -> str:
 complexity < 4 时，orchestrator-pro 执行以下操作：
 
 1. **显式读取** `orchestrator/SKILL.md`（使用 Read 工具）
-2. **按照 orchestrator 的 9 步流程执行**（意图识别 → 历史检索 → skill匹配 → 任务生成 → 执行控制 → 任务恢复 → 结果校验 → 结果输出 → 任务归档）
+2. **按照 orchestrator 的 9 步流程执行**（意图识别 → 历史检索 → skill匹配 → **⭐读取匹配skill的SKILL.md** → 任务生成 → 执行控制 → 任务恢复 → 结果校验 → 结果输出 → 任务归档）
 3. **不进行 τ 测量和折叠操作**（与 orchestrator 原有行为一致）
+
+**⭐ 关键要求：orchestrator 步骤 3 匹配到主 skill 后，必须读取该 skill 的 SKILL.md**
+
+> 在轻量路径中，orchestrator 的 9 步流程中**步骤 3 匹配主 skill 后**，必须显式读取匹配 skill 的 SKILL.md 文件（从 `skills_register.md` 的 `path` 字段获取路径），加载原子 skill 列表和执行逻辑。这是主 skill 能正确执行的前提条件。
 
 ```
 orchestrator-pro 执行时（complexity < 4）
@@ -67,6 +73,18 @@ orchestrator-pro 执行时（complexity < 4）
 Read orchestrator/SKILL.md
     ↓
 按照 orchestrator 的 9 步流程执行
+    ├─ 步骤 1：意图识别
+    ├─ 步骤 2：历史检索
+    ├─ 步骤 3：主 skill 匹配（从 skills_register.md 匹配）
+    │   ↓
+    │   ⭐ Read {matched_skill.path}  ← 必须读取匹配 skill 的 SKILL.md
+    │       ↓                         （如 .claude/skills/code-generator/SKILL.md）
+    ├─ 步骤 4：任务生成（基于 SKILL.md 中的 atomic_skills）
+    ├─ 步骤 5：执行控制
+    ├─ 步骤 6：任务恢复
+    ├─ 步骤 7：结果校验
+    ├─ 步骤 8：结果输出
+    └─ 步骤 9：任务归档
     ↓
 结果输出 → 【end】
 ```
@@ -287,13 +305,146 @@ co_design["match"] = {"model": 0.5, "rules": 0.3, "skills": 0.2}
 
 ### 步骤 3：主 skill 匹配（τ 增强：Co-Design 显式化）
 
-**处理**：与 v1.2 相同，增加 Co-Design 贡献度记录。
+**处理**：
 
 ```python
-matched_skill = match_main_skill(intent, skills_register)
-# τ 增强：τ 效率加权（pattern 复用时略微加权）
-if pattern_results.get("matched_count", 0) > 0:
-    matched_skill["score"] = matched_skill["score"] * (1 + pattern_discount * 0.1)
+# 匹配所有主 skill，计算匹配分数
+all_matches = match_main_skill(intent, skills_register)
+# 返回格式：[{"skill": skill_obj, "score": float}, ...]
+
+# τ 增强：pattern 复用时 τ 效率加权（对所有候选略微加分）
+for match in all_matches:
+    if pattern_results.get("matched_count", 0) > 0:
+        match["score"] = match["score"] * (1 + pattern_discount * 0.1)
+
+# 按分数降序排列
+all_matches.sort(key=lambda x: x["score"], reverse=True)
+```
+
+**匹配判断（三分支处理）**：
+
+```python
+# ===== 分支 A：无匹配（所有候选 score < 0.4）=====
+if not all_matches or all_matches[0]["score"] < 0.4:
+    # 记录到 missing_skills.md
+    record_to_missing_skills(
+        intent=intent,
+        reason="no_skill_matched",
+        matched_scores=[m["score"] for m in all_matches]
+    )
+
+    # 提示用户
+    print(f"⚠️  未匹配到已注册的主 skill（最高匹配分数：{all_matches[0]['score'] if all_matches else 0.0:.2f}）")
+    print(f"📋 可用 skill：{', '.join([s['skill'].name for s in all_matches])}")
+
+    # 尝试自主执行（基于意图的规则兜底）
+    autonomy_result = attempt_autonomous_execution(intent)
+    if autonomy_result["executed"]:
+        print(f"✅ 已基于意图自主执行：{autonomy_result['summary']}")
+        return autonomy_result  # → end
+    else:
+        print(f"❌ 无法自主执行，请尝试以下方式：")
+        print(f"   1. 使用 /orchestrator-pro + 具体描述重新发起请求")
+        print(f"   2. 直接使用 slash command（如 /code-generator、/bug-solver 等）")
+        print(f"   3. 描述更具体的任务（如「帮我写一个 Vue 组件」而非「帮我做点事」）")
+        return {"status": "no_match", "user_action_required": True}  # → end
+
+# ===== 分支 B：单匹配（1个候选 score ≥ 0.4）=====
+elif len(all_matches) == 1 or all_matches[0]["score"] >= 0.4:
+    matched_skill = all_matches[0]["skill"]
+    print(f"🎯 匹配到主 skill：{matched_skill.name}（匹配度：{all_matches[0]['score']:.2f}）")
+
+# ===== 分支 C：多匹配（≥2个候选 score ≥ 0.4）=====
+else:
+    # 显示 Top3 供用户选择
+    top3 = all_matches[:3]
+    print(f"🤔 匹配到多个主 skill（显示 Top3，* 为推荐）：")
+    for i, m in enumerate(top3):
+        marker = " *" if i == 0 else "  "
+        print(f"   {marker} [{i + 1}] {m['skill'].name}（匹配度：{m['score']:.2f}）")
+    print(f"   请回复数字选择，或描述更具体的任务以自动匹配。")
+
+    # 等待用户选择（异步等待用户输入）
+    # 默认使用推荐（最高分）
+    user_choice = await_user_selection(options=top3)
+    matched_skill = user_choice["skill"]
+```
+
+**自主执行兜底逻辑（分支 A 辅助）**：
+
+```python
+def attempt_autonomous_execution(intent: dict) -> dict:
+    """
+    当无 skill 匹配时，尝试基于意图的规则自主执行。
+    仅处理高置信度意图（confidence.overall >= 0.7）。
+    """
+    if intent.get("confidence", {}).get("overall", 0) < 0.7:
+        return {"executed": False, "reason": "confidence_too_low"}
+
+    # 基于 domain + action 的规则兜底
+    autonomous_map = {
+        ("frontend", "create"): "simple_code_generation",
+        ("frontend", "fix"): "simple_bug_fix",
+        ("refactoring", "optimize"): "simple_code_optimization",
+        ("analysis", "analyze"): "simple_code_analysis",
+    }
+
+    key = (intent.get("domain"), intent.get("action"))
+    if key in autonomous_map:
+        return {
+            "executed": True,
+            "mode": "autonomous",
+            "summary": f"以 {autonomous_map[key]} 模式自主执行",
+            "note": "结果可能不完整，建议使用具体 skill 获取更优结果"
+        }
+
+    return {"executed": False, "reason": "no_autonomous_route"}
+```
+
+**⭐ 关键：读取匹配主 skill 的 SKILL.md（必须在分支 B/C 末尾执行，不可跳过）**
+
+> **强制要求**：分支 B（单匹配）或分支 C（多匹配）确定主 skill 后，必须显式读取该 skill 的 SKILL.md 文件，加载原子 skill 列表和执行逻辑。
+> 依据：skills_register.md 只提供主 skill 元数据（名称、路径、关键词），原子 skill 列表和详细执行逻辑在各个 SKILL.md 文件中。
+
+**⭐ 关键：读取匹配主 skill 的 SKILL.md（必须在步骤 3 执行，不可跳过）**
+
+> **强制要求**：匹配到主 skill 后，必须显式读取该 skill 的 SKILL.md 文件，加载原子 skill 列表和执行逻辑。
+> 依据：skills_register.md 只提供主 skill 元数据（名称、路径、关键词），原子 skill 列表和详细执行逻辑在各个 SKILL.md 文件中。
+
+```
+# ===== 读取匹配 skill 的 SKILL.md（MUST，步骤 3 末尾执行）=====
+# 1. 从 matched_skill.path 提取路径（如 .claude/skills/code-generator/SKILL.md）
+# 2. Read {matched_skill.path}  → 加载该主 skill 的完整 SKILL.md
+# 3. 解析 SKILL.md 中的 atomic_skills 列表（如存在）或执行流程定义
+# 4. 将原子 skill 列表传递给步骤 4（任务生成）
+# 5. 如果该 skill 依赖其他 skill（如 bug-solver 依赖 scan-object-info），
+#    递归读取依赖 skill 的 SKILL.md（Skill Stacking 上下文预加载）
+```
+
+**原子 skill 来源优先级**：
+1. 读取 `.claude/skills/orchestrator/atomic_skills_register.md`（集中式注册表）
+2. 读取匹配 skill 的 SKILL.md 中的 atomic_skills 列表（主 skill 自包含）
+3. 如果两者都存在，以 SKILL.md 中的为准（主 skill 可覆盖全局注册）
+
+```python
+# 读取匹配 skill 的 SKILL.md（τ 增强）
+matched_skill_path = matched_skill["path"]  # 如 .claude/skills/code-generator/SKILL.md
+skill_md_content = read_file(matched_skill_path)
+
+# 解析 SKILL.md，提取 atomic_skills 列表或执行流程定义
+atomic_skills = parse_atomic_skills_from_skill_md(skill_md_content)
+
+# Skill Stacking：预加载依赖 skill 的上下文
+# 如果该 skill 的 atomic_skills 包含对其他 skill 输出文件的读取，
+# 预加载已存在的上下文（如 tasks/current/task_skill.md 中的共享上下文）
+if skill_has_skill_stacking_dependency(matched_skill, atomic_skills):
+    shared_context = read_task_skill_shared_context(
+        ".claude/skills/tasks/current/task_skill.md"
+    )
+    # 传入执行上下文，供下游 skill 使用
+    execution_context = {"shared_context": shared_context}
+else:
+    execution_context = {}
 
 co_design["match"] = {"model": 0.5, "rules": 0.3, "skills": 0.2}
 tau_controller.record_step(step="match", duration_ms=elapsed_ms, tokens=tokens)
@@ -938,7 +1089,7 @@ print(efficiency_composite)  # 包含异常标记
 
 ---
 
-**版本**: 1.4
+**版本**: 1.6
 **最后更新**: 2026-06-05
 **理论基础**: 华为韬定律（何庭波，2026）+ 三指标体系（τ 为主 + Token/时间辅助）
 **父版本**: Orchestrator v1.2

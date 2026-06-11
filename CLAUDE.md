@@ -76,12 +76,12 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 | `.claude/skills/tasks/current/task_skill.md` | 当前任务状态文件（执行中实时写入） |
 | `.claude/skills/tasks/templates/task_skill_template.md` | 任务文件模板 |
 | `.claude/rules/*.mdc` | τ 控制、任务折叠、技能栈叠、模式复用规则 |
-| `settings.json` → `commands` | Slash commands（14 个入口） |
+| `settings.json` → `commands` | Slash commands（16 个入口） |
 | `skill-design.md` | 完整设计思路文档 |
 
 ---
 
-## 主 Skill 体系（15 个）
+## 主 Skill 体系（17 个）
 
 所有任务通过 `/orchestrator-pro`（唯一入口）自动调度，也可直接触发 slash command：
 
@@ -91,6 +91,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 | `/code-generator` | 实现功能、生成代码、写函数 |
 | `/code-optimizer` | 优化代码、重构、性能优化、冗余检测 |
 | `/code-style-generator` | 检测代码规范、生成 CODE_STYLE |
+| `/code-structure-analyzer` | 分析代码结构、流程图、关键节点、依赖关系 |
 | `/personal-code-habits-generator` | 生成我的代码习惯、记录开发习惯 |
 | `/bug-solver` | 解决 bug、修复错误、调试问题 |
 | `/cheers` | 初始化项目、首次配置、项目引导 |
@@ -102,6 +103,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 | `/git-assistant` | commit、分支、冲突、stash |
 | `/deploy-helper` | Docker、CI/CD、部署脚本 |
 | `/skill-analyzer` | 解读 Skill、分析架构 |
+| `/product-designer` | 设计产品模块、扩展需求、用户故事、功能规格 |
 
 **新增主 skill**：创建目录 → 编写 SKILL.md → 注册到 `orchestrator/skills_register.md` → 添加到 `settings.json` commands。
 
