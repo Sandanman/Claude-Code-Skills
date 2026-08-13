@@ -1,12 +1,11 @@
 {
-  "model": "z-ai/glm-5.2",
+  "model": "Opus",
   "modelCatalog": [
     "Default (recommended) ",
     "Opus",
     "Sonnet",
     "Sonnet (1M context)",
-    "Haiku",
-    "z-ai/glm-5.2"
+    "Haiku"
   ],
   "permissions": {
     "allow": [
