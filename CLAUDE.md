@@ -81,7 +81,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 ---
 
-## 主 Skill 体系（17 个）
+## 主 Skill 体系（18 个）
 
 所有任务通过 `/orchestrator-pro`（唯一入口）自动调度，也可直接触发 slash command：
 
@@ -104,6 +104,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 | `/deploy-helper` | Docker、CI/CD、部署脚本 |
 | `/skill-analyzer` | 解读 Skill、分析架构 |
 | `/product-designer` | 设计产品模块、扩展需求、用户故事、功能规格 |
+| `/project-cloud-map` | 生成项目云图、页面/入口关系、模块、数据流和交互分析 |
 
 **新增主 skill**：创建目录 → 编写 SKILL.md → 注册到 `orchestrator/skills_register.md` → 添加到 `settings.json` commands。
 

@@ -151,6 +151,13 @@ version: 1.8
   match_keywords: 设计产品模块, 扩展需求, 产品功能设计, 用户故事, 功能规格, 产品模块, 模块设计, 功能点设计, 需求扩展, 产品方案
   status: 启用
 
+- name: project-cloud-map
+  desc: 读取整个项目当前代码快照，自动识别 Web/全栈/后端/CLI/库类型，按页面或入口、数据流和交互逻辑拆分模块，输出 Markdown + Mermaid 项目云图；代码变更前必须列候选方案并等待确认
+  path: .claude/skills/project-cloud-map/SKILL.md
+  core_ability: 全项目快照读取、项目类型识别、页面/入口拆分、模块与数据流分析、交互链路分析、Markdown/Mermaid 云图输出、变更前确认
+  match_keywords: 项目云图, 项目地图, 系统全貌, 架构鸟瞰, 页面关系, 模块关系, 数据流梳理, 项目结构图, 代码全景
+  status: 启用
+
 - name: project-planner
   desc: 基于迭代周期规划项目目标，生成每日工作内容与项目进度追踪，支持多项目分组管理和超期预警，具备历史速度学习能力动态调整估算精度（v1.0 整合韬定律，τ 控制、Task Folding、Skill Stacking）
   path: .claude/skills/project-planner/SKILL.md

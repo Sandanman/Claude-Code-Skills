@@ -190,6 +190,10 @@
     {
       "name": "product-designer",
       "description": "将用户简单的需求描述扩展为完整的产品模块设计方案，替代产品经理工作。75%围绕需求本身，25%合理发散，不确定部分必须向用户提问而非臆想"
+    },
+    {
+      "name": "project-cloud-map",
+      "description": "读取完整项目当前代码快照，自动识别项目类型并生成 Markdown + Mermaid 项目云图；代码变更前必须等待用户确认"
     }
   ],
   "auto-save": true,
