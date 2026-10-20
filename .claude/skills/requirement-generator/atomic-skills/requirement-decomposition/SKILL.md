@@ -71,7 +71,7 @@ requirement-input-processor 输出的原始需求数据（含 code_snippet_analy
 
 ### 步骤1：功能点聚类
 - 将 `requirement-input-processor` 提取的功能点分组
-- 使用语义相似度匹配（余弦相似度）
+- 使用语义关联分析匹配功能点
 - 合并语义相近的功能点到同一模块
 
 ### 步骤2：模块命名

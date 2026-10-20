@@ -1,37 +1,19 @@
 ---
 name: detect-net-router
-description: 检测前端项目网络请求方案与路由方案，一次扫描输出两个维度。τ=500，比分别调用detect-request-scheme+detect-router-solution节省38%。v1.2新增confidence scores、Co-Design规则分配。
 ---
-
-# detect_net_router（v1.2，K1合并技能）
 
 ## 任务定义
 
-你是原子技能 `detect_net_router`（K1 Task Folding 合并版），一次性检测两个维度：
 - **网络请求**：HTTP 客户端、请求封装层
 - **路由方案**：路由库、路由类型、路由文件位置
 
-**τ 值**：500（原2技能分开调用合计约800，节省38%）
-
 ## 合并来源
-
-本技能由以下两个技能合并而来（K1 Task Folding）：
-1. `detect_request_scheme`（τ=400 → 合并入）
-2. `detect_router_solution`（τ=400 → 合并入）
 
 ## 输入依据
 
 - `package.json`（dependencies/devDependencies/scripts）
 - 项目结构（src/api、src/router、src/routes 等目录）
 - 路由文件（router/index.*、routes/.*、App.tsx 等）
-
-## Co-Design 规则分配
-
-| 检测维度 | 规则分配 | LLM分配 | 说明 |
-|---------|---------|--------|------|
-| 请求方案 | 包名正则匹配 | 封装层解读 | 规则处理90%场景 |
-| 路由方案 | 文件名+包名正则 | 目录结构推断 | 规则处理标准命名 |
-| 路由类型 | 文件内容分析 | 上下文推断 | 规则处理配置式路由 |
 
 ## 网络请求检测（规则路径）
 
@@ -99,17 +81,6 @@ description: 检测前端项目网络请求方案与路由方案，一次扫描�
 - 路由文件：`src/router/index.ts` 等
 ```
 
-## Skill Stacking 上下文写入
-
-检测完成后，将结果写入 task_skill.md 共享上下文：
-
-```markdown
-### 网络上下文（detect_net_router 输出）
-- 请求方案：xxx
-- 路由方案：xxx
-- 路由文件：xxx
-```
-
 ## 错误处理
 
 ```markdown
@@ -123,20 +94,6 @@ description: 检测前端项目网络请求方案与路由方案，一次扫描�
 1. 请确保项目根目录存在 package.json
 ```
 
-## τ 节省说明
-
-```
-分开调用（K1前）：
-detect_request_scheme τ=400 + detect_router_solution τ=400 = τ=800
-
-合并调用（K1后）：
-detect_net_router τ=500
-
-τ 节省：300（节省率 38%）
-原因：package.json 只读一次，两个维度共享解析结果
-```
-
 ## 版本
 
-- v1.2 - K1 Task Folding 合并版：从 detect_request_scheme + detect_router_solution 合并而来
 - 继承各来源技能的核心检测逻辑，统一输出格式

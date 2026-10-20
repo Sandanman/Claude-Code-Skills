@@ -1,9 +1,7 @@
 ---
 name: documentation-update
-description: 为生成的代码添加完整注释，确保所有组件、函数、类型都有清晰的文档说明。在 code-validation 通过后自动执行。继承 requirements.json 中的质量评估和建议。v1.3 整合韬定律（τ 控制、技能栈叠）。
+description: 为生成或整合后的组件、函数、类型和 API 添加准确的注释、示例和文档说明。
 ---
-
-# Documentation Update 原子Skill v1.3（τ 增强版）
 
 ## 概述
 
@@ -65,10 +63,10 @@ description: 为生成的代码添加完整注释，确保所有组件、函数�
 /**
  * 函数名称
  * 功能描述
- *
+
  * @param {类型} paramName - 参数描述
  * @returns {类型} 返回值描述
- *
+
  * @example
  * const result = functionName(param)
  */
@@ -115,10 +113,10 @@ export interface TypeName {
   /**
    * 格式化日期
    * 将ISO格式的日期字符串转换为 'YYYY-MM-DD HH:mm' 格式
-   *
+
    * @param {string} timestamp - ISO格式的日期字符串（如 '2026-04-08T10:30:00Z'）
    * @returns {string} 格式化后的字符串（如 '2026-04-08 10:30'）
-   *
+
    * @example
    * formatDate('2026-04-08T10:30:00Z') // '2026-04-08 10:30'
    */
@@ -167,10 +165,10 @@ export interface TypeName {
   /**
    * 创建会议
    * 创建新的会议
-   *
+
    * @param {MeetingParams} params - 会议参数
    * @returns {Promise<Meeting>} 创建成功的会议对象
-   *
+
    * @example
    * const meeting = await createMeeting({
    *   title: '项目会议',
@@ -345,30 +343,5 @@ requirements.json 中的 `quality` 字段包含需求质量评估和改进建议
 `.claude/skills/code-generator/atomic-skills/documentation-update/SKILL.md`
 
 ## 版本历史
-- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注、Task Folding 折叠组标注
 - v1.2
 - v1.0（初始版本）
-
----
-
-## Skill Stacking & τ-Weight（v1.3）
-
-### τ-Weight
-| 场景 | τ-Weight |
-|------|----------|
-| 场景1（标准输入） | 10% |
-| 场景2（简单需求） | 5% |
-| 场景3（复杂需求） | 5% |
-
-### Skill Stacking 上下文键
-| 键名 | 类型 | 说明 |
-|------|------|------|
-| validation_result | required_keys | 从 task_skill.md 读取（由 code-validation 写入，优先从上下文读取） |
-| generated_code | required_keys | 从 task_skill.md 读取（由 code-generation 写入，优先从上下文读取） |
-| final_artifacts | output_keys | 带注释代码 + 文档 + 质量评分 + 后续建议 |
-
-### 执行日记写入（必须）
-本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
-
-### Task Folding 标记
-**[可折叠]** — 本 skill 可与 code-validation 合并为 Group D 折叠组，τ_remaining < 20% 时优先折叠合并执行。

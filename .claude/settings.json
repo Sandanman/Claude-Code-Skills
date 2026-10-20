@@ -40,15 +40,6 @@
             "prompt": "执行 Bash 命令前确认：\n1. 命令是只读操作还是会产生变更？\n2. 如果产生变更，确认是否符合项目规范。\n3. 危险的破坏性命令（如 rm -rf、git reset --hard）需先询问用户。"
           }
         ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "写入或编辑文件前确认：\n1. 文件路径正确，目标位置符合项目结构。\n2. 内容符合 .claude/rules/ 中的编码规范。\n3. 如果是配置文件，确认格式正确。"
-          }
-        ]
       }
     ],
     "SessionStart": [
@@ -125,7 +116,7 @@
   "commands": [
     {
       "name": "bug-solver",
-      "description": "系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证（v1.3 τ 增强版，整合 Task Folding、Skill Stacking、Pattern Mining）"
+      "description": "系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证"
     },
     {
       "name": "cheers",
@@ -133,11 +124,11 @@
     },
     {
       "name": "code-generator",
-      "description": "根据需求文档或需求描述自动生成符合项目规范的代码（v1.3 τ 增强版，整合 Task Folding、Skill Stacking、Pattern Mining）"
+      "description": "根据需求文档或需求描述自动生成符合项目规范的代码"
     },
     {
       "name": "code-optimizer",
-      "description": "系统化地优化代码（v2.0 τ 增强版），整合代码质量分析、性能优化和冗余检测，通过 τ-Agent 监控（Task Folding、Skill Stacking、Pattern Mining）提升优化效率"
+      "description": "系统化地优化代码（v2.0），整合代码质量分析、性能优化和冗余检测"
     },
     {
       "name": "code-style-generator",
@@ -145,7 +136,7 @@
     },
     {
       "name": "code-structure-analyzer",
-      "description": "读取项目中某个页面、业务模块或流程的代码，分析流程、关键节点、变量和依赖，在同目录下生成 md 文档（v1.0 韬定律增强版，整合 τ 控制、Task Folding、Skill Stacking、Pattern Mining）"
+      "description": "读取项目中某个页面、业务模块或流程的代码，分析流程、关键节点、变量和依赖，在同目录下生成 md 文档"
     },
     {
       "name": "skill-analyzer",
@@ -180,12 +171,12 @@
       "description": "辅助部署操作，支持Docker配置、CI/CD流水线生成、环境配置、部署脚本生成"
     },
     {
-      "name": "orchestrator-pro",
-      "description": "智能调度总控（v1.6 τ 增强版，唯一入口），complexity<4 自动走轻量路径，complexity≥4 走完整 τ 优化路径，未匹配 skill 时提供自主执行兜底和用户提示"
+      "name": "orchestrator",
+      "description": "统一任务编排入口，按复杂度选择执行策略，完成意图识别、Skill 匹配、任务规划、执行、校验、输出和归档"
     },
     {
       "name": "personal-code-habits-generator",
-      "description": "从人的角度主动询问用户，生成个人代码习惯文档 CODE_STYLE_PERSONAL.md（v1.2 整合韬定律，τ 控制、任务折叠、技能栈叠、模式复用）"
+      "description": "从人的角度主动询问用户，生成个人代码习惯文档 CODE_STYLE_PERSONAL.md"
     },
     {
       "name": "product-designer",
@@ -194,6 +185,10 @@
     {
       "name": "project-cloud-map",
       "description": "读取完整项目当前代码快照，自动识别项目类型并生成 Markdown + Mermaid 项目云图；代码变更前必须等待用户确认"
+    },
+    {
+      "name": "project-planner",
+      "description": "基于迭代周期规划项目目标，生成每日工作内容与项目进度追踪，支持多项目分组管理和超期预警，具备历史速度学习能力动态调整估算精度"
     }
   ],
   "auto-save": true,

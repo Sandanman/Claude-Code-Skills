@@ -1,6 +1,6 @@
 ---
 name: scan-code-patterns
-description: K1任务折叠已合并至 detect-config-rules → detect-and-scan。本文件已废弃，仅作向后兼容存根。v1.2 原 scan-code-patterns + detect-config-rules 合并为 detect-and-scan。
+description: 已废弃的兼容存根；代码扫描能力已合并到 detect-and-scan，不作为独立执行阶段。
 ---
 
 # scan-code-patterns（已废弃 → 合并入 detect-and-scan）
@@ -15,9 +15,7 @@ description: K1任务折叠已合并至 detect-config-rules → detect-and-scan�
 | detect-config-rules | detect-and-scan | 配置检测 + 代码推断一体化 |
 | scan-code-patterns | detect-and-scan | 已整合入 detect-config-rules |
 
-## K1 任务折叠效果
 - 执行步骤：5步 → 3步
-- τ 消耗：减少约 40%
 - 无功能损失，所有规则检测能力保留
 
 ## 新执行流程（v1.2）
@@ -35,4 +33,3 @@ generate-style-document
 - `atomic-skills/generate-probe-code/SKILL.md`（generate-and-confirm）
 
 ## 版本
-v1.2 - K1任务折叠：scan-code-patterns 已合并入 detect-and-scan，不再作为独立 atomic skill。

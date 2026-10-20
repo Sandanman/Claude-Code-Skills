@@ -16,31 +16,23 @@ version: 1.8
 
 ```yaml
 - name: orchestrator
-  desc: 智能调度总控 — 意图识别、Skill 匹配、任务生成、执行控制、结果校验、任务归档（已废弃，降级为 orchestrator-pro 轻量 fallback）
+  desc: 统一任务编排入口 — 意图识别、Skill 匹配、任务生成、执行控制、结果校验、任务归档
   path: .claude/skills/orchestrator/SKILL.md
-  core_ability: 9步执行流程、上下文感知、多Skill组合、Token追踪、断点恢复
-  match_keywords: [所有意图]
-  status: 已废弃（由 orchestrator-pro 接管，complexity<4 时内部委托）
-  is_reasoner: false
-  note: complexity < 4 时由 orchestrator-pro 委托执行轻量路径；complexity ≥ 4 由 orchestrator-pro 完整 τ 优化路径执行
-
-- name: orchestrator-pro
-  desc: 智能调度总控（τ 增强版）— 以 τ 为统一性能指标，通过时间缩微提升 Agent 表现
-  path: .claude/skills/orchestrator-pro/SKILL.md
-  core_ability: K1任务折叠、K2技能堆叠、K3全栈协同、K4模式挖掘
+  core_ability: 意图识别、上下文感知、多 Skill 组合、DAG 任务生成、断点恢复、结果校验和归档
   match_keywords: [所有意图]
   status: 启用
   is_reasoner: true
+  note: 统一执行轻量和完整任务编排流程
 
 - name: code-generator
-  desc: 根据需求文档或需求描述自动生成符合项目规范的代码，支持多种输入形式并自动适配项目技术栈（v1.3 整合韬定律，τ 控制、任务折叠、技能栈叠、协同设计、模式复用）
+  desc: 根据需求文档或需求描述自动生成符合项目规范的代码，支持多种输入形式并自动适配项目技术栈
   path: .claude/skills/code-generator/SKILL.md
-  core_ability: 需求理解、技术栈检测、代码结构设计、代码生成、模块整合、代码验证、文档更新、τ 动态预算、Task Folding、Skill Stacking、Pattern Mining
+  core_ability: 需求理解、技术栈检测、代码结构设计、代码生成、模块整合、代码验证、文档更新
   match_keywords: 根据需求写代码, 实现这个功能, 生成代码, 写一个函数, 实现这个模块, 按照需求文档开发, 帮我实现
   status: 启用
 
 - name: code-optimizer
-  desc: 系统化地优化代码，基于代码质量分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性（v2.0 τ 增强版，整合性能优化+冗余检测）
+  desc: 系统化地优化代码，基于代码质量分析识别改进点，提供可执行的优化方案，并应用修改以提升代码质量、性能和可维护性（v2.0，整合性能优化+冗余检测）
   path: .claude/skills/code-optimizer/SKILL.md
   core_ability: 静态代码质量分析、代码模式识别、性能分析、冗余检测、优化建议、自动化代码重构、优化验证、文档维护
   match_keywords: 优化代码, 重构代码, 更好的实现方式, 性能优化, 提高代码质量, 改进这个函数, 简化这段代码, 消除代码重复, 检查代码冗余, 检测重复代码, 找出死代码, 清理未使用代码, 冗余导入, 代码重复率
@@ -54,28 +46,28 @@ version: 1.8
   status: 启用
 
 - name: cheers
-  desc: 首次将 Claude Code Skills 引入项目时的初始化 skill。依次执行：检测/生成 CLAUDE.md → 扫描项目信息 → 生成项目代码风格 → 生成个人代码习惯，最终在 CLAUDE.md 中写入代码生成优先级说明（个人风格优先，项目规范兜底）。τ 增强版（K1 任务折叠、K2 技能栈叠、K4 模式复用）。
+  desc: 首次将 Claude Code Skills 引入项目时的初始化 skill。依次执行：检测/生成 CLAUDE.md → 扫描项目信息 → 生成项目代码风格 → 生成个人代码习惯，最终在 CLAUDE.md 中写入代码生成优先级说明（个人风格优先，项目规范兜底）。支持多 Skill 协同执行。
   path: .claude/skills/cheers/SKILL.md
   core_ability: CLAUDE.md 检测/生成、项目信息扫描、代码风格生成、个人习惯收集、CLAUDE.md 合并更新
   match_keywords: 初始化项目, 设置项目, 首次配置, 项目引导, cheers, 首次使用, 欢迎使用
   status: 启用
 
 - name: bug-solver
-  desc: 系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证，完整记录和追溯整个debug过程（v1.3 整合韬定律，τ 控制、任务折叠、技能栈叠、协同设计、模式复用）
+  desc: 系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证，完整记录和追溯整个debug过程
   path: .claude/skills/bug-solver/SKILL.md
-  core_ability: 问题分类(Bug Triage)、问题识别、代码分析、根因定位、安全修复、修复验证、测试建议、τ 动态预算、Task Folding、Skill Stacking、Pattern Mining
+  core_ability: 问题分类(Bug Triage)、问题识别、代码分析、根因定位、安全修复、修复验证、测试建议
   match_keywords: 解决bug, 修复错误, 调试问题, 定位问题, debug, bug修复, 错误分析
   status: 启用
 
 - name: personal-code-habits-generator
-  desc: 从人的角度主动询问用户，生成个人代码习惯文档 CODE_STYLE_PERSONAL.md（v1.2 整合韬定律，τ 控制、任务折叠、技能栈叠、模式复用）。与 code-style-generator（从代码推断）不同，本 skill 通过主动询问用户来收集个人开发习惯，适合新环境或系统化整理个人习惯。
+  desc: 从人的角度主动询问用户，生成个人代码习惯文档 CODE_STYLE_PERSONAL.md。与 code-style-generator（从代码推断）不同，本 skill 通过主动询问用户来收集个人开发习惯，适合新环境或系统化整理个人习惯。
   path: .claude/skills/personal-code-habits-generator/SKILL.md
-  core_ability: 对话式习惯收集、分批次提问、τ 预算管理、CODE_STYLE_PERSONAL.md 生成、用户确认与补充
+  core_ability: 对话式习惯收集、分批次提问、CODE_STYLE_PERSONAL.md 生成、用户确认与补充
   match_keywords: 生成我的代码习惯, 生成个人代码规范, 我习惯怎么写代码, 记录我的开发习惯, 我的编码偏好, 生成代码风格, 个人代码习惯
   status: 启用
 
 - name: scan-object-info
-  desc: 智能扫描并分析前端项目的各种技术信息（框架、UI库、状态管理、请求方案、配置文件、项目结构、路由方案、环境变量等），基于韬定律K1 Task Folding、K2 Skill Stacking、K3 Co-Design、K4 Pattern Mining
+  desc: 智能扫描并分析前端项目的各种技术信息（框架、UI库、状态管理、请求方案、配置文件、项目结构、路由方案、环境变量等）
   path: .claude/skills/scan-object-info/SKILL.md
   core_ability: 智能意图识别、精准技能选择、依赖关系分析、结构化输出、错误处理、技术栈全面扫描
   match_keywords: 扫描项目, 分析项目, 项目信息, 技术栈, 项目结构, 配置文件, 依赖分析, 框架识别, UI库, 状态管理, 请求方案, 路由方案, 环境变量
@@ -124,9 +116,9 @@ version: 1.8
   status: 启用
 
 - name: git-assistant
-  desc: 智能 Git 操作助手，基于华为韬定律 τ 优化技能选择组合，支持 commit 生成、分支管理、历史分析、冲突解决、Stash 操作、版本管理、提交规范检查
+  desc: 智能 Git 操作助手，支持 commit 生成、分支管理、历史分析、冲突解决、Stash 操作、版本管理、提交规范检查
   path: .claude/skills/git-assistant/SKILL.md
-  core_ability: 意图识别与路由、τ 优化的原子技能选择、Git 命令生成
+  core_ability: 意图识别与路由、Git 命令生成
   match_keywords: 提交, commit, 分支, branch, 冲突, conflict, stash, 历史, history, blame, tag, 版本, merge, rebase, git操作
   status: 启用
 
@@ -138,7 +130,7 @@ version: 1.8
   status: 启用
 
 - name: code-structure-analyzer
-  desc: 读取项目中某个页面、业务模块或流程的代码，分析整体流程、逻辑、关键节点、重要变量和依赖关系，在同目录下生成以分析对象命名的 md 文档（v1.0 整合韬定律，τ 控制、Task Folding、Skill Stacking、Pattern Mining）
+  desc: 读取项目中某个页面、业务模块或流程的代码，分析整体流程、逻辑、关键节点、重要变量和依赖关系，在同目录下生成以分析对象命名的 md 文档
   path: .claude/skills/code-structure-analyzer/SKILL.md
   core_ability: 代码结构扫描、流程逻辑分析、关键节点识别、变量/依赖提取、依赖关系图生成、文档自动生成
   match_keywords: 分析代码结构, 代码结构分析, 生成流程图, 流程分析, 提取依赖关系, 依赖分析, 关键节点识别, 节点分析, 变量提取, 状态变量分析
@@ -159,7 +151,7 @@ version: 1.8
   status: 启用
 
 - name: project-planner
-  desc: 基于迭代周期规划项目目标，生成每日工作内容与项目进度追踪，支持多项目分组管理和超期预警，具备历史速度学习能力动态调整估算精度（v1.0 整合韬定律，τ 控制、Task Folding、Skill Stacking）
+  desc: 基于迭代周期规划项目目标，生成每日工作内容与项目进度追踪，支持多项目分组管理和超期预警，具备历史速度学习能力动态调整估算精度
   path: .claude/skills/project-planner/SKILL.md
   core_ability: 迭代周期规划、目标→任务双向拆解、每日工作生成、进度追踪、超期预警、历史速度学习、动态估算调整、多项目分组、日报/周报/仪表盘输出
   match_keywords: 项目规划, 迭代计划, 每周目标, 每日工作, 任务规划, 项目进度, 进度追踪, 超期预警, 里程碑, 甘特图, 任务分配, sprint计划, 每日计划, 工作内容, 多项目
@@ -173,8 +165,8 @@ version: 1.8
 | 类别 | 数量 |
 |------|------|
 | 总主技能数 | 19 |
-| Reasoner（调度器） | 2（orchestrator, orchestrator-pro）|
-| 功能主技能 | 17 |
+| Reasoner（调度器） | 1（orchestrator）|
+| 功能主技能 | 18 |
 
 ---
 

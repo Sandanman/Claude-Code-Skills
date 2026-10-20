@@ -1,166 +1,50 @@
 ---
 name: code-optimization
-description: 应用优化方案，生成优化后代码（diff 格式），包含回滚脚本。Task Folding 合并了 code-refactoring（代码重构）和 optimization-application（策略应用），统一执行代码级和构建配置级修改。
+description: 在用户确认优化方案后应用代码重构、冗余清理和必要的构建配置优化，输出实际变更、验证记录和影响范围。
 version: 2.0
-merged_from:
-  - code-refactoring (from code-optimizer)
-  - optimization-application (from performance-optimizer)
-tau_layer: generation
 ---
 
-# Code Optimization 原子Skill
-
-> Task Folding 合并了 `code-refactoring` 和 `optimization-application`，统一执行代码级和构建配置级修改。
+# Code Optimization 原子 Skill
 
 ## 概述
-根据 `optimization-proposal` 输出的优化方案，统一执行代码重构和构建配置优化，生成优化后的代码，确保功能正确性和构建可用性。
+
+根据 `optimization-proposal` 和用户确认内容执行代码与配置修改，保留最小变更面，确保语法、类型和构建可验证。
 
 ## 核心能力
-**代码级修改（来自 code-refactoring）**：
-- 应用具体的代码修改建议（diff 格式）
-- 保留原始代码备份（.bak 文件）
-- 确保语法正确性，支持多种文件类型（Vue/React/TS）
 
-**构建配置修改（来自 optimization-application）**：
-- 构建配置优化（Vite/Webpack：代码分割、Tree-shaking、压缩配置）
-- 路由懒加载（静态 import → 动态 import）
-- 组件懒加载（defineAsyncComponent）
-- 依赖按需引入（全量引入 → 按需引入）
-- 资源优化配置（图片压缩、WebP、字体子集化）
-- 生成回滚脚本（一键撤销所有变更）
+- 应用确认的代码重构、重复逻辑提取和死代码清理
+- 执行路由/组件懒加载、按需引入、代码分割和资源配置优化
+- 逐项记录文件路径、修改原因和实际 diff
+- 变更后运行可用的格式、类型、测试或构建检查
 
 ## 输入
-`optimization-proposal` 输出的优化方案文档，包含：
-- 用户选择的优化方案（激进/保守/折中）
-- 代码修改 diff
-- 构建配置变更清单
-- 预期改善指标
+
+`proposals`、用户确认的方案、目标文件和项目命令。没有用户确认或方案不明确时不得写入。
 
 ## 输出
-代码重构报告：
 
-```markdown
-# 代码重构报告
-
-## 执行目标
-应用激进优化方案，重构src/components/MeetingCard.vue
-
-## 选择的优化方案
-- 问题1（重复日期格式化）→ 激进优化（使用computed计算属性）
-- 问题2（大函数模式）→ 激进优化（拆分为多个小函数）
-- 问题3（XSS风险）→ 激进优化（替换v-html为插值表达式）
-
-## 修改内容
-
-### 修改1：重复日期格式化优化
-
-**文件**：src/components/MeetingCard.vue
-**行号**：新增10-15行，删除45-48行、89-92行
-
-```diff
---- a/src/components/MeetingCard.vue
-+++ b/src/components/MeetingCard.vue
-@@ -1,10 +1,12 @@
-<script setup>
--import { ref } from 'vue'
-+import { ref, computed } from 'vue'
-
-const props = defineProps({
-  meeting: Object
-})
-
-+const formatDate = (timestamp) => {
-+  const date = new Date(timestamp)
-+  return `${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`
-+}
-+
-+const formattedStartTime = computed(() => formatDate(props.meeting.startTime))
-+const formattedEndTime = computed(() => formatDate(props.meeting.endTime))
-```
-
-### 修改2：handleJoinMeeting拆分
-
-**文件**：src/components/MeetingCard.vue
-**行号**：新增25-60行
-
-```diff
-+const validateParams = (meetingId, userId) => {
-+  if (!meetingId || !userId) {
-+    ElMessage.error('参数缺失')
-+    return false
-+  }
-+  return true
-+}
-+
-+const handleJoinMeeting = async (...) => {
-+  if (!validateParams(meetingId, userId)) return
-+  // ... 简化后的逻辑
-+}
-```
-
-### 修改3：XSS风险修复
-
-```diff
--<div v-html="meeting.description"></div>
-+<div>{{ meeting.description }}</div>
-```
-
-## 原始代码备份
-- **备份路径**：src/components/MeetingCard.vue.bak
-- **备份时间**：2026-05-21 10:05:00
-- **备份内容**：原始代码已保存，可随时恢复
-
-## 代码验证
-- **语法检查**：通过（无ESLint错误）
-- **编译测试**：通过（Vite构建成功）
-- **功能测试**：日期格式化正常、会议加入功能正常
-
-## 代码变更统计
-| 指标 | 变化 |
-|------|------|
-| 新增行数 | 55 |
-| 删除行数 | 48 |
-| 修改行数 | 28 |
-| 总变更行数 | 131 |
-| 文件数 | 1 |
-
-## 推荐下一步
-1. 运行测试用例验证功能完整性
-2. 使用optimization-verification验证性能提升
-3. 更新相关文档
-```
+共享上下文键：`applied_changes`。报告包含确认内容、修改文件、变更摘要、执行命令、结果、未完成项和后续验证要求。备份/回滚不是默认输出。
 
 ## 执行逻辑
-1. 接收improvement-suggestion的改进建议报告
-2. 确认用户选择的优化方案
-3. 读取原始代码文件
-4. 按照diff格式应用每个修改
-5. 创建备份文件
-6. 写入修改后的代码
-7. 验证语法正确性
-8. 输出完整的重构报告
+
+1. 校验确认范围和工作区状态。
+2. 按方案逐项修改，避免扩大范围。
+3. 检查语法和类型，运行项目提供的相关检查。
+4. 汇总实际变更并移交验证阶段。
 
 ## 依赖关系
-- 依赖：`optimization-proposal`（必须有完整的优化方案文档）
+
+- 依赖：`optimization-proposal` 及用户确认
 - 被依赖：`optimization-verification`
 
 ## 完成标准
-1. 所有选择的优化方案都已应用
-2. 每个修改包含完整的diff格式
-3. 原始代码已备份
-4. 代码语法正确（无语法错误）
-5. 输出完整的代码重构报告
+
+确认的修改全部完成或明确列出未完成项；每个变更有文件路径和依据；代码检查结果真实可追溯；未引入未经批准的依赖或业务变化。
 
 ## 错误处理
-- **用户未选择方案**：暂停等待用户选择
-- **代码修改冲突**：标记冲突点，提示用户手动解决
-- **语法错误**：报错并列出错误位置，等待修正后重试
 
-## 注意事项
-- 所有修改都基于用户选择的方案
-- 保留了原始代码备份，可随时回滚
-- 修改确保了语法正确性
-- 没有引入新依赖
+冲突、语法错误、类型错误或测试失败时停止后续修改并报告位置；不自动覆盖冲突或反复尝试破坏性修改。
 
-## 原子skill位置
-`.claude/skills/code-optimizer/atomic-skills/code-optimization/SKILL.md`
+## 安全边界
+
+仅修改确认范围。备份或回滚仅在用户确认后作为可选机制执行；不自动生成回滚脚本、不删除文件、不发布或推送代码。

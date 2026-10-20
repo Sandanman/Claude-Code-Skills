@@ -1,56 +1,29 @@
 # Doc Generator
 
-## 概述
+## 定位
 
-Doc Generator 是前端项目的自动化文档生成技能，自动从代码中提取 API 定义、生成组件文档、创建变更日志，支持多种输出格式。
+根据明确的文档目标，选择最小必要的原子 Skill 生成或转换文档。它只处理已确认的输入范围，不默认执行完整项目扫描，也不把静态分析结果当作运行时事实。
 
-## 核心能力
+## 原子 Skill
 
-- **API 文档提取**: 从路由文件、API 层代码中提取接口定义
-- **组件文档生成**: 自动生成 Vue/React 组件的 props、events、slots、示例
-- **变更日志生成**: 从 git commit 和 PR 中自动生成规范化的 CHANGELOG
-- **格式转换**: 支持 Markdown/HTML/PDF/JSON 多种格式输出
-- **注释补充**: 自动识别并补充缺失的 JSDoc/TSDoc 注释
+| 原子 Skill | 用途 | 默认输出 |
+|---|---|---|
+| `api-doc-extraction` | 提取可静态识别的 API 信息 | `docs/api.md` 或 `docs/openapi.json` |
+| `component-doc-generation` | 生成 Vue/React 组件文档 | `docs/components/` |
+| `changelog-generation` | 从 Git 历史生成变更日志 | `CHANGELOG.md` |
+| `doc-format-conversion` | 转换或合并已有文档 | 用户指定路径 |
 
-## 适用场景
+API、组件和 CHANGELOG 可按需并行；格式转换只在输入文件或前置产物明确后执行。用户只要求其中一项时，不执行其他原子 Skill。
 
-- 项目初始化时生成完整的 README 和 API 文档
-- 新增组件后更新组件文档
-- 发布新版本时生成 CHANGELOG
-- 将 Markdown 文档转换为 HTML/PDF 格式
+## 输出与安全
 
-## 原子技能列表
+写入前展示文件路径、格式和覆盖/追加策略。已有文档不自动覆盖；敏感值不写入文档。每份输出记录执行范围、证据来源、跳过项和无法静态确认项。结果状态为 `passed`、`partial`、`failed` 或 `cancelled`。
 
-| 原子技能 | 职责 |
-|---------|------|
-| api-doc-extraction | 从代码中提取 API 定义（endpoint、参数、返回值） |
-| component-doc-generation | 生成组件文档（props、events、slots、usage） |
-| changelog-generation | 生成变更日志（基于git commit和PR） |
-| doc-format-conversion | 文档格式转换（Markdown/HTML/PDF） |
+## 示例
 
-## 执行流程图
-
-```
-api-doc-extraction ─┐
-                    │
-component-doc-generation ─┤
-                    ├──→ doc-format-conversion
-changelog-generation ──────┘
-```
-
-## 输出产物
-
-- `README.md` - 项目主文档
-- `API.md` - API 文档
-- `docs/components/` - 组件文档目录
-- `CHANGELOG.md` - 变更日志
-- `docs/api.html` - 交互式 API 文档（可选）
-
-## 快速开始
-
-```bash
-# 通过 orchestrator 触发
-# 用户: "生成这个项目的 README 和 API 文档"
-# 用户: "为所有组件生成文档"
-# 用户: "生成 CHANGELOG"
+```text
+生成 API 文档                 → api-doc-extraction
+为 src/components 生成文档   → component-doc-generation
+根据 v1.2.0..HEAD 生成日志    → changelog-generation
+把 docs/api.md 转成 HTML     → doc-format-conversion
 ```

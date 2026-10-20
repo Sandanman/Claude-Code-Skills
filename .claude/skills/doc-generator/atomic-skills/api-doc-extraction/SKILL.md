@@ -1,84 +1,51 @@
 ---
 name: api-doc-extraction
-description: 从代码中提取API定义（endpoints、params、return values），在需要生成API文档时触发
+description: 从已确认范围中提取可静态识别的 API 定义；当用户要求 API 文档、OpenAPI 或接口清单时触发。
 ---
 
 # API Doc Extraction
 
-## 概述
+## 职责
 
-API Doc Extraction 负责从项目代码中提取 API 接口定义信息，包括 REST API 路由、GraphQL Schema、前端请求封装等。提取的信息包括：HTTP 方法、URL 路径、请求参数（path/query/body）、响应格式、认证方式、错误码等。输出格式支持 Markdown、OpenAPI/Swagger、Postman Collection。
-
-## 核心能力
-
-- **REST API 路由解析**: 从 vue-router、react-router、Express 路由配置中提取 API 端点
-- **请求参数提取**: 解析 TypeScript 类型定义，提取请求参数和响应类型
-- **HTTP 方法识别**: 识别 GET/POST/PUT/DELETE/PATCH 方法
-- **认证信息提取**: 从 middleware、decorator 中提取认证和授权信息
-- **错误码收集**: 从业务代码中收集 HTTP 状态码和业务错误码
-- **API 文档生成**: 生成 Markdown、OpenAPI JSON/YAML、Postman Collection 格式
+从服务端路由、OpenAPI/GraphQL 契约或客户端请求封装中提取可静态确认的接口信息。`vue-router` 和 `react-router` 仅表示页面路由，不作为服务端 API 框架；动态注册、运行时拼接和缺少类型的信息必须标记为未确认。
 
 ## 输入
 
-- **SourceCodeContext**: 项目源码目录
-- **ApiFramework**: API 框架类型（vue-router/express/nest/axios，已自动检测可覆盖）
-- **ExtractionFormat**: 输出格式（markdown/openapi/json/yaml/postman）
-- **ApiScope**: 扫描范围（全部/指定模块）
+- `source_paths`：源码、契约或 API 层路径。
+- `api_source`：`server_route`、`openapi`、`graphql`、`client_request` 或用户指定来源。
+- `output_format`：`markdown`、`openapi_json`、`openapi_yaml` 或 `postman`，必须是项目支持的格式。
+- `api_scope`：全部或指定模块。
+- `write_files`：是否写入；写入前确认输出路径和覆盖策略。
 
 ## 输出
 
-- **ApiDocContent**: 提取的 API 文档内容
-- **ApiEndpointsList**: API 端点列表（结构化数据）
-- **OpenApiSpec**: OpenAPI 3.0 规范文档（可选格式）
-- **ApiSchema**: API 数据模型 schema（用于 type generation）
-
-**输出示例格式**:
-```yaml
-apiEndpoints:
-  - path: /api/meetings
-    method: POST
-    description: 创建会议
-    auth: Bearer Token
-    request:
-      body:
-        type: CreateMeetingDTO
-        fields:
-          - name: title
-            type: string
-            required: true
-          - name: startTime
-            type: ISO8601
-            required: true
-    response:
-      200:
-        type: Meeting
-        description: 创建成功
-      400:
-        type: ErrorResponse
-        description: 参数错误
-      401:
-        description: 未授权
-```
+- 结构化端点清单：method、path、参数、请求体、响应、认证线索和证据路径。
+- Markdown 默认写入 `docs/api.md`；OpenAPI 默认写入 `docs/openapi.json` 或用户指定路径。
+- 无法静态确认项、动态路由和缺失类型清单。
 
 ## 执行逻辑
 
-1. **框架检测**: 检测项目使用的 API 框架（Express/Nest/Vue Router 等）
-2. **路由文件扫描**: 找到所有路由定义文件（router/index.ts、routes/*.ts 等）
-3. **路由解析**: 解析路由定义，提取 path、method、handler
-4. **类型提取**: 读取 TypeScript 类型定义，提取请求/响应类型
-5. **认证提取**: 解析 middleware 配置，提取认证要求
-6. **文档生成**: 按选定格式生成 API 文档
-7. **输出保存**: 保存到 docs/api.md 或 docs/openapi.json
-
-## 依赖关系
-
-- 依赖: 无
-- 被依赖: doc-format-conversion
+1. 检查输入范围和来源类型。
+2. 扫描路由、契约或请求封装，识别 method 和 path。
+3. 提取参数、请求体、响应类型、错误码和认证线索，并保留证据路径。
+4. 对动态或不完整信息标记 `confidence: low`，不补造业务字段。
+5. 按选定格式生成预览；写入前检查现有文件。
+6. 对 OpenAPI 输出执行可用的 schema 解析或校验；工具缺失时记录原因。
 
 ## 完成标准
 
-1. 所有 API 端点都有对应的文档条目
-2. 每个端点包含：path、method、description、parameters、response
-3. 请求参数类型和必需性标注正确
-4. 输出格式符合 OpenAPI 3.0 规范（当选择 openapi 格式时）
-5. 生成 `docs/api.md` 或 `docs/openapi.json` 并保存
+1. 所选范围内的可静态识别端点均有条目，未将“未发现”表述为“没有”。
+2. 每个条目包含已确认的 method、path 和可获取的参数/响应信息。
+3. 输出格式与用户选择一致，且文件存在、非空、路径可追溯。
+4. 动态路由、缺失类型和工具限制已列入未覆盖项。
+
+## 完成后校验
+
+- 重新读取输出并检查 Markdown 或 JSON/YAML 结构。
+- OpenAPI 输出可解析时检查版本、paths 和方法结构。
+- 检查证据路径、置信度、输出路径和覆盖策略一致。
+- 核心输入不可读或输出失败返回 `failed`；存在未确认项返回 `partial`。
+
+## 状态
+
+返回 `passed`、`partial`、`failed` 或 `cancelled`。最多重试 3 次；不得通过扩大扫描范围或猜测类型掩盖失败。

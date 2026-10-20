@@ -1,40 +1,27 @@
 ---
 name: generate-and-confirm
-description: 生成探测代码片段并与用户确认补充一体化执行（K1任务折叠）。合并 configRules + inferredRules 生成探测代码，展示给用户并收集反馈。v1.2 替代原 generate-probe-code + confirm-and-supplement。
+description: 根据检测结果生成规范探测代码，收集用户确认和补充规则，输出带来源的确认结果。
 reasoner_instructions: |
-  K1任务折叠：一体化执行 generate-probe-code + confirm-and-supplement。
   MERGE configRules and inferredRules. GENERATE probe code with edge cases.
   SHOW probe code to user. USE AskUserQuestion for missing rules (max 3 per batch).
   RECORD user modifications and answers. OUTPUT confirmedRules JSON.
-  K2栈叠：输入从 task_skill.md 读取，输出写入 task_skill.md。
 ---
 
-# generate-and-confirm（v1.2 - K1任务折叠版）
 
 ## 概述
-**K1任务折叠**：本 atomic skill 整合了 `generate-probe-code`（生成探测代码）和 `confirm-and-supplement`（用户确认与补充），减少 τ 消耗约40%。
-
-## τ 预算
-- simple：1200 token
-- moderate：2500 token
-- complex：4000 token
 
 ## 核心能力
-- **K1折叠**：探测代码生成 + 用户确认补充一体化执行
 - 合并 configRules + inferredRules 生成探测代码
 - 展示探测代码供用户确认和修改
 - 分批次提问收集补充信息（框架特定规则）
 - 记录规则来源（config / inferred / user）
 
-## K2 技能栈叠（输入）
 - **优先读取**共享上下文 `task_skill.md` 中的 detect-and-scan 输出
 - 如果共享上下文无数据，才读取直接输入
 
-## K2 技能栈叠（输出）
 - **必须写入**共享上下文 `task_skill.md`
 - 输出内容：confirmedRules + ruleSources + userModifications + userAnswers + probeCode
 
-## 执行流程（K1任务折叠一体化）
 
 ### 阶段1：合并规则并生成探测代码
 
@@ -123,18 +110,11 @@ reasoner_instructions: |
 }
 ```
 
-## τ 控制（v1.2）
-- 探测代码生成必须包含所有6种代码片段，即使某些为空
-- 分批提问时，每批不超过3个问题，避免用户疲劳
-- 用户跳过问题 → 使用默认值，标记来源为 "default"
-
 ## 强约束
 - 必须使用 `AskUserQuestion` 工具，不能直接输出问题
 - 每批问题不超过3个
 - 必须记录规则的来源（config / inferred / user / default）
 - 必须记录用户修改的内容
-- **K2栈叠**：输入从共享上下文读取，输出写入共享上下文
 - 输出必须是合法的JSON格式
 
 ## 版本
-v1.2 - K1任务折叠版：整合 generate-probe-code + confirm-and-supplement，K2技能栈叠，τ 预算管理

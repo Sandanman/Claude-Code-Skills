@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | 技术栈 | Node.js / Claude API / Claude Code |
 | 开发入口 | Claude Code CLI（`/help` 查看帮助）|
 
-这是一个 **AI Agent Skills 编排系统**，基于华为韬定律（τ-Law），以 τ（时间常数）为核心性能指标，通过时间缩微而非堆模型参数来提升 Agent 综合表现。所有用户请求统一通过 `orchestrator-pro` 调度。
+这是一个 **AI Agent Skills 编排系统**，所有用户请求统一通过 `orchestrator` 调度。
 
 ---
 
@@ -36,30 +36,15 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 ### 调度器（唯一入口）
 
-**orchestrator-pro** 是所有任务的唯一入口，内部按复杂度自动分流：
+**orchestrator** 是所有任务的唯一入口，按复杂度选择执行策略：
 
 ```
 用户输入 → 意图识别 + complexity 评分
-    ├── complexity < 4  → orchestrator 轻量 9 步
-    └── complexity ≥ 4 → orchestrator-pro τ 增强 9 步
+    ├── complexity < 4  → 轻量执行策略
+    └── complexity ≥ 4 → 完整执行策略
 ```
 
-τ 优化路径包含：Task Folding + Skill Stacking + Pattern Mining + 三指标报告。
-
-### τ（时间常数）体系
-
-```
-τ = duration_ms × 0.5 + tokens × 0.001（驱动所有决策）
-
-三档预算：simple=5000 / moderate=15000 / complex=50000
-预警：80% 警告 / 95% 严重 / 100% 终止
-```
-
-四大韬定律技术：
-- **K1 Task Folding**：τ 不足时自动折叠可合并的任务链路（节省约 30%）
-- **K2 Skill Stacking**：通过 `task_skill.md` TSV 垂直互联，下游 skill 直读上游结果
-- **K3 Co-Design**：Model × Rules × Skills 三层贡献度显式化
-- **K4 Pattern Mining**：历史相似度 ≥ 0.6 复用子步骤，成熟模式 τ 折扣 70%
+两种策略共享同一套意图识别、Skill 匹配、DAG 生成、执行控制、结果校验和任务归档流程。
 
 ### 任务状态管理
 
@@ -71,23 +56,23 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 | 文件 | 作用 |
 |------|------|
-| `.claude/skills/orchestrator-pro/SKILL.md` | τ 增强调度器，完整 9 步流程 |
+| `.claude/skills/orchestrator/SKILL.md` | 统一任务编排器，完整任务流程 |
 | `.claude/skills/orchestrator/skills_register.md` | 主 skill 注册表（意图匹配数据源） |
 | `.claude/skills/tasks/current/task_skill.md` | 当前任务状态文件（执行中实时写入） |
 | `.claude/skills/tasks/templates/task_skill_template.md` | 任务文件模板 |
-| `.claude/rules/*.mdc` | τ 控制、任务折叠、技能栈叠、模式复用规则 |
-| `settings.json` → `commands` | Slash commands（16 个入口） |
+| `.claude/rules/*.mdc` | 项目编码、语言和工作流规则 |
+| `settings.json` → `commands` | Slash commands（19 个入口） |
 | `skill-design.md` | 完整设计思路文档 |
 
 ---
 
-## 主 Skill 体系（18 个）
+## 主 Skill 体系（19 个）
 
-所有任务通过 `/orchestrator-pro`（唯一入口）自动调度，也可直接触发 slash command：
+所有任务通过 `/orchestrator`（唯一入口）自动调度，也可直接触发 slash command：
 
 | Skill | 触发关键词 |
 |-------|-----------|
-| `/orchestrator-pro` | 唯一入口，complexity 分流自动执行 |
+| `/orchestrator` | 统一任务编排入口，按复杂度选择执行策略 |
 | `/code-generator` | 实现功能、生成代码、写函数 |
 | `/code-optimizer` | 优化代码、重构、性能优化、冗余检测 |
 | `/code-style-generator` | 检测代码规范、生成 CODE_STYLE |
@@ -105,6 +90,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 | `/skill-analyzer` | 解读 Skill、分析架构 |
 | `/product-designer` | 设计产品模块、扩展需求、用户故事、功能规格 |
 | `/project-cloud-map` | 生成项目云图、页面/入口关系、模块、数据流和交互分析 |
+| `/project-planner` | 项目规划、迭代计划、每日工作、进度追踪、超期预警、多项目管理 |
 
 **新增主 skill**：创建目录 → 编写 SKILL.md → 注册到 `orchestrator/skills_register.md` → 添加到 `settings.json` commands。
 
@@ -114,7 +100,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 - 思考过程、回答内容、工具说明 → **必须中文**
 - 文件内容、命令行输出、技术错误信息 → 保留原样
-- 技术术语（Skill、τ、Task Folding 等）→ 保留英文
+- 技术术语（Skill、DAG、Task Archiver 等）→ 保留英文
 
 ---
 

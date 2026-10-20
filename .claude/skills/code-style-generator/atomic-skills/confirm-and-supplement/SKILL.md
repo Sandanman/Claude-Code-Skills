@@ -1,6 +1,6 @@
 ---
 name: confirm-and-supplement
-description: K1任务折叠已合并至 generate-probe-code → generate-and-confirm。本文件已废弃，仅作向后兼容存根。v1.2 原 confirm-and-supplement + generate-probe-code 合并为 generate-and-confirm。
+description: 已废弃的兼容存根；确认和补充能力已合并到 generate-and-confirm，不作为独立执行阶段。
 ---
 
 # confirm-and-supplement（已废弃 → 合并入 generate-and-confirm）
@@ -15,9 +15,7 @@ description: K1任务折叠已合并至 generate-probe-code → generate-and-con
 | generate-probe-code | generate-and-confirm | 探测代码生成 + 用户确认一体化 |
 | confirm-and-supplement | generate-and-confirm | 已整合入 generate-probe-code |
 
-## K1 任务折叠效果
 - 执行步骤：5步 → 3步
-- τ 消耗：减少约 40%
 - 用户交互流程保持不变（展示 → 修改 → 提问 → 确认）
 
 ## 新执行流程（v1.2）
@@ -35,4 +33,3 @@ generate-style-document
 - `atomic-skills/generate-probe-code/SKILL.md`（generate-and-confirm）
 
 ## 版本
-v1.2 - K1任务折叠：confirm-and-supplement 已合并入 generate-and-confirm，不再作为独立 atomic skill。

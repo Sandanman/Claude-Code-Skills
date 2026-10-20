@@ -1,30 +1,16 @@
 ---
 name: requirement-analysis
-description: 整合需求分解与分析（K1任务折叠：decomposition + analysis 合并）。分析需求类型、模块分解、依赖关系、约束提取。在 input-processor 后执行。
 ---
 
-# Requirement Analysis 原子 Skill（v1.2 - K1任务折叠版）
-
 ## 概述
-**K1任务折叠**：本 atomic skill 整合了 `requirement-decomposition`（分解）与 `requirement-analysis`（分析），减少 τ 消耗~20%。
 将原始需求分解为功能模块 + 分析需求类型与约束，为后续设计提供技术决策依据。
 
-## τ 预算
-- simple：500 token
-- moderate：1000 token
-- complex：1500 token
-
 ## 核心能力
-- **K1折叠**：模块分解 + 需求分析一体化执行
 - 判断代码操作类型：新建 vs 修改
 - 判断是否需要新增API接口
 - 判断是否涉及权限控制
 - 判断是否需要状态管理
 - 识别关键约束
-
-## K2 技能栈叠（输入）
-- **优先读取**共享上下文 `task_skill.md` 中的 requirement-input-processor 输出
-- 如果共享上下文无数据，才读取直接输入
 
 ## 输出
 模块分解 + 需求分析一体化结果：
@@ -81,10 +67,7 @@ description: 整合需求分解与分析（K1任务折叠：decomposition + anal
 | `static` | 静态展示 | 关于页面、帮助中心 |
 | `layout` | 布局组件 | 导航栏、侧边栏、页脚 |
 
-## 执行逻辑（K1任务折叠一体化）
-
-### 阶段1：模块分解（折叠入本skill）
-1. 从共享上下文读取 requirement-input-processor 输出
+### 阶段1：模块分解
 2. 使用语义聚类将功能点分组（合并相似功能）
 3. 生成模块名称和描述
 4. 识别模块间依赖关系，输出依赖图
@@ -99,11 +82,10 @@ description: 整合需求分解与分析（K1任务折叠：decomposition + anal
 11. 根据模块间依赖判断 requires_state_management
 12. 从需求文本提取约束条件
 
-## 依赖关系（v1.2）
-- **K2栈叠**：优先从共享上下文 `task_skill.md` 读取 requirement-input-processor 输出
-- 不再依赖独立的 requirement-decomposition（已折叠入本skill）
+## 依赖关系
+- 模块分解能力已包含在本 skill 中
 
-## 完成标准（v1.2）
+## 完成标准
 1. 完成模块分解（模块数 >= 1）
 2. 正确判断 code_action（new/modify）
 3. 正确判断 requires_new_api（true/false）
@@ -120,7 +102,6 @@ description: 整合需求分解与分析（K1任务折叠：decomposition + anal
 
 ## 示例
 
-**输入（来自共享上下文）**：
 ```json
 {
   "input_type": "code_snippet",
@@ -158,11 +139,4 @@ description: 整合需求分解与分析（K1任务折叠：decomposition + anal
 }
 ```
 
-## 注意事项（v1.2）
-- **K1折叠**：分解 + 分析一体化执行，τ 节省约20%
-- **K2栈叠**：优先读取共享上下文，禁止重复解析
-- 不分析具体代码，仅基于需求语义
-- 当 input_type 为 code_snippet 时，优先判断为 modify
-
 ## 版本
-v1.2 - K1任务折叠版：整合 decomposition + analysis，K2技能栈叠，τ 预算管理

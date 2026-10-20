@@ -1,73 +1,89 @@
 ---
 name: doc-generator
-description: 自动生成代码文档，包括API文档、README、组件文档、变更日志等，支持多种格式（Markdown、API文档、TypeDoc、JSDoc）
+description: 根据用户指定范围生成或转换项目文档，包括 API 文档、组件文档、CHANGELOG 和格式转换；当用户要求生成文档、更新 README、组件文档、API 文档、变更日志或转换文档格式时使用，并按意图选择最小必要原子 Skill。
 ---
 
 # Doc Generator
 
 ## 概述
 
-Doc Generator 是前端项目的自动化文档生成技能，通过4个原子技能协同工作，从 API 文档提取、组件文档生成、变更日志生成到文档格式转换，完整覆盖项目文档生成需求。支持 TypeDoc、JSDoc、VuePress 文档等多种格式，可生成 README、API 文档、组件文档、CHANGELOG 等多种文档类型。
+Doc Generator 将已确认的源码、Git 历史或文档输入转换为可审阅的项目文档。它不默认扫描或生成所有文档，也不保证静态分析能发现动态注册、运行时路由或缺失类型；无法确认的内容必须标记为待人工确认。
 
 ## 核心能力
 
-- 从代码中提取 API 定义（endpoints、parameters、return types）
-- 生成 Vue/React 组件文档（props、events、slots、usage examples）
-- 从 git commits 和 PRs 生成变更日志
-- 支持文档格式转换（Markdown/HTML/PDF/JSON）
-- 自动识别并补充缺失的 JSDoc/TSDoc 注释
-- 生成交互式 API 文档（支持 Swagger/OpenAPI 格式）
+- 提取可静态识别的 API 路由、请求/响应类型和认证线索
+- 生成 Vue/React 组件的属性、事件、插槽或暴露方法文档
+- 根据 Git 提交和可获取的 PR 信息生成 CHANGELOG
+- 在已生成或用户提供的文档之间进行格式转换、合并和目录生成
 
-## 执行流程
+## 按需编排
 
-1. **api-doc-extraction** - 从代码中提取API定义（endpoint、参数、返回值）
-2. **component-doc-generation** - 生成组件文档（props、events、slots、usage）
-3. **changelog-generation** - 生成变更日志（基于git commit和PR）
-4. **doc-format-conversion** - 文档格式转换（Markdown/HTML/PDF）
+根据用户目标选择最小 Skill 集合：
 
-## 原子skill依赖关系
+| 用户目标 | 执行 Skill | 依赖 |
+| --- | --- | --- |
+| API 文档 | `api-doc-extraction` | 无 |
+| 组件文档 | `component-doc-generation` | 无 |
+| CHANGELOG | `changelog-generation` | 无；需 Git 仓库 |
+| 转换已有文档 | `doc-format-conversion` | 无 |
+| 生成 API/组件文档并转换 | 对应生成 Skill → `doc-format-conversion` | 转换依赖生成结果 |
+| 全面文档 | API、组件、CHANGELOG 可并行；转换在选定输入完成后执行 | 按实际输入决定 |
 
-- **api-doc-extraction**: 无依赖
-- **component-doc-generation**: 无依赖
-- **changelog-generation**: 无依赖
-- **doc-format-conversion**: 依赖 api-doc-extraction 或 component-doc-generation
+未被用户目标选中的原子 Skill 不执行。README、注释补充、Swagger UI 等仅在输入或选定原子 Skill 明确支持时处理，不将能力声明当作已完成产物。
 
-## 主skill完成标准
+## 输入契约
 
-1. 成功扫描所有 API 路由/接口，提取完整的 endpoint 定义
-2. 生成所有组件的文档（包含 props、events、slots、示例代码）
-3. 生成符合 Keep a Changelog 规范的变更日志
-4. 文档格式正确（Markdown 语法无误、示例代码可运行）
-5. 文档内容准确（参数类型、返回值格式正确）
-6. 生成文档保存到正确的位置（README.md、docs/ 目录等）
+- `target_path`：源码、Git 仓库或文档路径，必须由任务上下文确认。
+- `document_scope`：`api`、`component`、`changelog`、`conversion` 或组合值。
+- `source_paths`：可选的具体文件或目录；未提供时只使用已确认的项目范围。
+- `output_path`：输出文件或目录；未提供时使用对应原子 Skill 的默认路径。
+- `format_options`：可选的输出格式、版本范围、主题或目录配置。
+- `write_files`：是否写入文件；写入前必须展示目标路径和覆盖行为。
 
-## 重试规则
+不得读取或输出未授权的敏感值；生成前发现输出文件已存在时，必须选择预览后覆盖、追加、合并或跳过。
 
-- 每个原子skill失败后可重试 **3次**
-- changelog-generation 在非 Git 仓库中执行时生成示例文档
-- doc-format-conversion 失败时回退到 Markdown 格式输出
+## 输出契约
+
+- 文档文件：Markdown、HTML、PDF、JSON 或原子 Skill 声明的其他格式。
+- 结构化结果：发现范围、成功项、跳过项、无法静态确认项和输出路径。
+- 每个结论注明证据来源；不把“未发现”表述为“必然不存在”。
+- 返回状态：`passed`、`partial`、`failed` 或 `cancelled`。
+
+## 完成标准
+
+仅对本次实际选择的原子 Skill 评估：
+
+1. 输入范围与用户目标一致，未选中的能力未被宣称执行。
+2. 生成文件存在、非空、路径与预览一致，且未未经确认覆盖已有文件。
+3. 文档结构符合所选格式；无法静态解析或缺少工具的部分已记录。
+4. API、组件、版本范围和变更分类等核心结论均可追溯到输入证据。
+5. 转换任务保留可识别的标题、正文、代码块和链接结构；格式限制已说明。
+
+## 完成后校验
+
+1. 重新读取输出文件，确认非空且格式可解析。
+2. 检查报告中的输出路径、执行范围、跳过项与实际结果一致。
+3. 检查 Markdown 标题、链接和代码围栏；OpenAPI 输出按可用工具进行结构校验。
+4. CHANGELOG 检查版本边界、重复条目和未分类提交；无 Git 数据时不得伪造变更。
+5. 若存在低置信度、工具缺失、部分失败或人工确认项，返回 `partial`，不得返回 `passed`。
+
+## 错误与状态
+
+- `passed`：所选流程、写入和校验均成功。
+- `partial`：部分内容无法静态确认、工具缺失、输入不完整或仅完成部分目标，但产物可用。
+- `failed`：目标不可读、核心生成失败、输出写入失败或校验失败。
+- `cancelled`：用户取消生成、转换或覆盖操作，不覆盖已有文件。
+
+每个原子 Skill 最多重试 3 次；重试不得通过减少核心范围掩盖失败。Git 仓库不存在时，CHANGELOG 流程应暂停或返回 `partial`，不得生成虚构历史。
 
 ## 触发关键词
 
-- 生成文档
-- API文档
-- README
-- 组件文档
-- 变更日志
-- 文档更新
-- 生成注释
-- TSDoc
-- JSDoc
-- 生成CHANGELOG
-
-## 注意事项
-
-- Git 仓库中才执行 changelog-generation，非 Git 仓库生成模板
-- PDF 转换需要 pandoc 或类似工具，未安装时输出 HTML 格式
-- 敏感信息（如真实 API Key）不出现在生成的文档中
-- 文档覆盖范围由扫描范围决定，扫描范围需明确指定
+生成文档、API 文档、README、组件文档、变更日志、CHANGELOG、文档转换、JSDoc、TSDoc、OpenAPI。
 
 ## 文件系统位置
 
-- 主skill路径: ./.claude/skills/doc-generator/SKILL.md
-- 原子skill路径: ./.claude/skills/doc-generator/atomic-skills/下各子目录
+- 主 Skill：`./.claude/skills/doc-generator/SKILL.md`
+- 原子 Skill：`./.claude/skills/doc-generator/atomic-skills/`
+- 默认 API 输出：`docs/api.md` 或 `docs/openapi.json`
+- 默认组件输出：`docs/components/`
+- 默认变更日志：`CHANGELOG.md`

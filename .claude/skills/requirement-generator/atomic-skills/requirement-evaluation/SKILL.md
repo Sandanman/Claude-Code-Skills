@@ -3,15 +3,10 @@ name: requirement-evaluation
 description: 全面评估需求完整性、一致性、可测试性、安全性、可行性、紧急度，识别缺陷和风险。在测试用例生成后自动执行。v1.2新增 feasibility_score 和 urgency_score（7维度）。
 ---
 
-# Requirement Evaluation 原子 Skill（v1.2 - 7维度评估版）
+# Requirement Evaluation 原子 Skill
 
 ## 概述
 对需求的7个维度进行全面评估，识别潜在缺陷、风险和改进点。**v1.2新增 feasibility_score（可行性）和 urgency_score（紧急度），形成7维度评估体系。**
-
-## τ 预算
-- simple：300 token
-- moderate：600 token
-- complex：1000 token
 
 ## 核心能力
 - 评估需求完整性（是否缺少关键要素）
@@ -25,9 +20,7 @@ description: 全面评估需求完整性、一致性、可测试性、安全性�
 - 输出质量评分报告（含 7 个维度）
 
 ## 输入
-- **K2栈叠**：优先从共享上下文 `task_skill.md` 读取上游 skill 输出
 - test-case-generator 输出的测试用例
-- design-designer（原 function-flow-designer + ui-component-identifier 折叠合并）输出的流程+UI
 - api-spec-designer 输出的API规格
 
 ## 输出
@@ -88,7 +81,7 @@ description: 全面评估需求完整性、一致性、可测试性、安全性�
 }
 ```
 
-## 多维度 Quality Score 评估体系（v1.2 - 7维度）
+## 多维度 Quality Score 评估体系
 
 ### 1. overall_score（综合评分）
 > 公式：`overall = weighted_average(completeness×0.25 + consistency×0.15 + testability×0.2 + security×0.2 + feasibility×0.1 + urgency×0.1)`
@@ -157,18 +150,15 @@ description: 全面评估需求完整性、一致性、可测试性、安全性�
 | 频繁请求 | 是否有不必要的轮询？ |
 
 ## 执行逻辑
-1. **K2栈叠**：优先从共享上下文 `task_skill.md` 读取所有上游skill输出
 2. 按7个评估维度逐一检查
 3. 标记每个检查项的结果
 4. 计算综合评分（7维度加权平均，详见公式）
 5. 生成问题列表和改进建议
 6. 输出评估报告
 
-## 依赖关系（v1.2）
-- **K2栈叠**：优先从共享上下文 `task_skill.md` 读取上游skill输出
-- 依赖：design-designer（原 function-flow-designer + ui-component-identifier 折叠合并）+ api-spec-designer + test-case-generator
+## 依赖关系
 
-## 完成标准（v1.2）
+## 完成标准
 1. 完成所有7个维度的评估
 2. 标记所有问题和风险
 3. 提供具体改进建议
@@ -231,7 +221,5 @@ description: 全面评估需求完整性、一致性、可测试性、安全性�
 - 问题必须具体，有定位
 - 建议必须可操作
 - 不提出技术实现建议，只提需求层面问题
-- **K2栈叠**：优先从共享上下文读取上游输出
 
 ## 版本
-v1.2 - 7维度评估版：新增 feasibility_score（可行性）和 urgency_score（紧急度），K2技能栈叠，τ 预算管理

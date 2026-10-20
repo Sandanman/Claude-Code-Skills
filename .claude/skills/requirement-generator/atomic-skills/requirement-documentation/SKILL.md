@@ -1,22 +1,11 @@
 ---
 name: requirement-documentation
-description: 整合所有原子skill的输出，生成标准化的机器可读requirements.json（含 τ 分解 + pattern 匹配）和人类可读requirements.md（含 quality score + τ 可视化）。作为最后一个原子skill执行。v1.2 整合韬理论。
 ---
 
-# Requirement Documentation 原子 Skill（v1.2 - 韬理论增强版）
-
 ## 概述
-整合所有前置原子 skill 的输出，生成标准化的需求文档。**v1.2 输出包含 τ 分解报告和 pattern 模式匹配结果。**
-
-## τ 预算
-- simple：500 token
-- moderate：800 token
-- complex：1500 token
 
 ## 核心能力
 - 整合所有前置原子skill的输出数据
-- 生成符合规范的 requirements.json（含 7维度 quality.score + τ 分解 + pattern 匹配，v1.2）
-- 生成结构化的 requirements.md 文档（含 quality score 可视化 + τ 分解可视化，v1.2）
 - 自动填充项目上下文
 - 生成时间戳和版本信息
 
@@ -28,17 +17,14 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
 - 生成时间戳和版本信息
 
 ## 输入
-所有前置原子skill的输出结果（v1.2）：
+所有前置原子skill的输出结果：
 - requirement-input-processor（含 code_snippet_analysis / api_spec_analysis）
-- requirement-analysis（含 decomposition 折叠合并）
-- design-designer（原 function-flow-designer + ui-component-identifier 折叠合并）
 - api-spec-designer（含 reuse_existing）
 - test-case-generator
 - requirement-evaluation（含 7 维度 quality.score + feasibility/urgency）
 - project-context-reader
 
 ## 输出
-两个文件（v1.2 新增 τ 分解 + pattern 匹配）：
 
 ### 1. requirements.json（机器可读，v1.2）
 
@@ -47,7 +33,6 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
   "version": "1.2",
   "generated_at": "2026-06-03T10:00:00Z",
   "source": "user_text | uploaded_document | ui_design_image | code_snippet | api_spec | mixed",
-  "tau": {
     "complexity": "moderate",
     "total_budget": 6600,
     "total_consumed": 5840,
@@ -61,12 +46,9 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
     },
     "folding_notes": []
   },
-  "pattern": {
     "matched_patterns": [
-      { "name": "auth-login-standard", "maturity": "mature", "frequency": 12, "tau_discount": 0.7, "similarity": 0.92 }
     ],
     "reuse_rate": 0.75,
-    "tau_saved": 1200
   },
   "project_context_used": true,
   "requirement": {
@@ -104,14 +86,9 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
 }
 ```
 
-### 2. requirements.md（人类可读，v1.2 含 τ + pattern 可视化）
-
 ```markdown
 # 需求规格说明书
 
-## τ 分解报告（**新增 v1.2**）
-
-| 步骤 | τ 预算 | τ 消耗 | 状态 |
 |------|--------|--------|------|
 | input | 500 | 480 | ✅ 88% |
 | analysis | 1000 | 920 | ✅ 92% |
@@ -124,13 +101,7 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
 | **总计** | **6600** | **5840** | **88%** |
 
 ```
-总预算  █████████████████████  6600
-已消耗  ██████████████████    5840   88%  ✅
-剩余    ██                    760    12%
 ```
-
-**τ 折叠**：未触发（预算充足）
-**τ 节省**：1200（来自模式复用，成熟模式 auth-login-standard τ 折扣70%）
 
 ## 1. 需求概述
 [需求描述]
@@ -140,7 +111,6 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
 - **代码操作**：新建 / 修改
 - **是否需API**：是 / 否
 - **是否含权限控制**：是 / 否
-- **模式匹配**：auth-login-standard（相似度 92%，成熟模式 τ 折扣70%）**（新增 v1.2）**
 
 ## 3. 模块分解
 | 模块名称 | 类型 | 描述 | 优先级 |
@@ -205,30 +175,24 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
 
 ## 10. 生成信息
 - 生成时间：2026-06-03 10:00:00
-- 生成工具：requirement-generator v1.2（韬理论增强版）
 - 质量评估：7 维度评估（completeness/consistency/testability/security/feasibility/urgency）
-- τ 总消耗：5840/6600（88%）
-- 模式复用：auth-login-standard（相似度92%，τ节省1200）
 ```
 
-## 执行逻辑（v1.2）
+## 执行逻辑
 
 ### 1. 数据收集
-- **K2栈叠**：优先从共享上下文 `task_skill.md` 读取所有前置skill输出
 - 验证所有必需数据都已存在
 
 ### 2. requirements.json 生成
 - 构建JSON结构
 - 填充来自各原子skill的数据
-- **生成 τ 分解报告（v1.2 新增）**
-- **生成 pattern 模式匹配结果（v1.2 新增）**
-- 生成时间戳和版本信息（v1.2）
+- **生成 pattern 模式匹配结果**
+- 生成时间戳和版本信息
 - 验证JSON格式
 
 ### 3. requirements.md 生成
 - 按照固定模板构建Markdown文档
-- **新增 τ 分解可视化（ASCII bar chart）（v1.2 新增）**
-- **新增 pattern 匹配结果说明（v1.2 新增）**
+- **新增 pattern 匹配结果说明**
 - 保留 quality score 可视化（7维度，v1.2 扩展）
 - 填充各章节内容
 - 格式化代码块和表格
@@ -237,18 +201,14 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
 ### 4. 输出
 - 写入当前目录的 requirements.json 文件
 - 写入当前目录的 requirements.md 文件
-- 记录生成日志（含 τ 消耗统计）
 
-## 依赖关系（v1.2）
-- 依赖所有前置原子skill（8个，v1.2 折叠后）
-- **K2栈叠**：优先从共享上下文读取上游skill输出
+## 依赖关系
+- 依赖所有前置原子 skill
 
-## 完成标准（v1.2）
+## 完成标准
 1. 所有前置原子skill已完成（8个，v1.2）
-2. requirements.json 已生成且格式正确（包含 7 维度 quality.score + τ + pattern）
-3. requirements.md 已生成且格式正确（包含 7 维度 quality score 可视化 + τ 分解可视化）
 4. 两个文件内容与所有前置输出一致
-5. 时间戳和版本信息已正确填充（v1.2）
+5. 时间戳和版本信息已正确填充
 6. 文件已保存到当前目录
 
 ## 错误处理
@@ -257,20 +217,8 @@ description: 整合所有原子skill的输出，生成标准化的机器可读re
 - **Markdown格式错误**：检查模板和填充内容
 - **文件写入失败**：报告错误，尝试写入临时文件
 
-## 注意事项（v1.2）
-- 严格遵循输出格式规范
-- 不修改或添加任何原子skill的输出内容
-- 仅整合，不分析
-- 不生成新的需求信息
-- 不依赖项目文件
-- requirements.md 必须包含：
-  - **τ 分解可视化（v1.2 新增）**
-  - **7 维度 quality score 可视化（v1.2 扩展）**
-  - **pattern 匹配结果说明（v1.2 新增）**
-
 ## 文件位置
 - requirements.json：./requirements.json
 - requirements.md：./requirements.md
 
 ## 版本
-v1.2 - 韬理论增强版：新增 τ 分解报告、pattern 模式匹配、7 维度 quality.score、requirements.md 新增 τ 可视化，K2 技能栈叠

@@ -1,12 +1,10 @@
 ---
 name: fix-generation
-description: 根据根因定位报告，设计并生成具体的代码修复方案，提供可执行的修改建议。在根因定位后执行。v1.3 整合韬定律（τ 控制、技能栈叠）。
+description: 根据根因定位报告设计并生成可执行的代码修复方案。在根因定位后执行。
 ---
 
-# Fix Generation 原子Skill v1.3（τ 增强版）
 
 ## 版本历史
-- v1.3 (2026-06-04): 整合韬定律，添加 Skill Stacking 上下文键、τ-weight 标注
 - v1.0（初始版本）
 
 ## 概述
@@ -100,25 +98,3 @@ root-cause-analysis输出的根因定位报告
 ./.claude/skills/bug-solver/atomic-skills/fix-generation/SKILL.md
 
 ---
-
-## Skill Stacking & τ-Weight（v1.3）
-
-### τ-Weight
-从 bug-solver 主 SKILL.md 的 7步 τ 分配表继承。
-| 复杂度 | τ-Weight |
-|--------|----------|
-| simple | 20% |
-| moderate | 18% |
-| complex | 20% |
-
-### Skill Stacking 上下文键
-| 键名 | 类型 | 说明 |
-|------|------|------|
-| `root_cause` | required_keys | 从 task_skill.md 读取，根因 + 证据链 |
-| `fix_plan` | output_keys | 修复方案列表 + 推荐方案 + diff |
-
-### 执行日记写入（必须）
-本 atomic skill 执行完成后，必须将 output_keys 写入 `task_skill.md` 的技能输出区域，供下游 skill 通过 Skill Stacking TSV 读取。
-
-### 折叠标记
-[核心·不折叠] - fix-generation 是核心修复步骤，禁止折叠，必须独立执行。

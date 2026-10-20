@@ -1,25 +1,14 @@
 ---
 name: detect-tech-stack
-description: 检测前端项目技术栈（框架+UI库+状态管理），一次扫描输出三个维度。τ=600，比分别调用detect-framework+detect-ui-library+detect-state-manage节省40%。v1.2新增confidence scores、Co-Design规则分配。
 ---
-
-# detect_tech_stack（v1.2，K1合并技能）
 
 ## 任务定义
 
-你是原子技能 `detect_tech_stack`（K1 Task Folding 合并版），一次性检测三个维度：
 - **框架**：前端框架类型与版本、TS使用情况、渲染模式
 - **UI库**：UI组件库、样式方案、主题配置
 - **状态管理**：状态管理库与使用方式
 
-**τ 值**：600（原3技能分开调用合计约1500，节省60%）
-
 ## 合并来源
-
-本技能由以下三个技能合并而来（K1 Task Folding）：
-1. `detect_framework`（τ=500 → 合并入）
-2. `detect_ui_library`（τ=400 → 合并入）
-3. `detect_state_manage`（τ=600 → 合并入）
 
 ## 输入依据
 
@@ -27,15 +16,6 @@ description: 检测前端项目技术栈（框架+UI库+状态管理），一次
 - 项目结构（关键目录、入口文件）
 - 配置文件（tsconfig.json、tailwind.config.* 等）
 - 样式相关目录（src/styles、src/theme 等）
-
-## Co-Design 规则分配
-
-| 检测维度 | 规则分配 | LLM分配 | 说明 |
-|---------|---------|--------|------|
-| 框架检测 | 包名正则匹配 | 版本范围解析 | 规则处理90%场景 |
-| UI库检测 | 已知库正则 | 未知库兜底 | 规则优先 |
-| 状态管理 | 包名+目录正则 | 目录结构推断 | 规则为主 |
-| 置信度 | 基础规则 | 上下文调整 | 规则+LLM综合 |
 
 ## 框架检测规则（规则路径，高优先级）
 
@@ -76,8 +56,6 @@ description: 检测前端项目技术栈（框架+UI库+状态管理），一次
 - Element Plus：`element-plus` 依赖
 - Naive UI：`naive-ui` 依赖
 - Ant Design：`antd` 或 `@ant-design/react` 依赖
-- Arco Design Vue：`@arco-design/web-vue` 依赖
-- Arco Design React：`@arco-design/web-react` 依赖
 - Vuetify：`vuetify` 依赖
 - Quasar：`quasar` 依赖
 - shadcn/ui：`components.json` 存在 → shadcn/ui（confidence: medium）
@@ -156,23 +134,8 @@ description: 检测前端项目技术栈（框架+UI库+状态管理），一次
 1. 框架结论必须唯一（命中即停止规则）
 2. 每个检测结论必须标注 confidence score
 3. 规则优先（覆盖90%场景），LLM处理边缘情况
-4. τ 消耗：600（包含三个维度的完整检测）
 5. 禁止重复输出，三个维度一次性输出
-
-## τ 节省说明
-
-```
-分开调用（K1前）：
-detect_framework τ=500 + detect_ui_library τ=400 + detect_state_manage τ=600 = τ=1500
-
-合并调用（K1后）：
-detect_tech_stack τ=600
-
-τ 节省：900（节省率 60%）
-原因：package.json 只读一次，三个维度共享解析结果
-```
 
 ## 版本
 
-- v1.2 - K1 Task Folding 合并版：从 detect_framework + detect_ui_library + detect_state_manage 合并而来
 - 继承各来源技能的核心检测逻辑，统一输出格式
