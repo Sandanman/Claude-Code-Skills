@@ -40,10 +40,12 @@ impl_status: design_spec
     {
       "name": "skill-name",
       "score": 0.0,
-      "reason": "匹配理由"
+      "reason": "匹配理由",
+      "matched_keywords": ["用户关键词"]
     }
   ],
   "selected_skill": "skill-name",
+  "matched_keywords": ["用户关键词"],
   "selection_reason": "选择理由",
   "fallback": false
 }

@@ -67,6 +67,10 @@ class StreamOutput:
     def skill_failure(self, skill_name: str, error: str):
         self.emit("skill_failure", {"skill": skill_name, "error": error})
 
+    def main_skill_selected(self, skill_name: str, matched_keywords: list[str]):
+        keywords = "、".join(matched_keywords)
+        print(f"{skill_name}：用户的{keywords}匹配上{skill_name}")
+
     def emit(self, event: str, payload: dict):
         if self.enabled:
             print({"event": event, **payload})
@@ -190,6 +194,11 @@ def run_orchestrator_pro(user_input: str, skills_register: list) -> dict:
     match = match_main_skill(intent, skills_register)
     if match["matched_skill"] is None:
         return handle_missing_skill(intent, match)
+
+    StreamOutput().main_skill_selected(
+        match["matched_skill"]["name"],
+        match.get("matched_keywords", []),
+    )
 
     skill_definition = read_skill_file(match["matched_skill"]["path"])
     atomic_skills = parse_atomic_skills(skill_definition)

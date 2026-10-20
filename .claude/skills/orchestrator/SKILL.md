@@ -86,7 +86,13 @@ def retrieve_history(intent: dict, monthly_index: list) -> list:
 - 单匹配：选择唯一候选。
 - 多匹配：展示候选并选择推荐项，或等待用户选择。
 
-确定主 Skill 后必须 Read 其 `SKILL.md`，加载原子 Skill 列表、依赖和执行逻辑。若主 Skill 声明依赖其他 Skill，递归读取依赖文件。匹配结果不得修改注册表中的基础路径和依赖关系。
+确定主 Skill 后，立即在控制台输出选择结果，格式固定为：
+
+```text
+{skill-name}：用户的{keyword}匹配上{skill-name}
+```
+
+其中 `{keyword}` 使用实际命中的用户关键词；多个关键词命中时用 `、` 连接。随后必须 Read 其 `SKILL.md`，加载原子 Skill 列表、依赖和执行逻辑。若主 Skill 声明依赖其他 Skill，递归读取依赖文件。匹配结果不得修改注册表中的基础路径和依赖关系。
 
 ## 6. 步骤 4：任务生成
 
