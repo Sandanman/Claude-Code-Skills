@@ -12,31 +12,17 @@
 
 ```
 .claude/skills/                          # v1.2 改进后的skill集合
-├── orchestrator/                            # 唯一总控调度器（Reasoner）
-│   ├── SKILL.md                             # 核心入口（9步执行流程）
+├── orchestrator/                            # 统一任务编排器
+│   ├── SKILL.md                             # 核心入口与统一执行流程
 │   ├── README.md                            # 使用指南
-│   ├── algorithms.md                        # 10个核心算法（~600行伪代码）
-│   ├── config.md                            # 16个配置块
-│   ├── technical_implementation.md          # 11个技术实现模块
-│   ├── user_interaction.md                  # 6个决策点交互模板
-│   ├── skills_register.md                   # 主技能索引（v1.2 split）
-│   ├── atomic_skills_register.md            # 原子技能详情（v1.2 split）
-│   └── missing_skills.md                    # 缺失技能记录
-│
-├── orchestrator-pro/                       # 智能调度总控（τ增强版）
-│   └── [15个主Skill]                            # 主技能（协同执行）
-│   ├── code-generator/         [9原子skill]  # 代码生成（+multi-scenario-adapter）
-│   ├── code-optimizer/         [7原子skill]  # 代码优化（+performance-analysis）
-│   ├── bug-solver/             [7原子skill]  # Bug修复（+bug-triage）
-│   ├── code-style-generator/   [5原子skill]  # 代码风格
-│   ├── requirement-generator/  [10原子skill]# 需求标准化
-│   ├── scan-object-info/       [7原子skill]  # 项目扫描（v1.2韬定律优化版）
-│   ├── performance-optimizer/  [已合并至code-optimizer] # 性能优化（τ增强版）
-│   ├── security-scanner/       [4原子skill]  # 安全扫描 [新增]
-│   ├── test-generator/        [4原子skill]  # 测试生成 [新增]
-│   ├── doc-generator/          [4原子skill]  # 文档生成 [新增]
-│   ├── git-assistant/          [7原子skill]  # Git操作（τ增强版，整合git-helper）[新增]
-│   └── deploy-helper/          [4原子skill]  # 部署辅助 [新增]
+│   ├── algorithms.md                        # 调度算法
+│   ├── config.md                            # 编排配置
+│   ├── technical_implementation.md          # 技术实现
+│   ├── user_interaction.md                  # 用户交互模板
+│   ├── skills_register.md                   # 主技能索引
+│   ├── atomic_skills_register.md            # 原子技能详情
+│   ├── missing_skills.md                    # 缺失技能记录
+│   └── atomic-skills/                       # 编排器通用原子技能
 │
 └── README.md                               # 本文件
 ```
@@ -47,7 +33,7 @@
 
 | 类别 | v1.0 数量 | v1.2 数量 | 新增/改进 |
 |------|---------|---------|----------|
-| 主skill | 7个 | **15个** | +8个新skill（含orchestrator-pro，orchestrator已废弃） |
+| 主skill | 统一由 orchestrator 调度 |
 | 原子skill | ~49个 | **77个** | +28个原子能力（不含已清空的orchestrator原子skill） |
 | 配置文件 | 5个 | **7个** | +missing_skills.md、+atomic_skills_register.md |
 | 核心算法 | 8个 | **10个** | +并行层识别、反思重规划 |
@@ -61,7 +47,7 @@
 | # | 主Skill | 原子数 | 改进 | v1.0原子数 |
 |---|---------|--------|------|-----------|
 | 1 | code-generator | 9 | +multi-scenario-adapter | 8 |
-| 2 | code-optimizer | 7 | +τ增强+冗余检测合并 | 6 |
+| 2 | code-optimizer | 7 | 代码质量分析与冗余检测合并 | 6 |
 | 3 | bug-solver | 7 | +bug-triage | 6 |
 | 4 | code-style-generator | 5 | +TS/Vue3/React支持 | 5 |
 | 6 | requirement-generator | 10 | 增强quality.score+flow类型 | 10 |
@@ -70,7 +56,7 @@
 | 9 | security-scanner | 4 | **新增** | 0 |
 | 10 | test-generator | 4 | **新增** | 0 |
 | 11 | doc-generator | 4 | **新增** | 0 |
-| 12 | git-assistant | 7 | **整合git-helper，τ增强** | 4 |
+| 12 | git-assistant | 8 | 整合 git-helper | 4 |
 | 13 | deploy-helper | 4 | **新增** | 0 |
 
 ---
@@ -114,7 +100,7 @@
 ## 新增主Skill详情
 
 ### performance-optimizer（性能优化）
-> **[已合并至 code-optimizer v2.0]** 功能已整合进 code-optimizer，无需单独使用。通过 Task Folding 压缩为 6 个原子技能，τ 效率提升约 30%。
+> **[已合并至 code-optimizer v2.0]** 功能已整合进 code-optimizer，无需单独使用。
 
 ### security-scanner（安全扫描）
 **触发关键词**：安全扫描、安全漏洞、XSS、CSRF、依赖安全、敏感信息检测
@@ -128,9 +114,9 @@
 **触发关键词**：生成文档、API文档、README、组件文档、变更日志
 **4个原子skill**：api-doc-extraction → component-doc-generation → changelog-generation → doc-format-conversion
 
-### git-assistant（Git操作，τ 增强版）
+### git-assistant（Git操作）
 **触发关键词**：提交、commit、分支管理、冲突解决、stash、历史分析、版本Tag、conventional commits
-**7个原子skill**：intent-router → commit-generation → branch-management → conflict-resolution → history-analysis → stash-management → version-management
+**8个原子skill**：intent-router → commit-generation → branch-management → conflict-resolution → history-analysis → stash-management → version-management → cloud-map-sync（commit 执行前自动链式触发，非意图路由项，仅当 docs/project-cloud-map.md 存在时执行）
 
 ### deploy-helper（部署辅助）
 **触发关键词**：部署、Docker、CI/CD、环境配置、部署脚本、Vercel、Netlify
