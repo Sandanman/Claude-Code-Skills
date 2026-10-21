@@ -163,6 +163,10 @@
       "description": "自动生成代码文档，包括API文档、README、组件文档、变更日志等"
     },
     {
+      "name": "skill-creator-orchestrator",
+      "description": "创建新 Skill 或定制、扩展已有 Skill，依据项目规则同步注册配置并完成一致性校验"
+    },
+    {
       "name": "git-assistant",
       "description": "智能 Git 操作助手，支持 commit 生成、分支管理、历史分析、冲突解决、版本管理"
     },

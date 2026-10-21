@@ -115,6 +115,13 @@ version: 1.8
   match_keywords: 生成文档, API文档, README, 组件文档, 变更日志, 文档更新, 生成注释
   status: 启用
 
+- name: skill-creator-orchestrator
+  desc: 创建新 Skill 或定制、扩展已有 Skill，依据项目编排规则同步 Skill 文件、主技能注册表和 slash command，并完成一致性校验
+  path: .claude/skills/skill-creator-orchestrator/SKILL.md
+  core_ability: Skill 需求分析、Skill 创建、已有 Skill 更新、原子 Skill 依赖设计、注册同步、结构校验
+  match_keywords: 新增Skill, 创建Skill, 创建技能, 修改Skill, 定制Skill, 扩展Skill, 修改SKILL.md, Skill注册, 添加slash command
+  status: 启用
+
 - name: git-assistant
   desc: 智能 Git 操作助手，支持 commit 生成、分支管理、历史分析、冲突解决、Stash 操作、版本管理、提交规范检查
   path: .claude/skills/git-assistant/SKILL.md
@@ -160,13 +167,13 @@ version: 1.8
 
 ---
 
-## 主技能统计（v1.9）
+## 主技能统计（v2.0）
 
 | 类别 | 数量 |
 |------|------|
-| 总主技能数 | 19 |
+| 总主技能数 | 20 |
 | Reasoner（调度器） | 1（orchestrator）|
-| 功能主技能 | 18 |
+| 功能主技能 | 19 |
 
 ---
 
@@ -178,5 +185,5 @@ version: 1.8
 
 ---
 
-**版本**: 1.9
-**最后更新**: 2026-06-18
+**版本**: 2.0
+**最后更新**: 2026-10-21
