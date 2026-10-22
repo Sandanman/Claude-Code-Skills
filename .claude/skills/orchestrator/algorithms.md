@@ -1,10 +1,51 @@
-# Orchestrator Pro 通用算法
+# Orchestrator 通用算法
 
-本文档描述任务编排中的基础算法和数据处理流程。
-
-## 1. Skill 匹配评分
+## 1. 路由决策
 
 ```python
+def choose_route(intent: dict, match: dict) -> str:
+    risk = intent.get("risk_level", "unknown")
+    score = intent.get("complexity_assessment", {}).get("score", 99)
+    confidence = intent.get("confidence", 0)
+    matched = match.get("matched_skills", [])
+    has_dependencies = bool(match.get("dependencies"))
+
+    unsafe = (
+        risk in {"high", "unknown"}
+        or intent.get("requires_confirmation", False)
+        or intent.get("ambiguity", True)
+    )
+    fast_eligible = (
+        not unsafe
+        and confidence >= 0.85
+        and score <= 3
+        and len(matched) == 1
+        and not has_dependencies
+        and intent.get("statefulness", "stateless") == "stateless"
+    )
+    return "fast" if fast_eligible else "durable"
+```
+
+安全和明确度优先于复杂度。旧版 Skill 未声明风险元数据时按 Durable Path 处理。
+
+## 2. Skill 匹配评分与选择说明
+
+```python
+def build_selection_record(intent: dict, candidates: list[dict]) -> dict:
+    ranked = sorted(candidates, key=lambda item: item["match_score"], reverse=True)
+    selected = ranked[0]
+    return {
+        "main_skill": selected["name"],
+        "matched_keywords": selected.get("matched_keywords", []),
+        "match_score": round(selected["match_score"], 3),
+        "selection_reason": explain_selection(intent, ranked),
+        "dependencies": selected.get("depends_on", []),
+    }
+```
+
+`selection_reason` 必须基于实际匹配结果生成，至少说明用户意图与主 Skill 能力的对应关系；多个候选时还要说明选择最高分、唯一满足条件或用户确认的依据。无法可靠计算分数时输出 `unknown`，不得使用默认分数冒充真实结果。选择记录在 Fast → Durable 升级时保持不变，仅追加升级原因。
+
+
 def calculate_match_score(intent: dict, skill: dict) -> float:
     weights = {
         "domain": 0.30,
@@ -26,9 +67,11 @@ def calculate_match_score(intent: dict, skill: dict) -> float:
     return round(score, 3)
 ```
 
-候选结果按分数降序排列，低于匹配阈值的候选不作为自动选择结果。
+明确单意图且唯一高置信度匹配时直接选择；仅在多个候选分数接近、用户意图包含多个动作或置信度不足时展示候选和请求澄清。匹配完成后缓存注册元数据，避免重复读取。
 
-## 2. 依赖图构建
+## 3. 依赖图构建
+
+Durable Path 才构建完整 DAG。Fast Path 仅检查主 Skill 是否声明依赖；一旦发现依赖立即升级。
 
 ```python
 def build_dependency_graph(skills: list):
@@ -46,113 +89,64 @@ def build_dependency_graph(skills: list):
     return graph, in_degree, None
 ```
 
-## 3. 循环检测与拓扑排序
+## 4. 并行层与执行模式
 
-使用 Kahn 算法，按名称稳定排序，保证相同输入得到相同执行顺序。
+`identify_parallel_layers` 只生成计划层，默认执行模式为 `serial_by_default`。没有状态隔离、副作用协调和失败合并能力时，不启用真实并行。
 
-```python
-from collections import deque
+## 5. 按需历史相似度
 
-
-def topological_sort(graph: dict, in_degree: dict) -> list:
-    degree = in_degree.copy()
-    queue = deque(sorted(name for name, value in degree.items() if value == 0))
-    result = []
-
-    while queue:
-        current = queue.popleft()
-        result.append(current)
-        for dependent in sorted(graph[current]):
-            degree[dependent] -= 1
-            if degree[dependent] == 0:
-                queue.append(dependent)
-
-    if len(result) != len(graph):
-        return []
-    return result
-```
-
-返回空列表表示检测到循环依赖。
-
-## 4. 并行层识别
-
-具有相同依赖层级且互不依赖的 Skill 可以放入同一并行层。
+历史检索只有在以下条件满足时触发：用户明确要求参考历史、需要恢复任务、需要复用历史模式，或 Durable Path 需要确认存在同构任务。Fast Path 默认跳过。
 
 ```python
-def identify_parallel_layers(sorted_skills: list, graph: dict) -> list:
-    levels = {}
-    for skill in sorted_skills:
-        dependencies = [
-            source for source, targets in graph.items()
-            if skill in targets
-        ]
-        levels[skill] = max((levels[item] for item in dependencies), default=-1) + 1
-
-    layers = []
-    for level in sorted(set(levels.values())):
-        layers.append([
-            skill for skill in sorted_skills
-            if levels[skill] == level
-        ])
-    return layers
+def should_retrieve_history(intent: dict, route: str) -> bool:
+    if route == "fast":
+        return False
+    return any([
+        intent.get("user_requested_history", False),
+        intent.get("requires_recovery", False),
+        intent.get("reuse_historical_pattern", False),
+        intent.get("requires_estimation", False),
+    ])
 ```
 
-## 5. 历史相似度
+历史结果只能补充上下文，不能替代当前任务的执行和校验。
 
-历史检索可综合领域、动作、目标类型和关键词。历史结果用于补充上下文，不替代当前任务的执行和校验。
+## 6. 共享上下文
+
+共享上下文只在 Durable Path 持久化，采用带 Skill 名称的 marker，保留已有结果和日志，不允许覆盖。
+
+## 7. 分级结果校验
 
 ```python
-def calculate_similarity(intent: dict, history: dict) -> float:
-    domain = exact_or_semantic(intent.get("domain"), history.get("domain"))
-    action = exact_or_semantic(intent.get("action"), history.get("action"))
-    target = exact_or_semantic(
-        intent.get("target", {}).get("type"), history.get("target_type")
-    )
-    keywords = jaccard(intent.get("keywords", []), history.get("keywords", []))
-    return round(0.30 * domain + 0.30 * action + 0.15 * target + 0.25 * keywords, 3)
+def validate_result(task, level: str) -> dict:
+    if level == "L0":
+        return validate_minimum_output(task)
+
+    verification = verify_completion_criteria(task)
+    criteria = task.get("goal", {}).get("criteria", [])
+    deviation = calculate_deviation(task.get("goal", {}), verification) if criteria else None
+    passed = verification["all_passed"] and (deviation is None or deviation < 0.2)
+    return {
+        "level": level,
+        "passed": passed,
+        "failed_criteria": verification.get("failed_items", []),
+        "deviation": deviation,
+        "risk_notes": verification.get("risk_notes", []),
+        "needs_resume": not passed,
+        "reflection_attempts": 0,
+        "recommended_next_action": "archive" if passed else "reflect",
+    }
 ```
 
-## 6. 错误影响评估
-
-```python
-def assess_error_impact(skill: dict, error: Exception) -> int:
-    if skill.get("is_core") or skill.get("blocks_dependents"):
-        return 5
-    if skill.get("user_required"):
-        return 4
-    return 2
-```
-
-影响等级决定错误后的行为：低影响错误记录并继续，中等影响错误重试后继续，高影响错误暂停并等待恢复。
-
-## 7. 共享上下文读写
-
-```python
-def append_shared_context(task_file: str, skill_name: str, result: str):
-    block = (
-        f"<!-- atomic-skill: {skill_name} -->\n"
-        f"{result}\n"
-        f"<!-- /atomic-skill: {skill_name} -->\n"
-    )
-    append_to_shared_context(task_file, block)
-
-
-def read_shared_context(task_file: str, skill_name: str):
-    start_marker = f"<!-- atomic-skill: {skill_name} -->"
-    end_marker = f"<!-- /atomic-skill: {skill_name} -->"
-    content = read_file(task_file)
-    return extract_between(content, start_marker, end_marker)
-```
-
-写入采用追加或定点更新，保留已有结果和日志。
+L0 只检查输出存在、非空、无明显错误和最低完成标准。L1 检查 Durable Path 的目标标准。L2 仅在 L1 失败、高风险或用户要求时触发，默认反思次数为 0，触发后最多 3 次。
 
 ## 8. 结果偏差
 
 ```python
-def calculate_deviation(goal: dict, verification: dict) -> float:
+def calculate_deviation(goal: dict, verification: dict) -> float | None:
     criteria = goal.get("criteria", [])
     if not criteria:
-        return 0.0 if verification.get("all_passed") else 1.0
+        return None
 
     passed = sum(
         1 for criterion in criteria
@@ -161,17 +155,8 @@ def calculate_deviation(goal: dict, verification: dict) -> float:
     return round(1 - passed / len(criteria), 3)
 ```
 
-偏差用于结果判断和反思触发，不用于调整任务预算或执行路径。
+没有量化目标时返回 `None`，不强行制造偏差数值。
 
 ## 9. 归档校验
 
-```python
-def validate_archive(current_path: str, history_path: str, index_path: str) -> dict:
-    return {
-        "current_removed": not exists(current_path),
-        "history_exists": exists(history_path),
-        "index_updated": exists(index_path),
-    }
-```
-
-只有任务文件移动成功、历史文件存在并完成月度索引更新，归档才算完成。
+只有 Durable Path 进入归档。归档失败时保留当前任务文件和最终结果，不覆盖错误日志；只验证本次任务的来源、目标和索引，不要求当前目录全局为空。

@@ -1,19 +1,27 @@
-# Orchestrator Pro 通用配置
+# Orchestrator 通用配置
 
-本文档定义任务编排所需的通用配置。配置只描述路由、依赖、执行、恢复和归档行为，不对模型调用或任务执行设置额外性能指标。
+本文档定义任务编排的路由、上下文、执行、恢复、校验和归档策略。Fast Path 与 Durable Path 共享状态语义和安全边界，但执行步骤按任务风险和状态需求裁剪。
 
-## 1. 复杂度路由
+## 1. 路由策略
 
 ```python
-COMPLEXITY_ROUTE = {
-    "lightweight_max": 3,
-    "complete_min": 4,
+ROUTE_CONFIG = {
+    "fast_confidence_min": 0.85,
+    "fast_complexity_max": 3,
+    "fast_max_main_skills": 1,
+    "fast_max_dependencies": 0,
+    "default_route_for_legacy_skill": "durable",
+    "upgrade_only": True,
 }
 ```
 
-`complexity_score <= 3` 使用轻量流程，`complexity_score >= 4` 使用完整流程。
+Fast Path 仅在以下条件全部满足时使用：意图明确、置信度不低于阈值、只匹配一个主 Skill、复杂度不超过 3、无依赖、低风险、无用户确认、无恢复需求、无跨步骤共享上下文。
 
-## 2. Skill 匹配
+以下任一条件成立即使用 Durable Path：低置信度、匹配歧义、多 Skill、多步骤依赖、需要确认、需要重试/暂停/恢复、删除/覆盖/部署/权限/凭证/Git 写操作、数据迁移、外部系统写入或其他不可逆副作用。
+
+Fast Path 执行中只能升级到 Durable Path，升级时保留已完成步骤、意图、匹配结果和共享上下文。
+
+## 2. 匹配配置
 
 ```python
 MATCH_CONFIG = {
@@ -21,12 +29,27 @@ MATCH_CONFIG = {
     "candidate_limit": 3,
     "history_similarity_threshold": 0.85,
     "allow_autonomous_fallback": True,
+    "skip_history_for_fast": True,
+    "load_only_selected_skill": True,
 }
 ```
 
-无匹配时记录缺失能力并尝试自主执行；多匹配时保留候选及选择理由。
+明确单意图请求直接执行规则化路由；仅在多意图、低置信度或关键词冲突时展示候选或请求澄清。
 
-## 3. DAG 与任务生成
+## 3. 上下文读取策略
+
+```python
+CONTEXT_POLICY = {
+    "fast": ["user_input", "skill_metadata", "selected_skill"],
+    "durable": ["user_input", "skill_metadata", "selected_skill", "dependencies", "task_template"],
+    "history": "on_demand",
+    "duplicate_reads": False,
+}
+```
+
+Fast Path 不读取无关 Skill、历史正文、完整原子注册表或任务模板。Durable Path 仅在需要恢复、复用历史模式或用户明确要求时读取历史。
+
+## 4. DAG 与任务生成
 
 ```python
 TASK_GRAPH_CONFIG = {
@@ -34,50 +57,36 @@ TASK_GRAPH_CONFIG = {
     "detect_cycles": True,
     "stable_topological_sort": True,
     "identify_parallel_layers": True,
+    "execution_mode": "serial_by_default",
+    "create_task_for_fast": False,
 }
 ```
 
-任务生成必须在执行前完成依赖检查。检测到循环依赖或缺失依赖时，返回错误并停止生成不可执行计划。
+Fast Path 不生成完整 DAG；Durable Path 在执行前完成依赖检查、循环检测、稳定拓扑排序和并行层识别。`parallel_layers` 仅表示计划层，不代表运行时已并行。
 
-## 4. 执行控制
+## 5. 执行控制
 
 ```python
 EXECUTION_CONFIG = {
     "max_retries": 3,
-    "parallel_execution": True,
+    "execution_mode": "serial_by_default",
     "stream_output": True,
-    "persist_status": True,
-    "persist_shared_context": True,
+    "persist_status_for_fast": False,
+    "persist_status_for_durable": True,
+    "persist_shared_context_for_durable": True,
 }
 ```
 
-每个原子 Skill 使用以下状态：
+Fast Path 不创建完整任务状态；若需要重试、暂停、恢复、跨步骤共享上下文或发生高影响错误，立即升级并创建 Durable 状态。
 
-```text
-待执行 → 执行中 → 已完成
-                 └→ 失败
-```
-
-高影响错误暂停任务，低影响错误允许独立分支继续。重试次数达到上限后保留失败状态和错误日志。
-
-## 5. 错误影响等级
-
-```python
-ERROR_IMPACT = {
-    "low": {"min": 1, "max": 2, "action": "record_and_continue"},
-    "medium": {"min": 3, "max": 4, "action": "retry_then_continue"},
-    "high": {"min": 5, "max": 10, "action": "pause_and_resume"},
-}
-```
-
-影响评估应基于任务依赖、用户目标、数据完整性和后续步骤是否可执行。
-
-## 6. 任务文件
+## 6. 任务状态
 
 ```python
 TASK_FILE_CONFIG = {
-    "current_path": "tasks/current/task_skill.md",
+    "legacy_current_path": "tasks/current/task_skill.md",
+    "current_path_template": "tasks/current/task_skill_{task_id}.md",
     "history_path": "tasks/history/{YYYY-MM}/task_skill_{task_id}.md",
+    "legacy_read_supported": True,
     "required_sections": [
         "任务基础信息",
         "子任务列表",
@@ -91,9 +100,21 @@ TASK_FILE_CONFIG = {
 }
 ```
 
-任务文件是执行过程中的唯一状态载体，写入时不得覆盖已有日志、结果或错误信息。
+新任务优先使用带任务 ID 的状态文件。旧的固定路径只用于兼容读取；发现多个活动任务时不得覆盖或自动选择。
 
-## 7. 共享上下文
+## 7. 错误影响等级
+
+```python
+ERROR_IMPACT = {
+    "low": {"min": 1, "max": 2, "action": "record_and_continue"},
+    "medium": {"min": 3, "max": 4, "action": "retry_then_continue"},
+    "high": {"min": 5, "max": 10, "action": "pause_and_resume"},
+}
+```
+
+高影响错误暂停 Durable 任务；低影响错误可独立继续。Fast Path 不自动重试，首次需要重试即升级。
+
+## 8. 共享上下文
 
 ```python
 SHARED_CONTEXT_CONFIG = {
@@ -104,44 +125,40 @@ SHARED_CONTEXT_CONFIG = {
 }
 ```
 
-上游 Skill 写入核心结果，下游 Skill 优先读取任务文件中的对应区域。
+仅 Durable Path 持久化共享上下文。写入不得覆盖已有日志或结果。
 
-## 8. 结果校验
+## 9. 分级校验
 
 ```python
 VALIDATION_CONFIG = {
+    "fast_level": "L0",
+    "durable_level": "L1",
+    "reflection_level": "L2",
+    "default_reflection_attempts": 0,
     "max_reflection_attempts": 3,
+    "reflection_trigger": ["L1_FAILED", "HIGH_RISK", "USER_REQUESTED"],
     "success_deviation_threshold": 0.2,
     "require_all_criteria": True,
 }
 ```
 
-结果必须同时满足所有必要完成标准，且偏差低于阈值；否则输出失败或部分完成状态，并保留未通过项。
+- `L0`：输出存在、非空、无明显错误并满足最低完成标准。
+- `L1`：逐项检查 Durable 任务完成标准，必要时计算偏差。
+- `L2`：仅在 L1 失败、高风险或用户要求时触发反思；默认不主动反思。
 
-## 9. 归档
+没有量化目标时偏差标记为“不适用”，不强行计算。
+
+## 10. 归档
 
 ```python
 ARCHIVE_CONFIG = {
+    "fast_archive": False,
+    "durable_archive": True,
     "archive_statuses": ["已完成", "失败"],
     "monthly_index_required": True,
     "record_persistable_documents": True,
-    "verify_current_directory_empty": True,
+    "preserve_source_on_failure": True,
 }
 ```
 
-归档前确认任务状态和任务 ID 有效，归档后确认历史文件存在、月度索引已更新且当前任务目录已清理。
-
-## 10. 原子 Skill 执行顺序
-
-```python
-ATOMIC_SKILL_ORDER = [
-    "intent-recognition",
-    "skill-matcher",
-    "task-generator",
-    "execution-controller",
-    "result-validator",
-    "task-archiver",
-]
-```
-
-其中 `skill-matcher` 输出供 `task-generator` 使用，`task-generator` 输出供 `execution-controller` 使用，`result-validator` 完成后才能进行归档。
+只有 Durable Path 归档。归档失败时保留原任务文件和最终结果；不要求当前目录全局为空，只验证本次任务状态已正确关闭。

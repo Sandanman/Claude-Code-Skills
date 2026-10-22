@@ -122,6 +122,13 @@ version: 1.8
   match_keywords: 新增Skill, 创建Skill, 创建技能, 修改Skill, 定制Skill, 扩展Skill, 修改SKILL.md, Skill注册, 添加slash command
   status: 启用
 
+- name: claude-code-skills-release-manager
+  desc: 仅针对当前 Claude-Code-Skills 项目管理版本文档与版本归档，协调版本管理和 ZIP 归档两个原子 Skill
+  path: .claude/skills/claude-code-skills-release-manager/SKILL.md
+  core_ability: 版本文档管理、版本号校验、修改描述生成、项目资源归档、ZIP 生成和归档校验
+  match_keywords: Claude Code Skills版本, 本项目版本, 更新 VERSION.md, Claude Code Skills归档, 本项目归档, 生成 Skills ZIP, 发布版本
+  status: 启用
+
 - name: git-assistant
   desc: 智能 Git 操作助手，支持 commit 生成、分支管理、历史分析、冲突解决、Stash 操作、版本管理、提交规范检查
   path: .claude/skills/git-assistant/SKILL.md
@@ -171,9 +178,9 @@ version: 1.8
 
 | 类别 | 数量 |
 |------|------|
-| 总主技能数 | 20 |
+| 总主技能数 | 21 |
 | Reasoner（调度器） | 1（orchestrator）|
-| 功能主技能 | 19 |
+| 功能主技能 | 20 |
 
 ---
 
@@ -186,4 +193,4 @@ version: 1.8
 ---
 
 **版本**: 2.0
-**最后更新**: 2026-10-21
+**最后更新**: 2026-10-22

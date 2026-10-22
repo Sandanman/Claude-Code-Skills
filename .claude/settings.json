@@ -167,6 +167,10 @@
       "description": "创建新 Skill 或定制、扩展已有 Skill，依据项目规则同步注册配置并完成一致性校验"
     },
     {
+      "name": "claude-code-skills-release-manager",
+      "description": "仅针对当前 Claude-Code-Skills 项目管理版本文档与版本归档，协调版本管理和 ZIP 归档两个原子 Skill"
+    },
+    {
       "name": "git-assistant",
       "description": "智能 Git 操作助手，支持 commit 生成、分支管理、历史分析、冲突解决、版本管理"
     },

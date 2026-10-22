@@ -15,29 +15,35 @@ version: 1.5
 ```yaml
 atomic_skills:
   - name: intent-recognition
-    core_ability: 将用户输入转化为结构化意图，识别领域、操作、目标、约束、复杂度和置信度
+    core_ability: 将用户输入转化为结构化意图，识别领域、操作、目标、约束、复杂度、风险、状态需求和置信度
     depend: 无
     status: 启用
+    route_role: 所有路径
   - name: skill-matcher
-    core_ability: 根据结构化意图匹配主 Skill，处理单匹配、多匹配和无匹配 fallback
+    core_ability: 根据结构化意图匹配主 Skill，处理单匹配、多匹配和无匹配 fallback，并缓存选中元数据
     depend: intent-recognition
     status: 启用
+    route_role: 所有路径
   - name: task-generator
-    core_ability: 构建依赖 DAG、检测循环依赖、执行拓扑排序、识别并行层并生成任务文件
+    core_ability: Fast Path 执行最小依赖检查，Durable Path 构建依赖 DAG、检测循环依赖、执行拓扑排序、识别计划层并生成任务文件
     depend: intent-recognition, skill-matcher
     status: 启用
+    route_role: Durable Path 必需，Fast Path 按需
   - name: execution-controller
-    core_ability: 按依赖和并行层执行原子 Skill，持久化状态、共享上下文和错误日志
+    core_ability: 按依赖和执行模式执行原子 Skill，Durable Path 持久化状态、共享上下文和错误日志，并支持 Fast Path 升级
     depend: task-generator
     status: 启用
+    route_role: 所有路径
   - name: result-validator
-    core_ability: 校验完成标准、量化结果偏差并执行有限反思循环
+    core_ability: 按 L0/L1/L2 分级校验结果，仅在失败、高风险或用户要求时执行有限反思
     depend: execution-controller
     status: 启用
+    route_role: 所有路径
   - name: task-archiver
-    core_ability: 移动任务文件、更新月度索引、记录执行摘要并验证归档结果
+    core_ability: 仅归档 Durable Path 任务文件，按任务 ID 更新月度索引并验证归档结果
     depend: result-validator
     status: 启用
+    route_role: Durable Path 按需
 ```
 
 ---
@@ -520,7 +526,25 @@ atomic_skills:
 
 ---
 
-## 原子技能统计（v1.4）
+## 17. claude-code-skills-release-manager 原子技能
+
+```yaml
+atomic_skills:
+  - name: version-management
+    core_ability: 读取 Claude-Code-Skills 项目版本基线、校验版本号、生成版本描述并在确认后更新 README.md 与 VERSION.md
+    depend: 无
+    status: 启用
+    route_role: 版本管理
+  - name: archive-generation
+    core_ability: 按已确认版本复制指定项目资源、创建版本目录、生成 ZIP 并校验归档内容
+    depend: version-management（release 流程）
+    status: 启用
+    route_role: 项目归档
+```
+
+---
+
+## 原子技能统计（v1.5）
 
 > `project-planner` 已注册为主 Skill，但当前未拆分独立 `atomic-skills` 目录，因此按 0 个原子 Skill 统计。
 

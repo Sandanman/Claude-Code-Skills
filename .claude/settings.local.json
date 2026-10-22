@@ -38,7 +38,9 @@
       "Bash(cp \"/Users/lijianxin1/Desktop/sandaman/21-ai-code/jiawei/.claude/maps/project_map.json\" \"/Users/lijianxin1/Desktop/sandaman/20-ai/Claude-Code-Skills/.claude/skills/project-mapper-workspace/iteration-1/eval-2-mark/with_skill/outputs/project_map.json\")",
       "Bash(cp \"/Users/lijianxin1/Desktop/sandaman/21-ai-code/jiawei/PROJECT_MAP.md\" \"/Users/lijianxin1/Desktop/sandaman/20-ai/Claude-Code-Skills/.claude/skills/project-mapper-workspace/iteration-1/eval-2-mark/with_skill/outputs/PROJECT_MAP.md\")",
       "Read(//Users/lijianxin1/Desktop/sandaman/20-ai/**)",
-      "Read(//Users/lijianxin1/Desktop/sandaman/20-ai-code/**)"
+      "Read(//Users/lijianxin1/Desktop/sandaman/20-ai-code/**)",
+      "Bash(git ls-tree:*)",
+      "Bash(perl -ne 'print if /\\(?:^|\\\\/\\)\\(?:package\\\\.json|Makefile|.*\\\\.\\(?:sh|py|js|ts|mjs|cjs|yaml|yml\\)\\)$/i')"
     ]
   }
 }
