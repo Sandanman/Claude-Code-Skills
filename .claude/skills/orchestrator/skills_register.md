@@ -158,10 +158,10 @@ version: 1.8
   status: 启用
 
 - name: project-cloud-map
-  desc: 读取整个项目当前代码快照，自动识别 Web/全栈/后端/CLI/库类型，按页面或入口、数据流和交互逻辑拆分模块，输出 Markdown + Mermaid 项目云图；代码变更前必须列候选方案并等待确认
+  desc: 读取项目当前代码快照或指定文件，生成并增量维护 Mermaid 项目云图；支持 project/file 范围与 generate/supplement/record-change/analyze 操作，已有云图时优先在主文件关系图补充详细子项，仅在必要时使用 docs/cloud-map/，涉及业务代码变更时必须先列候选方案并等待确认
   path: .claude/skills/project-cloud-map/SKILL.md
-  core_ability: 全项目快照读取、项目类型识别、页面/入口拆分、模块与数据流分析、交互链路分析、Markdown/Mermaid 云图输出、变更前确认
-  match_keywords: 项目云图, 项目地图, 系统全貌, 架构鸟瞰, 页面关系, 模块关系, 数据流梳理, 项目结构图, 代码全景
+  core_ability: scope/operation 识别、项目与文件级快照分析、页面/入口/函数关系建模、主图—详细子项映射、代码/业务双置信度、Markdown/Mermaid 输出、增量维护、Fast/Durable Path 路由和分级校验
+  match_keywords: 项目云图, 文件云图, 项目地图, 页面关系, 模块关系, 函数调用关系, 补充云图, 完善云图, 细化云图, 更新云图, 云图增量维护, 新功能加入云图, 变更记录
   status: 启用
 
 - name: project-planner
