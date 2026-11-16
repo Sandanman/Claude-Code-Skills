@@ -16,7 +16,7 @@ version: 1.8
 
 ```yaml
 - name: orchestrator
-  desc: 统一任务编排入口 — 意图识别、Skill 匹配、任务生成、执行控制、结果校验、任务归档
+  desc: 统一任务编排入口 — 使用前必须确认自身 Skill 文件、启用注册表条目和 settings.json command 均存在；通过检查后负责意图识别、Skill 匹配、任务生成、执行控制、结果校验和任务归档
   path: .claude/skills/orchestrator/SKILL.md
   core_ability: 意图识别、上下文感知、多 Skill 组合、DAG 任务生成、断点恢复、结果校验和归档
   match_keywords: [所有意图]
@@ -169,6 +169,12 @@ version: 1.8
   path: .claude/skills/project-planner/SKILL.md
   core_ability: 迭代周期规划、目标→任务双向拆解、每日工作生成、进度追踪、超期预警、历史速度学习、动态估算调整、多项目分组、日报/周报/仪表盘输出
   match_keywords: 项目规划, 迭代计划, 每周目标, 每日工作, 任务规划, 项目进度, 进度追踪, 超期预警, 里程碑, 甘特图, 任务分配, sprint计划, 每日计划, 工作内容, 多项目
+  status: 启用
+- name: page-layout-designer
+  desc: 通过分阶段提问递归设计前端页面布局、组件、交互/弹层、状态、响应式和视觉规范，输出可供 AI 代码生成的 Markdown 与 JSON 页面文档
+  path: .claude/skills/page-layout-designer/SKILL.md
+  core_ability: 页面范围澄清、布局树递归拆分、组件映射、交互与弹层规格、页面状态、响应式行为、视觉 Token、Markdown/JSON 文档生成与一致性校验
+  match_keywords: 页面布局设计, 设计页面, 页面设计文档, 前端页面原型, 页面结构设计, UI布局, 页面交互设计, 生成页面规格, 生成页面布局文档
   status: 启用
 ```
 

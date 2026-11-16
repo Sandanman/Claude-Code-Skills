@@ -180,7 +180,7 @@
     },
     {
       "name": "orchestrator",
-      "description": "统一任务编排入口，按复杂度选择执行策略，完成意图识别、Skill 匹配、任务规划、执行、校验、输出和归档"
+      "description": "统一任务编排入口；使用前需确认 orchestrator Skill、注册表条目和当前项目 settings 配置完整，按复杂度选择执行策略，完成意图识别、Skill 匹配、任务规划、执行、校验、输出和归档"
     },
     {
       "name": "personal-code-habits-generator",
@@ -197,6 +197,10 @@
     {
       "name": "project-planner",
       "description": "基于迭代周期规划项目目标，生成每日工作内容与项目进度追踪，支持多项目分组管理和超期预警，具备历史速度学习能力动态调整估算精度"
+    },
+    {
+      "name": "page-layout-designer",
+      "description": "通过分阶段提问设计前端页面布局、组件、交互、页面状态、响应式行为和视觉规范，生成可供 AI 读取并用于页面代码生成的 Markdown 与 JSON 页面设计文档"
     }
   ],
   "auto-save": true,

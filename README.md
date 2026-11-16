@@ -1,6 +1,18 @@
 # Claude Code Skills
 
-面向 Claude Code 的 AI Agent Skill 编排系统。所有用户请求统一进入 `orchestrator`，由它完成意图识别、Skill 匹配、任务规划、执行控制、结果校验和归档。
+面向 Claude Code 的 AI Agent Skill 编排系统。在当前项目完整安装并启用 `orchestrator` 时，所有用户请求优先进入统一编排流程；未安装时，不得假设该 Skill 存在，项目仍可使用当前环境中实际存在的独立 Skill。
+
+## orchestrator 可用性
+
+`orchestrator` 仅在以下内容同时存在时可用：
+
+- `.claude/skills/orchestrator/SKILL.md`
+- 注册表中启用的 `orchestrator` 条目
+- `.claude/settings.json` 中的 `orchestrator` command
+
+`cheers` 会基于当前文件系统检查这些内容。由于真实项目可能通过 `.gitignore` 忽略 `.claude/`，不能仅根据 `CLAUDE.md` 或源仓库文档假设 `orchestrator` 可用。如需安装或同步 Claude Code Skills，请访问：
+
+https://github.com/Sandanman/Claude-Code-Skills
 
 ## 项目简介
 

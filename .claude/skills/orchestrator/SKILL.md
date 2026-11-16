@@ -6,7 +6,24 @@ impl_status: action_based
 
 # Orchestrator
 
-## 1. 核心定位
+## 1. 启动前置检查
+
+在读取项目上下文、主 Skill 注册表和执行任何编排步骤前，必须检查当前项目中的 `orchestrator` 是否完整可用。以下三项必须同时满足：
+
+1. `.claude/skills/orchestrator/SKILL.md` 存在且 frontmatter 中的 `name` 为 `orchestrator`
+2. `.claude/skills/orchestrator/skills_register.md` 中存在路径正确且 `status: 启用` 的 `orchestrator` 条目
+3. `.claude/settings.json` 的 `commands` 中存在 `name: orchestrator`
+
+检查当前文件系统，不以 Git 是否跟踪文件作为依据；被 `.gitignore` 忽略但实际存在的文件仍可用。任一项缺失或无效时，立即停止编排，不进入意图识别、Skill 匹配或任务执行，并输出：
+
+```text
+无法启动 orchestrator：当前项目的 orchestrator 安装不完整。
+缺失或无效项：{具体文件或配置}
+请先从以下地址安装或同步 Claude Code Skills：
+https://github.com/Sandanman/Claude-Code-Skills
+```
+
+## 2. 核心定位
 
 `orchestrator` 是任务编排的统一入口，负责将用户请求转换为可执行任务，并持续保存任务状态。它提供 Fast Path 与 Durable Path 两种执行路径，共享意图、匹配、结果和安全协议，但按任务风险和状态需求裁剪执行步骤。
 

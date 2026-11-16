@@ -24,9 +24,15 @@ reasoner_instructions: |
 
 ## 详细步骤
 
-### Step 1: 检测 CLAUDE.md + 检测/询问项目云图
+### Step 1: 检测 CLAUDE.md、orchestrator + 检测/询问项目云图
 
-使用 Glob 或 Read 工具检测项目根目录是否存在 `CLAUDE.md`，同时检测是否存在 `docs/project-cloud-map.md`。两项检测一次性做完，云图的询问也在这一步提前问，答案决定是否在后续并行启动云图生成。
+使用 Glob 或 Read 工具一次性检测项目根目录是否存在 `CLAUDE.md`、`docs/project-cloud-map.md`，并检查当前项目是否存在可用的 `orchestrator`。`orchestrator` 只有同时满足以下条件才视为可用：
+
+1. `.claude/skills/orchestrator/SKILL.md` 存在，且 frontmatter 中的 `name` 为 `orchestrator`
+2. `.claude/skills/orchestrator/skills_register.md` 中存在路径正确且 `status: 启用` 的 `orchestrator` 条目
+3. `.claude/settings.json` 的 `commands` 中存在 `name: orchestrator`
+
+记录 `orchestrator_status.available` 和具体缺失项。后续是否写入编排规则、是否引用 `/orchestrator`，必须使用本次检查结果；不能仅因注册表中存在条目就假设可用。云图的询问也在这一步提前问，答案决定是否在后续并行启动云图生成。
 
 **CLAUDE.md 复用判断**：
 - 如果 CLAUDE.md 已存在 → 跳过 init，记录 `pattern_reused: true`
@@ -98,6 +104,8 @@ reasoner_instructions: |
 
 **CLAUDE.md 标准格式（cheers 扩展版）**：
 
+根据 `orchestrator_status.available` 写入“任务编排能力说明”区块：可用时写入强制规则，不可用时只写入缺失说明和安装推荐，不得写入“所有任务必须通过 orchestrator”。
+
 ```markdown
 # CLAUDE.md
 
@@ -113,13 +121,33 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ---
 
-## 任务编排限制（cheers 初始化写入）
+## 任务编排能力说明（cheers 初始化写入）
+
+根据 Step 1 的 `orchestrator_status.available` 条件生成以下其中一个区块。
+
+**当 `orchestrator_status.available: true` 时：**
+
+当前项目已检测到可用的 `orchestrator`，其 Skill 文件、启用注册表条目和 Slash command 均存在。
 
 **强制要求**：项目中的所有任务都必须通过 `orchestrator` skill 进行意图识别、Skill 匹配、任务规划、执行和结果校验。
 
 - 不得绕过 `orchestrator` 直接执行其他 Skill 或自行处理任务
 - 所有用户请求统一由 `/orchestrator` 作为唯一入口进行编排
 - 新增或修改任务流程时，必须保持 `orchestrator` 的统一入口地位
+
+**当 `orchestrator_status.available: false` 时：**
+
+当前项目未检测到完整可用的 `orchestrator`，因此不写入强制通过 `orchestrator` 执行任务的规则，避免 `.claude` 未同步或被 `.gitignore` 忽略时产生不可执行的要求。
+
+如需启用统一任务编排能力，请安装或同步 Claude Code Skills：
+
+https://github.com/Sandanman/Claude-Code-Skills
+
+安装后请确认以下内容均存在并保持一致：
+
+- `.claude/skills/orchestrator/SKILL.md`
+- `skills_register.md` 中启用的 `orchestrator` 条目
+- `.claude/settings.json` 中的 `orchestrator` command
 
 ---
 
@@ -176,7 +204,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. 项目信息已扫描（可选跳过）
 3. CODE_STYLE.md 已生成（可选跳过）
 4. CODE_STYLE_PERSONAL.md 已生成（可选跳过）
-5. CLAUDE.md 已更新，含任务编排限制和代码生成优先级说明
+5. CLAUDE.md 已更新，含条件化的任务编排能力说明和代码生成优先级说明
 6. 项目云图状态已确定（`pattern_reused` / `generated` / `generating` / `skipped` / `failed` 之一），不要求必须生成完毕
 
 ### 完成后提示
@@ -185,14 +213,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 项目初始化完成！
 
 已生成/更新：
-- CLAUDE.md（含任务编排限制和代码生成优先级说明）✓
+- CLAUDE.md（含条件化的任务编排能力说明和代码生成优先级说明）✓
 - CODE_STYLE.md（项目代码风格）<视扫描结果>
 - CODE_STYLE_PERSONAL.md（个人代码习惯）<视用户配合度>
 - docs/project-cloud-map.md（项目云图）<视并行任务状态：已存在 / 已生成 / 仍在后台生成中 / 已跳过 / 生成失败>
 
+任务编排能力：
+- `orchestrator_status.available: <true/false>`
+- 若为 `false`：未写入强制编排规则，请从以下地址安装或同步 Claude Code Skills：
+  https://github.com/Sandanman/Claude-Code-Skills
+- 若为 `true`：后续任务可通过 `/orchestrator` 统一编排
+
 后续使用：
-- 所有任务必须通过 /orchestrator 统一编排
-- 首次生成代码时，Claude 自动读取 CLAUDE.md 获取上下文
+- `orchestrator_status.available` 为 true 时使用 `/orchestrator`
 - 调整个人习惯：/personal-code-habits-generator
 - 更新项目风格：/code-style-generator
 - 查/改需求前先看项目云图，改完记得让它在云图里留一笔：project-cloud-map
@@ -201,6 +234,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 注意事项
 
 - **全程中文**：所有提示和输出均为中文
+- **orchestrator 条件使用**：仅当 Step 1 的三项检查全部通过时才引用或调用 `orchestrator`；否则不强制编排，并输出安装推荐
 - **允许跳过**：用户对任何步骤不配合时，允许跳过（记录为 `skipped`），不阻塞后续流程
 - **复用已有文件**：CLAUDE.md 或项目云图存在时跳过对应初始化步骤
 - **共享上下文**：各 skill 输出写入 task_skill.md，供下游步骤读取，避免重复解析
