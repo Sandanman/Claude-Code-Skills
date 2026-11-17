@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | 技术栈 | Node.js / Claude API / Claude Code |
 | 开发入口 | Claude Code CLI（`/help` 查看帮助）|
 
-这是一个 **AI Agent Skills 编排系统**。当当前项目同时存在并启用 `orchestrator` 时，所有用户请求优先通过它调度；如果任一检查项不满足，不得假设 `orchestrator` 可用，也不得因本文件中的说明强制调用它。
+这是一个 **AI Agent Skills 编排系统**。当当前项目同时存在并启用 `orchestrator` 时，所有用户请求必须通过 orchestrator 调度；如果任一检查项不满足，不得假设 `orchestrator` 可用，也不得因本文件中的说明强制调用它。
 
 ---
 

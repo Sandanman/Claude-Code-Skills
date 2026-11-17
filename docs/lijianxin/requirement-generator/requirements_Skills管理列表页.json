@@ -1,0 +1,179 @@
+{
+  "version": "1.3",
+  "mode": "prototype_link",
+  "source": "prototype_url",
+  "source_url": "https://airun-00035i034v.beijing-internal.fc.zyunapp.cn/airun-skills.html",
+  "generated_at": "2026-11-17 11:42:04",
+  "project_context_used": false,
+  "requirement": {
+    "name": "Skills管理列表页",
+    "summary": "AIRUN 控制台「Skills」页面，展示 Skill 列表，提供按名称/描述搜索、按分类筛选、新建、详情、编辑、删除和分页展示。"
+  },
+  "scope": {
+    "confirmed_at": "2026-11-17",
+    "included": [
+      { "id": "M-05", "name": "工具栏" },
+      { "id": "M-06", "name": "Skill 列表" },
+      { "id": "M-07", "name": "行操作" },
+      { "id": "M-08", "name": "空状态" },
+      { "id": "M-09", "name": "分页" }
+    ],
+    "excluded": [
+      { "id": "M-01", "name": "顶部产品栏", "reason": "用户确认：排除（初判：通用布局/公共）" },
+      { "id": "M-02", "name": "工作台头部", "reason": "用户确认：排除（初判：通用布局/公共）" },
+      { "id": "M-03", "name": "左侧导航", "reason": "用户确认：排除（初判：通用布局/公共）" },
+      { "id": "M-04", "name": "面包屑栏", "reason": "用户确认：排除（初判：通用布局/公共）" }
+    ]
+  },
+  "modules": [
+    { "id": "M-05", "name": "工具栏", "location": "主内容区·列表上方", "description": "搜索框、分类下拉、「+ 新建 Skill」按钮" },
+    { "id": "M-06", "name": "Skill 列表", "location": "主内容区·表格", "description": "7 列表格，6 条 mock 数据，整行可点击" },
+    { "id": "M-07", "name": "行操作", "location": "表格「操作」列", "description": "详情、编辑、删除，含删除确认与「已删除」提示" },
+    { "id": "M-08", "name": "空状态", "location": "表格无数据行", "description": "无数据时的占位文案" },
+    { "id": "M-09", "name": "分页", "location": "表格下方", "description": "总数、每页条数、翻页控件、页码文案" }
+  ],
+  "fields": [
+    { "id": "F-01", "module": "M-05", "name": "搜索框（#searchInput）", "type": "文本输入框", "required": "—", "constraint": "按名称、描述关键字过滤，忽略大小写", "default": "—", "source": "原型·工具栏 / 脚本" },
+    { "id": "F-02", "module": "M-05", "name": "分类下拉", "type": "下拉选择", "required": "—", "constraint": "选项依次：全部分类、文档、语言、视觉、数据、检索、其他", "default": "—", "source": "原型·工具栏" },
+    { "id": "F-03", "module": "M-05", "name": "+ 新建 Skill", "type": "按钮（goCreate()）", "required": "—", "constraint": "—", "default": "—", "source": "原型·工具栏" },
+    { "id": "F-04", "module": "M-06", "name": "Skill ID", "type": "表格列（<code>，Menlo 等宽，11px，颜色 #006bff）", "required": "—", "constraint": "—", "default": "—", "source": "原型·表头/列样式" },
+    { "id": "F-05", "module": "M-06", "name": "Skill 名称", "type": "表格列（加粗）", "required": "—", "constraint": "—", "default": "—", "source": "原型·表头/列样式" },
+    { "id": "F-06", "module": "M-06", "name": "描述", "type": "表格列（颜色 #535760）", "required": "—", "constraint": "—", "default": "—", "source": "原型·表头/列样式" },
+    { "id": "F-07", "module": "M-06", "name": "分类", "type": "表格列（纯文本）", "required": "—", "constraint": "—", "default": "—", "source": "原型·表头/列样式" },
+    { "id": "F-08", "module": "M-06", "name": "来源", "type": "表格列（纯文本，取值 Markdown 或 ZIP 包）", "required": "—", "constraint": "—", "default": "—", "source": "原型·表头/列样式" },
+    { "id": "F-09", "module": "M-06", "name": "创建时间", "type": "表格列（颜色 #9ba7ba，12px）", "required": "—", "constraint": "—", "default": "—", "source": "原型·表头/列样式" },
+    { "id": "F-10", "module": "M-06", "name": "操作", "type": "表格列（class col-actions）", "required": "—", "constraint": "—", "default": "—", "source": "原型·表头/列样式" },
+    { "id": "F-11", "module": "M-07", "name": "详情", "type": "行内链接（颜色 #006bff，12px，右间距 12px）", "required": "—", "constraint": "—", "default": "—", "source": "原型·行操作" },
+    { "id": "F-12", "module": "M-07", "name": "编辑", "type": "行内链接（颜色 #006bff，12px，右间距 12px）", "required": "—", "constraint": "—", "default": "—", "source": "原型·行操作" },
+    { "id": "F-13", "module": "M-07", "name": "删除", "type": "行内链接（class danger，颜色 #e53935）", "required": "—", "constraint": "—", "default": "—", "source": "原型·行操作" },
+    { "id": "F-14", "module": "M-07", "name": "删除确认框", "type": "浏览器原生 confirm", "required": "—", "constraint": "正文：「确认删除该 Skill？删除后无法恢复」", "default": "—", "source": "原型·deleteSkill()" },
+    { "id": "F-15", "module": "M-07", "name": "已删除", "type": "提示（toast）", "required": "—", "constraint": "2000 毫秒后消失", "default": "—", "source": "原型·deleteSkill()" },
+    { "id": "F-16", "module": "M-08", "name": "暂无 Skill，点击「+ 新建 Skill」创建", "type": "空状态单元格（跨 7 列、居中、内边距 40px、颜色 #9ba7ba）", "required": "—", "constraint": "—", "default": "—", "source": "原型·空状态" },
+    { "id": "F-17", "module": "M-09", "name": "共 N 个", "type": "总数文案（#total）", "required": "—", "constraint": "N 随过滤结果条数更新", "default": "静态 HTML 为「共 0 个」", "source": "原型·分页" },
+    { "id": "F-18", "module": "M-09", "name": "每页条数", "type": "下拉选择", "required": "—", "constraint": "选项：10 条/页、20 条/页、50 条/页", "default": "—", "source": "原型·分页" },
+    { "id": "F-19", "module": "M-09", "name": "‹", "type": "上一页按钮", "required": "—", "constraint": "—", "default": "—", "source": "原型·分页" },
+    { "id": "F-20", "module": "M-09", "name": "1", "type": "页码按钮", "required": "—", "constraint": "—", "default": "—", "source": "原型·分页" },
+    { "id": "F-21", "module": "M-09", "name": "›", "type": "下一页按钮", "required": "—", "constraint": "—", "default": "—", "source": "原型·分页" },
+    { "id": "F-22", "module": "M-09", "name": "第 1/1 页", "type": "页码文案", "required": "—", "constraint": "—", "default": "—", "source": "原型·分页" }
+  ],
+  "sample_data": [
+    { "id": "sk-pdf", "name": "pdf-extractor", "desc": "PDF 文本/表格抽取", "category": "文档", "source": "Markdown", "status": "active", "created_at": "2026-04-12 10:22:11" },
+    { "id": "sk-excel", "name": "excel-analyzer", "desc": "Excel 公式与数据分析", "category": "文档", "source": "ZIP 包", "status": "active", "created_at": "2026-04-15 14:08:32" },
+    { "id": "sk-trans", "name": "translator", "desc": "多语种翻译", "category": "语言", "source": "Markdown", "status": "active", "created_at": "2026-04-20 09:15:00" },
+    { "id": "sk-img", "name": "image-classifier", "desc": "图片分类与目标识别", "category": "视觉", "source": "ZIP 包", "status": "active", "created_at": "2026-04-25 16:42:18" },
+    { "id": "sk-sql", "name": "sql-runner", "desc": "安全执行 SQL 查询", "category": "数据", "source": "Markdown", "status": "active", "created_at": "2026-05-02 11:08:50" },
+    { "id": "sk-web", "name": "web-search", "desc": "网页搜索 + 摘要", "category": "检索", "source": "ZIP 包", "status": "archived", "created_at": "2026-05-10 13:20:00" }
+  ],
+  "rules": [
+    { "id": "R-01", "module": "M-05", "rule": "搜索时关键词转小写，与名称、描述的小写形式做包含（includes）匹配，任一命中即保留", "source": "原型·脚本" },
+    { "id": "R-02", "module": "M-05", "rule": "搜索匹配字段只有名称和描述，不匹配 ID、分类、来源", "source": "原型·脚本" },
+    { "id": "R-03", "module": "M-05", "rule": "分类选中值非空时，要求 Skill 的分类与选中值严格相等，否则排除", "source": "原型·脚本" },
+    { "id": "R-04", "module": "M-06", "rule": "点击数据行调用 goDetail(id)；操作列通过 event.stopPropagation() 阻止冒泡", "source": "原型·表格" },
+    { "id": "R-05", "module": "M-07", "rule": "删除确认后从数组移除、重新渲染，并弹出「已删除」提示，2000 毫秒后消失", "source": "原型·deleteSkill()" },
+    { "id": "R-06", "module": "M-07", "rule": "删除仅作用于页面内的数组，页面中无接口调用", "source": "原型·deleteSkill()" },
+    { "id": "R-07", "module": "M-09", "rule": "总数文案中的数字随过滤后的条数更新", "source": "原型·分页" },
+    { "id": "R-08", "module": "M-08", "rule": "无数据时，表格显示一行跨 7 列的空状态文案", "source": "原型·空状态" },
+    { "id": "R-09", "module": "M-06", "rule": "表格仅 7 列，状态字段（active / archived）不在表格中显示", "source": "原型·表格 / 渲染代码" }
+  ],
+  "states": [
+    { "object": "Skill 状态（mock 数据 status 字段）", "value": "active", "display": "表格中不显示", "transition": "—", "source": "原型·mock 数据" },
+    { "object": "Skill 状态（mock 数据 status 字段）", "value": "archived", "display": "表格中不显示", "transition": "—", "source": "原型·mock 数据（sk-web）" },
+    { "object": "来源", "value": "Markdown", "display": "纯文本「Markdown」", "transition": "—", "source": "原型·mock 数据" },
+    { "object": "来源", "value": "ZIP 包", "display": "纯文本「ZIP 包」", "transition": "—", "source": "原型·mock 数据" },
+    { "object": "分类", "value": "文档 / 语言 / 视觉 / 数据 / 检索 / 其他", "display": "纯文本；下拉另有「全部分类」", "transition": "—", "source": "原型·工具栏" }
+  ],
+  "flows": [
+    {
+      "id": "FLOW-01", "name": "删除 Skill", "trigger": "点击某行「删除」",
+      "steps": ["调用 deleteSkill(id)，弹出原生确认框，正文「确认删除该 Skill？删除后无法恢复」", "用户确认", "从数组移除该 Skill，重新渲染列表", "弹出提示「已删除」，2000 毫秒后消失"],
+      "branches": ["确认框取消分支，原型中无描述（见 U-03）"], "end_state": "列表不含被删除的 Skill"
+    },
+    {
+      "id": "FLOW-02", "name": "搜索与分类过滤", "trigger": "按搜索框关键字与分类下拉选中值过滤列表",
+      "steps": ["关键词转小写", "名称或描述的小写形式包含关键词则保留", "分类选中值非空时，分类须与选中值严格相等，否则排除", "渲染过滤结果，总数更新为过滤后条数"],
+      "branches": ["过滤结果为 0 条时显示空状态（F-16）"], "end_state": "列表与总数反映过滤结果"
+    },
+    {
+      "id": "FLOW-03", "name": "新建 Skill", "trigger": "点击「+ 新建 Skill」",
+      "steps": ["调用 goCreate()，跳转 airun-skills-edit.html（不带参数）"], "branches": [], "end_state": "进入新建/编辑页"
+    },
+    {
+      "id": "FLOW-04", "name": "进入详情", "trigger": "点击某行「详情」，或点击数据行（非操作列）",
+      "steps": ["调用 goDetail(id)，跳转 airun-skills-detail.html?id=<id>"], "branches": [], "end_state": "进入详情页"
+    },
+    {
+      "id": "FLOW-05", "name": "编辑 Skill", "trigger": "点击某行「编辑」",
+      "steps": ["调用 goEdit(id)，跳转 airun-skills-edit.html?id=<id>"], "branches": [], "end_state": "进入新建/编辑页"
+    }
+  ],
+  "interactions": [
+    { "trigger": "点击「+ 新建 Skill」", "precondition": "无", "result": "跳转 airun-skills-edit.html（不带参数）", "feedback": "—", "source": "原型·goCreate()" },
+    { "trigger": "点击「详情」", "precondition": "无", "result": "跳转 airun-skills-detail.html?id=<id>", "feedback": "—", "source": "原型·goDetail(id)" },
+    { "trigger": "点击数据行（非操作列）", "precondition": "无", "result": "调用 goDetail(id)", "feedback": "—", "source": "原型·表格" },
+    { "trigger": "点击操作列", "precondition": "无", "result": "阻止冒泡，不触发整行点击", "feedback": "—", "source": "原型·event.stopPropagation()" },
+    { "trigger": "点击「编辑」", "precondition": "无", "result": "跳转 airun-skills-edit.html?id=<id>", "feedback": "—", "source": "原型·goEdit(id)" },
+    { "trigger": "点击「删除」", "precondition": "无", "result": "弹出原生确认框", "feedback": "确认删除该 Skill？删除后无法恢复", "source": "原型·deleteSkill(id)" },
+    { "trigger": "在确认框确认删除", "precondition": "已弹出确认框", "result": "从数组移除并重新渲染", "feedback": "已删除（2000 毫秒后消失）", "source": "原型·deleteSkill(id)" },
+    { "trigger": "操作分页控件（每页条数、‹、1、›）", "precondition": "无", "result": "原型仅展示控件；页面脚本中无分页切片逻辑，6 条全部渲染", "feedback": "原型仅提示：第 1/1 页", "source": "原型·分页" },
+    { "trigger": "修改搜索框关键字或分类下拉选中值", "precondition": "无", "result": "按 R-01 ~ R-03 过滤并渲染，总数更新", "feedback": "—", "source": "原型·脚本" }
+  ],
+  "visibility": [
+    { "object": "空状态行", "condition": "过滤后或数据为空，无数据行", "result": "显示「暂无 Skill，点击「+ 新建 Skill」创建」", "source": "原型·空状态" },
+    { "object": "总数文案", "condition": "过滤结果变化", "result": "「共 N 个」中的 N 取过滤后条数", "source": "原型·分页" },
+    { "object": "状态字段", "condition": "数据含 status", "result": "表格不显示", "source": "原型·渲染代码" },
+    { "object": "「已删除」提示", "condition": "删除确认后", "result": "显示，2000 毫秒后消失", "source": "原型·deleteSkill()" },
+    { "object": "新建页跳转", "condition": "点击「+ 新建 Skill」", "result": "airun-skills-edit.html", "source": "原型·goCreate()" },
+    { "object": "详情页跳转", "condition": "点击「详情」或数据行", "result": "airun-skills-detail.html?id=<id>", "source": "原型·goDetail(id)" },
+    { "object": "编辑页跳转", "condition": "点击「编辑」", "result": "airun-skills-edit.html?id=<id>", "source": "原型·goEdit(id)" }
+  ],
+  "api_spec": { "explicit": [] },
+  "test_cases": [
+    { "id": "TC-01", "module": "M-06", "refs": ["F-04", "F-05", "F-06", "F-07", "F-08", "F-09", "F-10", "R-09"], "type": "功能", "precondition": "打开页面", "steps": ["查看表头"], "expected": "表头依次为「Skill ID」「Skill 名称」「描述」「分类」「来源」「创建时间」「操作」，共 7 列，无状态列", "source": "原型·表头" },
+    { "id": "TC-02", "module": "M-06", "refs": ["F-04", "F-17", "R-07"], "type": "功能", "precondition": "打开页面，使用示例数据", "steps": ["查看列表与总数"], "expected": "表格显示 6 行，ID 依次为 sk-pdf、sk-excel、sk-trans、sk-img、sk-sql、sk-web；总数显示「共 6 个」", "source": "原型·mock 数据" },
+    { "id": "TC-03", "module": "M-05", "refs": ["R-01", "FLOW-02"], "type": "校验", "precondition": "使用示例数据", "steps": ["搜索框输入「PDF」"], "expected": "仅显示 sk-pdf 一行；总数显示「共 1 个」", "source": "原型·脚本" },
+    { "id": "TC-04", "module": "M-05", "refs": ["R-01"], "type": "校验", "precondition": "使用示例数据", "steps": ["搜索框输入「翻译」"], "expected": "仅显示 sk-trans 一行（命中描述「多语种翻译」）", "source": "原型·脚本" },
+    { "id": "TC-05", "module": "M-05", "refs": ["R-02", "R-08"], "type": "边界", "precondition": "使用示例数据", "steps": ["搜索框输入「sk-sql」"], "expected": "无数据行；显示「暂无 Skill，点击「+ 新建 Skill」创建」；总数显示「共 0 个」", "source": "原型·脚本" },
+    { "id": "TC-06", "module": "M-05", "refs": ["R-03", "R-07"], "type": "校验", "precondition": "使用示例数据", "steps": ["分类下拉选择「文档」"], "expected": "仅显示 sk-pdf、sk-excel 两行；总数显示「共 2 个」", "source": "原型·脚本" },
+    { "id": "TC-07", "module": "M-05", "refs": ["R-03", "R-08"], "type": "边界", "precondition": "使用示例数据", "steps": ["分类下拉选择「其他」"], "expected": "无数据行；显示空状态文案；总数显示「共 0 个」", "source": "原型·脚本" },
+    { "id": "TC-08", "module": "M-05", "refs": ["R-01", "R-03"], "type": "校验", "precondition": "使用示例数据", "steps": ["搜索框输入「excel」", "分类选择「文档」"], "expected": "仅显示 sk-excel 一行", "source": "原型·脚本" },
+    { "id": "TC-09", "module": "M-05", "refs": ["F-03", "FLOW-03"], "type": "交互", "precondition": "打开页面", "steps": ["点击「+ 新建 Skill」"], "expected": "页面跳转到 airun-skills-edit.html，URL 不带 id 参数", "source": "原型·goCreate()" },
+    { "id": "TC-10", "module": "M-07", "refs": ["F-11", "FLOW-04"], "type": "交互", "precondition": "使用示例数据", "steps": ["点击 sk-pdf 行「详情」"], "expected": "页面跳转到 airun-skills-detail.html?id=sk-pdf", "source": "原型·goDetail(id)" },
+    { "id": "TC-11", "module": "M-06", "refs": ["R-04", "FLOW-04"], "type": "交互", "precondition": "使用示例数据", "steps": ["点击 sk-excel 行的非操作列区域"], "expected": "页面跳转到 airun-skills-detail.html?id=sk-excel", "source": "原型·表格" },
+    { "id": "TC-12", "module": "M-06", "refs": ["R-04"], "type": "交互", "precondition": "使用示例数据", "steps": ["点击某行操作列中不含按钮的区域"], "expected": "页面不跳转，URL 保持不变", "source": "原型·event.stopPropagation()" },
+    { "id": "TC-13", "module": "M-07", "refs": ["F-12", "FLOW-05"], "type": "交互", "precondition": "使用示例数据", "steps": ["点击 sk-trans 行「编辑」"], "expected": "页面跳转到 airun-skills-edit.html?id=sk-trans", "source": "原型·goEdit(id)" },
+    { "id": "TC-14", "module": "M-07", "refs": ["F-13", "F-14", "FLOW-01"], "type": "交互", "precondition": "使用示例数据", "steps": ["点击 sk-sql 行「删除」"], "expected": "弹出确认框，正文为「确认删除该 Skill？删除后无法恢复」", "source": "原型·deleteSkill(id)" },
+    { "id": "TC-15", "module": "M-07", "refs": ["F-15", "R-05", "FLOW-01"], "type": "功能", "precondition": "使用示例数据，已弹出 sk-sql 的删除确认框", "steps": ["在确认框确认删除"], "expected": "表格不再包含 sk-sql 行，显示 5 行；总数显示「共 5 个」；出现提示「已删除」，2000 毫秒后消失", "source": "原型·deleteSkill(id)" },
+    { "id": "TC-16", "module": "M-07", "refs": ["R-06"], "type": "功能", "precondition": "使用示例数据，打开浏览器网络面板", "steps": ["确认删除任一 Skill"], "expected": "网络面板中无因删除产生的接口请求", "source": "原型·deleteSkill(id)" },
+    { "id": "TC-17", "module": "M-08", "refs": ["F-16", "R-08"], "type": "状态", "precondition": "使用示例数据", "steps": ["依次删除全部 6 条 Skill"], "expected": "表格显示一行跨 7 列居中的「暂无 Skill，点击「+ 新建 Skill」创建」；总数显示「共 0 个」", "source": "原型·空状态" },
+    { "id": "TC-18", "module": "M-09", "refs": ["F-17", "F-18", "F-19", "F-20", "F-21", "F-22"], "type": "功能", "precondition": "打开页面", "steps": ["查看分页区域"], "expected": "显示「共 6 个」；每页条数下拉选项为「10 条/页」「20 条/页」「50 条/页」；显示「‹」「1」「›」按钮与「第 1/1 页」", "source": "原型·分页" },
+    { "id": "TC-19", "module": "M-05", "refs": ["F-02"], "type": "功能", "precondition": "打开页面", "steps": ["展开分类下拉"], "expected": "选项依次为「全部分类」「文档」「语言」「视觉」「数据」「检索」「其他」", "source": "原型·工具栏" }
+  ],
+  "coverage": [
+    { "ref": "R-01", "cases": ["TC-03", "TC-04", "TC-08"] },
+    { "ref": "R-02", "cases": ["TC-05"] },
+    { "ref": "R-03", "cases": ["TC-06", "TC-07", "TC-08"] },
+    { "ref": "R-04", "cases": ["TC-11", "TC-12"] },
+    { "ref": "R-05", "cases": ["TC-15"] },
+    { "ref": "R-06", "cases": ["TC-16"] },
+    { "ref": "R-07", "cases": ["TC-02", "TC-06"] },
+    { "ref": "R-08", "cases": ["TC-05", "TC-07", "TC-17"] },
+    { "ref": "R-09", "cases": ["TC-01"] },
+    { "ref": "FLOW-01", "cases": ["TC-14", "TC-15"] },
+    { "ref": "FLOW-02", "cases": ["TC-03", "TC-04", "TC-05", "TC-06", "TC-07", "TC-08"] },
+    { "ref": "FLOW-03", "cases": ["TC-09"] },
+    { "ref": "FLOW-04", "cases": ["TC-10", "TC-11"] },
+    { "ref": "FLOW-05", "cases": ["TC-13"] }
+  ],
+  "unspecified": [
+    { "id": "U-01", "location": "M-05 搜索框", "fact": "原型中无 placeholder 文案" },
+    { "id": "U-02", "location": "M-05 分类下拉", "fact": "原型中无默认选中项的明确声明" },
+    { "id": "U-03", "location": "M-07 删除确认框", "fact": "使用浏览器原生 confirm，原型中无标题、按钮文案和取消分支的描述" },
+    { "id": "U-04", "location": "M-07 行操作", "fact": "PROTOTYPE_SPEC 第 4 条列出「归档（恢复）」，行操作与脚本中无归档、恢复按钮" },
+    { "id": "U-05", "location": "M-06 mock 数据", "fact": "数据含 status 字段（active / archived）；CSS 中有 .status-chip 样式，渲染代码未使用" },
+    { "id": "U-06", "location": "M-09 分页", "fact": "原型中无每页条数默认值；脚本无分页切片逻辑，6 条全部渲染；页码控件为静态「‹ 1 ›」" },
+    { "id": "U-07", "location": "M-09 总数", "fact": "静态 HTML 中总数文案为「共 0 个」，渲染时被替换" },
+    { "id": "U-08", "location": "M-05 / M-07 跳转目标", "fact": "airun-skills-edit.html、airun-skills-detail.html 的内容不在本页原型中；PROTOTYPE_SPEC 第 3 条写明新建页「支持 Markdown 编写或上传 .zip 技能包」，表单字段本页未给出" },
+    { "id": "U-09", "location": "PROTOTYPE_SPEC 第 5 条", "fact": "写明「快速创建 Agent 时绑定 Skills 从此列表选取」，该交互在本页未展示" }
+  ],
+  "quality": { "overall_score": null, "reason": "原型链接模式不评分" }
+}

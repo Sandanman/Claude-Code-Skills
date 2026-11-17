@@ -22,6 +22,16 @@
 Durable Path 按需归档
 ```
 
+## 预编排流程
+
+预编排流程是预先定义的多主 Skill 固定链路，注册在 `pipelines_register.md`，流程文件位于 `pipelines/`。主 Skill 匹配之前先检查该注册表：命中则直接按流程执行（固定走 Durable Path），未命中再走常规单 Skill 匹配。
+
+| 流程 | 链路 | 触发示例 |
+|------|------|---------|
+| `frontend-page-development` | requirement-generator → page-layout-designer → code-generator | 依照需求文档 {文档链接} 完成前端页面 |
+
+新增流程：在 `pipelines/` 新建流程文件，并在 `pipelines_register.md` 追加索引；引用的主 Skill 必须已在 `skills_register.md` 启用。
+
 ## 路径选择
 
 ### Fast Path

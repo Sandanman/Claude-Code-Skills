@@ -21,6 +21,18 @@ Fast Path 仅在以下条件全部满足时使用：意图明确、置信度不�
 
 Fast Path 执行中只能升级到 Durable Path，升级时保留已完成步骤、意图、匹配结果和共享上下文。
 
+预编排流程：主 Skill 匹配前先读取预编排流程注册表，命中的流程固定使用 Durable Path。
+
+```python
+PIPELINE_CONFIG = {
+    "register_path": ".claude/skills/orchestrator/pipelines_register.md",
+    "check_before_skill_match": True,
+    "route": "durable",
+    "execution_mode": "serial",
+    "require_stage_skills_enabled": True,
+}
+```
+
 ## 2. 匹配配置
 
 ```python

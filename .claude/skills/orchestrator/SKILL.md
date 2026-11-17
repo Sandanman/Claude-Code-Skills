@@ -45,6 +45,8 @@ https://github.com/Sandanman/Claude-Code-Skills
 
 主 Skill 确定后，执行流程必须输出主 Skill 的可观测性信息，包括匹配关键词、匹配分数、选择理由、声明依赖和执行路径。
 
+预编排流程：主 Skill 匹配之前，先读取 `.claude/skills/orchestrator/pipelines_register.md`。命中预编排流程（如“依照需求文档 {链接} 完成前端页面”）时，直接按对应流程文件执行固定的多主 Skill 链路；未命中再走常规单 Skill 匹配。详见步骤 3 的“预编排流程匹配”。
+
 ## 2. 执行路径
 
 复杂度评分只作为路由输入，不能单独决定安全级别。编排器先判断 `confidence`、`risk_level`、`statefulness`、`ambiguity` 和 `requires_confirmation`，再选择执行路径。
@@ -100,6 +102,19 @@ Durable Path 保留历史检索、DAG、任务状态、错误恢复、分级校�
 历史结果只用于提供上下文和参考，不直接跳过当前任务的必要校验。
 
 ## 5. 步骤 3：主 Skill 匹配
+
+### 预编排流程匹配（优先于单 Skill 匹配）
+
+1. 读取 `.claude/skills/orchestrator/pipelines_register.md`，按其“匹配规则”和 `match_keywords` 判断用户意图是否命中某个预编排流程。
+2. 命中且流程 `status: 启用`：
+   - 校验流程引用的每个主 Skill 都在 `skills_register.md` 中 `status: 启用`；缺失时不执行，明确报告缺失项。
+   - 读取流程文件（如 `pipelines/frontend-page-development.md`）及其各阶段 Skill 的 `SKILL.md`。
+   - 路径固定为 `durable`；输出选择信息时，主 Skill 写 `pipeline:{流程名}`，声明依赖写流程的阶段 Skill 列表，`match_score` 无法可靠计算时输出 `unknown`。
+   - 步骤 4～9 按流程文件执行：阶段（S1、S2、S3）视为 Durable 任务中的执行单元，阶段间关卡、共享上下文字段、校验与输出摘要以流程文件为准；其余通用规则（任务文件、恢复、L1 校验、归档）沿用本文件。
+3. 未命中、或意图介于单 Skill 与预编排流程之间无法判断：未命中则继续下面的常规匹配；无法判断时按 `user_interaction.md` 的 D2 一次性询问，选项包含“预编排全流程”。
+4. 用户明确只做到某阶段（如“只做页面交互设计”）时，仍按流程执行并在该阶段后停止。
+
+### 常规单 Skill 匹配
 
 综合比较 `domain`、`action`、`keywords`、目标类型、触发关键词和能力描述，输出候选列表、匹配分数和选择理由。
 
@@ -199,6 +214,8 @@ Durable Path 发现任务状态时，读取任务 ID、路由模式、依赖、�
 状态：{status}
 ```
 
+预编排流程命中时，在固定摘要后追加“阶段状态”和“遗留项”，格式见对应流程文件（如 `pipelines/frontend-page-development.md` 第 8 节）。
+
 无匹配、校验失败或安全升级时，明确说明当前状态和用户下一步。
 
 ## 11. 步骤 9：按需归档
@@ -228,6 +245,7 @@ Fast Path 不归档。归档失败时保留原任务文件和最终结果。
 ## 13. 完成标准
 
 - 统一流程覆盖简单和复杂任务，并根据复杂度选择执行策略。
+- 匹配前已检查预编排流程注册表；命中时按流程文件执行，各阶段和关卡结果可追溯。
 - 匹配主 Skill 后已读取对应 `SKILL.md`。
 - 依赖、并行层、状态、日志、错误和共享上下文持续可恢复。
 - 结果校验包含明确结论、偏差和有限反思记录。
