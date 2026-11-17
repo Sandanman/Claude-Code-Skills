@@ -209,7 +209,7 @@ name: requirement-documentation
 1. 所有前置原子skill已完成（8个，v1.2）
 4. 两个文件内容与所有前置输出一致
 5. 时间戳和版本信息已正确填充
-6. 文件已保存到当前目录
+6. 文件已保存到 docs/lijianxin/requirement-generator/
 
 ## 错误处理
 - **前置数据缺失**：报告缺失项，停止生成

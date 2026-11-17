@@ -38,9 +38,9 @@ test-framework-detection ─→ test-code-generation → test-verification
 
 ## 输出产物
 
-- `test-cases-design.md` - 测试用例设计文档
-- `__tests__/*.test.ts` - 生成的测试代码文件
-- `test-coverage-report.md` - 测试覆盖分析报告
+- `docs/lijianxin/test-generator/test-cases-design.md` - 测试用例设计文档
+- `__tests__/*.test.ts` - 生成的测试代码文件（保留在项目测试目录）
+- `docs/lijianxin/test-generator/test-coverage-report.md` - 测试覆盖分析报告
 
 ## 快速开始
 

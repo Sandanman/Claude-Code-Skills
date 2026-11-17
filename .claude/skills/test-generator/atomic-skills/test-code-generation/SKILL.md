@@ -78,4 +78,4 @@ describe('date utils', () => {
 3. 使用检测到的框架的官方语法（不用其他框架语法）
 4. 测试文件保存到正确的目录（`__tests__/` 或 `test/`）
 5. 每个生成的测试文件至少包含 3 个测试用例
-6. 生成 `generated-test-files.json` 列出所有文件
+6. 生成 `generated-test-files.json` 列出所有文件，保存到 `docs/lijianxin/test-generator/`（测试代码本身仍保存在项目测试目录）

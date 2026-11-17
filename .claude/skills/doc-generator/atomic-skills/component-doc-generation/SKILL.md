@@ -16,12 +16,12 @@ description: 为已确认路径中的 Vue 或 React 组件生成文档；当用�
 - `doc_format`：`markdown`、`vuepress` 或 `storybook`，仅在项目配置支持时生成。
 - `include_examples`：是否生成示例。
 - `exclude_patterns`：排除测试、构建产物或第三方目录。
-- `output_path`：默认 `docs/components/`；写入前确认覆盖策略。
+- `output_path`：默认 `docs/lijianxin/doc-generator/components/`；写入前确认覆盖策略。
 
 ## 输出
 
 - 每个组件一份文档，包含已确认的 description、props、events、slots/children、exposed API 和示例。
-- `docs/components/README.md` 组件索引，链接到实际生成文件。
+- `docs/lijianxin/doc-generator/components/README.md` 组件索引，链接到实际生成文件。
 - 未能解析的语法、动态类型和缺失说明清单。
 
 ## 支持边界

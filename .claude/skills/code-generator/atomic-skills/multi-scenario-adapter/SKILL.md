@@ -72,7 +72,7 @@ description: 根据输入来源、功能点和模块特征识别需求场景，�
 
 ### Step 1：检测输入来源
 
-1. 检测当前目录和上级目录是否有 `requirements.json`
+1. 检测 `docs/lijianxin/requirement-generator/`、当前目录和上级目录是否有 `requirements.json`
 2. 检测项目根目录是否有 `project_context.json`
 3. 分析用户输入是文件路径还是文本描述
 

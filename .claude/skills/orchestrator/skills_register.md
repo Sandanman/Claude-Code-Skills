@@ -158,7 +158,7 @@ version: 1.8
   status: 启用
 
 - name: project-cloud-map
-  desc: 读取项目当前代码快照或指定文件，生成并增量维护 Mermaid 项目云图；支持 project/file 范围与 generate/supplement/record-change/analyze 操作，已有云图时优先在主文件关系图补充详细子项，仅在必要时使用 docs/cloud-map/，涉及业务代码变更时必须先列候选方案并等待确认
+  desc: 读取项目当前代码快照或指定文件，生成并增量维护 Mermaid 项目云图；支持 project/file 范围与 generate/supplement/record-change/analyze 操作，已有云图时优先在主文件关系图补充详细子项，云图生成到被分析的目录下，仅在必要时使用该目录下的 cloud-map/ 子文档，涉及业务代码变更时必须先列候选方案并等待确认
   path: .claude/skills/project-cloud-map/SKILL.md
   core_ability: scope/operation 识别、项目与文件级快照分析、页面/入口/函数关系建模、主图—详细子项映射、代码/业务双置信度、Markdown/Mermaid 输出、增量维护、Fast/Durable Path 路由和分级校验
   match_keywords: 项目云图, 文件云图, 项目地图, 页面关系, 模块关系, 函数调用关系, 补充云图, 完善云图, 细化云图, 更新云图, 云图增量维护, 新功能加入云图, 变更记录

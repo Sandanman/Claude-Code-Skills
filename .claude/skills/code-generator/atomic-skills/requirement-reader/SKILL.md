@@ -78,7 +78,7 @@ description: 读取并校验 requirements.json、project_context.json 或自由�
 
 ### 场景1：检测到 requirements.json（推荐）
 
-1. 在当前目录和上级目录查找 `requirements.json`
+1. 依次在用户指定路径、`docs/lijianxin/requirement-generator/`、当前目录和上级目录查找 `requirements.json`（存在多个时优先取最近修改的，并向用户确认）
 2. 验证文件格式和必需字段
 3. 解析JSON内容
 4. 提取所有需求信息

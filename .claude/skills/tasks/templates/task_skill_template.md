@@ -11,7 +11,7 @@
 执行模式：serial_by_default
 升级原因：无 / {从 fast 升级到 durable 的原因}
 当前状态：待执行/执行中/待恢复/暂停/已完成/失败
-归档路径：未归档（Durable 执行完毕后自动更新为 tasks/history/YYYY-MM/）
+归档路径：未归档（Durable 执行完毕后自动更新为 docs/lijianxin/tasks/history/YYYY-MM/）
 
 # 子任务（原子skill）列表
 | 原子skill名称 | 所属主skill | 状态（待执行/执行中/待恢复/已完成/失败） | 依赖子任务（无则填“无”） | 重试次数（0-3） | 执行日志 | 完成标准 |
@@ -54,5 +54,5 @@
 
 # 归档说明
 归档时间：{Durable 执行完毕后自动填写YYYY-MM-DD HH:MM:SS}
-归档路径：{tasks/history/YYYY-MM/task_skill_{任务ID}.md}
+归档路径：{docs/lijianxin/tasks/history/YYYY-MM/task_skill_{任务ID}.md}
 是否可固化：{是/否，提示用户手动迁移至项目目录}

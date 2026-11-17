@@ -106,7 +106,7 @@ status: 启用
 | 验收条件 | Markdown（Given-When-Then） | 每项功能的验收标准 |
 | 业务逻辑流程 | Markdown（Mermaid） | 核心业务流程和异常流程 |
 
-**输出路径**: `.claude/skills/product-designer/outputs/{product_name}_{timestamp}/`
+**输出路径**: `docs/lijianxin/product-designer/{product_name}_{timestamp}/`
 
 ---
 
@@ -437,7 +437,7 @@ flowchart LR
 **输出文件**：
 
 ```
-.claude/skills/product-designer/outputs/{product_name}_{timestamp}/
+docs/lijianxin/product-designer/{product_name}_{timestamp}/
 ├── 01_产品模块设计文档.md    # 完整设计（含业务详细描述）
 ├── 02_功能清单.md           # 功能点汇总表
 ├── 03_API接口规格.md        # 接口详细定义
@@ -543,7 +543,7 @@ flowchart LR
 - **永远不要假设**：用户的沉默不等于默认
 - **一次不超过 3 个问题**：避免信息过载，分批次交互
 - **25% 发散建议必须标注**：`[建议]` 前缀 + 原因 + 优先级
-- **输出路径固定**：`.claude/skills/product-designer/outputs/{product_name}_{timestamp}/`
+- **输出路径固定**：`docs/lijianxin/product-designer/{product_name}_{timestamp}/`
 - **文档语言一致**：所有输出使用中文，技术术语保留英文
 
 ---

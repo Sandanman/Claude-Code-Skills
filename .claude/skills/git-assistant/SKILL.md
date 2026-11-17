@@ -80,7 +80,7 @@ commands: []
 
 ```text
 commit-generation
-  → 检查 docs/project-cloud-map.md
+  → 检查 staged 文件对应目录下的 project-cloud-map.md
   → 存在时执行 cloud-map-sync
   → 展示最终 staged 文件范围并确认
   → git commit

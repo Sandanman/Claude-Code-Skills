@@ -84,6 +84,6 @@ Doc Generator 将已确认的源码、Git 历史或文档输入转换为可审�
 
 - 主 Skill：`./.claude/skills/doc-generator/SKILL.md`
 - 原子 Skill：`./.claude/skills/doc-generator/atomic-skills/`
-- 默认 API 输出：`docs/api.md` 或 `docs/openapi.json`
-- 默认组件输出：`docs/components/`
-- 默认变更日志：`CHANGELOG.md`
+- 默认 API 输出：`docs/lijianxin/doc-generator/api.md` 或 `docs/lijianxin/doc-generator/openapi.json`
+- 默认组件输出：`docs/lijianxin/doc-generator/components/`
+- 默认变更日志：`docs/lijianxin/doc-generator/CHANGELOG.md`

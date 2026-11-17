@@ -39,7 +39,7 @@ redundancy-check ──────────┘              │
                                 documentation-update
 ```
 
-前两个分析 Skill 并行执行；模式识别和基准配置在上游完成后并行；方案、应用、验证和文档按顺序执行。阶段结果写入 `.claude/skills/tasks/current/task_skill.md` 作为共享上下文，默认输出目录为 `.claude/outputs/code-optimizer/`（项目已有约定时遵循项目约定）。
+前两个分析 Skill 并行执行；模式识别和基准配置在上游完成后并行；方案、应用、验证和文档按顺序执行。阶段结果写入 `docs/lijianxin/tasks/current/task_skill.md` 作为共享上下文，默认输出目录为 `docs/lijianxin/code-optimizer/`（项目已有约定时遵循项目约定）。
 
 ## 快速开始
 

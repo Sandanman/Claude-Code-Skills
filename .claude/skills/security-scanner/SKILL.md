@@ -37,7 +37,7 @@ Security Scanner 是前端项目的系统性安全扫描技能，通过4个原�
 - `scan_scope`：扫描范围，可为 `all` 或用户明确指定的源码、依赖、配置、敏感信息范围。
 - `dependency_audit`：是否执行依赖安全检查，必须由用户或上层任务明确指定。
 - `include_env_paths`：是否检查 `.env` 文件路径；只报告路径和风险类型，不读取或输出具体值。
-- `output_path`：安全报告输出路径，由任务上下文指定。
+- `output_path`：安全报告输出路径，默认 `docs/lijianxin/security-scanner/`，任务上下文另行指定时从其指定。
 - `execution_mode`：`interactive` 或 `ci`，决定是否允许无人值守返回结果。
 
 扫描范围和依赖审计选项必须来自用户输入或上层任务上下文，不得擅自扩大范围。

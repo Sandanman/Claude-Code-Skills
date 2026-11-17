@@ -87,5 +87,5 @@ Test Verification 负责验证生成的测试代码的正确性和可执行性�
 2. 所有 import 路径正确（无 Module not found 错误）
 3. 测试文件不包含 ESLint 错误（warning 可以接受）
 4. 框架语法验证通过（`vitest --run` 等命令不报语法错误）
-5. 生成 `test-verification-report.json` 记录验证结果
+5. 生成 `test-verification-report.json` 记录验证结果，保存到 `docs/lijianxin/test-generator/`
 6. 总体状态为 PASS 或仅有 LOW 级别 warning

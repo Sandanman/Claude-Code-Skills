@@ -57,7 +57,7 @@ https://github.com/Sandanman/Claude-Code-Skills
 意图识别 → 主 Skill 匹配 → 读取选中 Skill → 执行 → 基础校验 → 输出
 ```
 
-Fast Path 默认跳过历史检索、完整 DAG、完整任务模板、反思循环和月度归档，不创建完整 `tasks/current/task_skill.md`。仍必须执行主 Skill 的最低完成标准和安全检查。
+Fast Path 默认跳过历史检索、完整 DAG、完整任务模板、反思循环和月度归档，不创建完整 `docs/lijianxin/tasks/current/task_skill.md`。仍必须执行主 Skill 的最低完成标准和安全检查。
 
 ### Durable Path
 
@@ -140,7 +140,7 @@ Durable Path 执行：
 3. 使用稳定的拓扑排序生成执行顺序。
 4. 识别计划层；计划层不代表实际并行。
 5. 生成唯一任务 ID。
-6. 创建 `tasks/current/task_skill_{任务ID}.md`，兼容读取旧的 `tasks/current/task_skill.md`。
+6. 创建 `docs/lijianxin/tasks/current/task_skill_{任务ID}.md`，兼容读取旧的 `docs/lijianxin/tasks/current/task_skill.md`。
 
 循环依赖、缺失依赖或多个活动任务应在执行前返回明确错误，不覆盖已有任务。
 
@@ -162,7 +162,7 @@ Fast Path 直接执行唯一低风险目标，不默认重试或持久化。Dura
 
 Durable Path 发现任务状态时，读取任务 ID、路由模式、依赖、已完成结果、错误日志、校验级别和共享上下文。已完成的 Skill 不重复执行；`待恢复` Skill 先验证已有输出和外部副作用，再决定是否重试。
 
-旧的 `tasks/current/task_skill.md` 仅作为兼容读取来源。发现多个活动任务时不得自动覆盖或忽略，必须精确选择。恢复时不得覆盖已有结果或错误记录。
+旧的 `docs/lijianxin/tasks/current/task_skill.md` 仅作为兼容读取来源。发现多个活动任务时不得自动覆盖或忽略，必须精确选择。恢复时不得覆盖已有结果或错误记录。
 
 ## 9. 步骤 7：分级结果校验
 
@@ -205,7 +205,7 @@ Durable Path 发现任务状态时，读取任务 ID、路由模式、依赖、�
 
 仅 Durable Path 在终态（“已完成”或“失败”）后调用 `task-archiver`：
 
-1. 按任务 ID 将 `tasks/current/task_skill_{任务ID}.md` 移动到 `tasks/history/YYYY-MM/task_skill_{任务ID}.md`。
+1. 按任务 ID 将 `docs/lijianxin/tasks/current/task_skill_{任务ID}.md` 移动到 `docs/lijianxin/tasks/history/YYYY-MM/task_skill_{任务ID}.md`。
 2. 更新或创建当月任务索引。
 3. 保留执行摘要、校验结果、错误日志和共享上下文。
 4. 验证本次任务的历史文件和索引，不要求当前目录全局为空。

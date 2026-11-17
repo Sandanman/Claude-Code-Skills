@@ -31,7 +31,7 @@ description: 当用户提供一个 Skill 路径并要求"解读"、"分析"、"�
 
 ## 输出契约
 
-- 输出文件：`.claude/skills/skill-analyzer/skill-analyzer-reports/skill_analysis_<skill-name>.md`
+- 输出文件：`<被分析 Skill 所在目录>/skill_analysis_<skill-name>.md`（与被分析 Skill 的 SKILL.md 同级）
 - 输出格式：中文 Markdown，包含全部 8 个分析维度。
 - 报告顶部和底部必须包含基于实际执行时间生成的 ISO 8601 时间戳，不得硬编码。
 - 目标文件或关联文件缺失时，必须在报告中记录缺失项和影响。
@@ -172,7 +172,7 @@ description: 当用户提供一个 Skill 路径并要求"解读"、"分析"、"�
 
 ## 输出格式
 
-**输出文件名**：`.claude/skills/skill-analyzer/skill-analyzer-reports/skill_analysis_<skill-name>.md`
+**输出文件名**：`<被分析 Skill 所在目录>/skill_analysis_<skill-name>.md`（与被分析 Skill 的 SKILL.md 同级）
 
 **输出结构**：
 
@@ -294,7 +294,7 @@ description: 当用户提供一个 Skill 路径并要求"解读"、"分析"、"�
 ## 执行规范（必须遵守）
 
 1. **时间戳动态获取（MUST）**：文件顶部元数据和底部时间戳均使用 `date` 命令获取实际当前时间，禁止硬编码
-2. **文件路径（固定）**：`.claude/skills/skill-analyzer/skill-analyzer-reports/skill_analysis_<skill-name>.md`
+2. **文件路径（固定）**：`<被分析 Skill 所在目录>/skill_analysis_<skill-name>.md`（与被分析 Skill 的 SKILL.md 同级）
 3. **对话输出（最后）**：文件写入成功后，在对话中输出精简版报告
 
 ## 使用说明

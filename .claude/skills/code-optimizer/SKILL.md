@@ -54,7 +54,7 @@ redundancy-check ──────────┘              │
 1. `quality-and-perf-analysis` 与 `redundancy-check` 使用同一目标范围并行执行；两者只读项目文件，不互相覆盖输出。
 2. `pattern-and-benchmark-recognition` 等待两个上游报告完成后并行执行模式识别和基准配置生成。
 3. 方案、应用、验证和文档阶段按 DAG 顺序执行，避免下游使用不完整数据。
-4. 每个阶段把结构化结果写入共享上下文 `.claude/skills/tasks/current/task_skill.md`；无法写入时保留阶段结果并报告原因。
+4. 每个阶段把结构化结果写入共享上下文 `docs/lijianxin/tasks/current/task_skill.md`；无法写入时保留阶段结果并报告原因。
 
 ## 输入契约
 
@@ -89,7 +89,7 @@ verification_report: object
 doc_updates: array
 ```
 
-阶段报告可写入项目既有输出目录；若项目未约定目录，使用 `.claude/outputs/code-optimizer/`，不得伪造不存在的路径或测试结果。
+阶段报告可写入项目既有输出目录；若项目未约定目录，使用 `docs/lijianxin/code-optimizer/`，不得伪造不存在的路径或测试结果。
 
 ## 完成标准
 

@@ -102,7 +102,7 @@
 ### 6. 归档增强（步骤9）
 
 - **自动归档**：所有原子skill执行完毕后自动归档
-- **月度索引**：自动维护 `tasks/history/YYYY-MM/月度任务索引.md`
+- **月度索引**：自动维护 `docs/lijianxin/tasks/history/YYYY-MM/月度任务索引.md`
 - **可固化检测**：识别可复用文档
 
 ---
@@ -139,7 +139,7 @@
 
 **触发关键词**：提交、commit、分支管理、冲突解决、stash、历史分析、版本 Tag、conventional commits
 
-**8个原子 skill**：intent-router → commit-generation → branch-management → conflict-resolution → history-analysis → stash-management → version-management → cloud-map-sync（commit 执行前自动链式触发，非意图路由项，仅当 docs/project-cloud-map.md 存在时执行）
+**8个原子 skill**：intent-router → commit-generation → branch-management → conflict-resolution → history-analysis → stash-management → version-management → cloud-map-sync（commit 执行前自动链式触发，非意图路由项，仅当 staged 文件对应目录下存在 project-cloud-map.md 时执行）
 
 ### deploy-helper（部署辅助）
 

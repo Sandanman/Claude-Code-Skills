@@ -51,7 +51,7 @@ def generate_task(intent, matched_skill, atomic_skills_list, route_mode="durable
 
     parallel_layers = identify_parallel_layers(sorted_skills, graph)
     task_id = generate_task_id()
-    task_path = f"tasks/current/task_skill_{task_id}.md"
+    task_path = f"docs/lijianxin/tasks/current/task_skill_{task_id}.md"
     task_skill_md = create_task_skill_file(
         task_id=task_id,
         task_path=task_path,

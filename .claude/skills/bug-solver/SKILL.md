@@ -104,7 +104,7 @@ test-suggestion（按需）
 
 ## 共享上下文
 
-任务状态和阶段产物写入 `.claude/skills/tasks/current/task_skill.md`：
+任务状态和阶段产物写入 `docs/lijianxin/tasks/current/task_skill.md`：
 
 | 阶段 | 输出键 |
 |------|--------|
@@ -139,7 +139,7 @@ test-suggestion（按需）
 
 - 主 Skill：`.claude/skills/bug-solver/SKILL.md`
 - 原子 Skill：`.claude/skills/bug-solver/atomic-skills/`
-- 共享上下文：`.claude/skills/tasks/current/task_skill.md`
+- 共享上下文：`docs/lijianxin/tasks/current/task_skill.md`
 
 ## 版本信息
 

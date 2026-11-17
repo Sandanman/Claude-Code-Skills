@@ -26,7 +26,7 @@ reasoner_instructions: |
 
 ### Step 1: 检测 CLAUDE.md、orchestrator + 检测/询问项目云图
 
-使用 Glob 或 Read 工具一次性检测项目根目录是否存在 `CLAUDE.md`、`docs/project-cloud-map.md`，并检查当前项目是否存在可用的 `orchestrator`。`orchestrator` 只有同时满足以下条件才视为可用：
+使用 Glob 或 Read 工具一次性检测项目根目录是否存在 `CLAUDE.md`、`project-cloud-map.md`，并检查当前项目是否存在可用的 `orchestrator`。`orchestrator` 只有同时满足以下条件才视为可用：
 
 1. `.claude/skills/orchestrator/SKILL.md` 存在，且 frontmatter 中的 `name` 为 `orchestrator`
 2. `.claude/skills/orchestrator/skills_register.md` 中存在路径正确且 `status: 启用` 的 `orchestrator` 条目
@@ -39,7 +39,7 @@ reasoner_instructions: |
 - 如果 CLAUDE.md 不存在 → 继续流程
 
 **项目云图复用判断**：
-- 如果 `docs/project-cloud-map.md` 已存在 → 跳过询问，记录 `cloud_map: "pattern_reused"`
+- 如果 `project-cloud-map.md` 已存在 → 跳过询问，记录 `cloud_map: "pattern_reused"`
 - 如果不存在 → 在开场引导中一并询问用户是否要生成（见下方询问文案），记录用户的选择：
   - 同意 → 记录 `cloud_map: "pending_parallel"`，进入 Step 2 时后台并行调用 `.claude/skills/project-cloud-map/SKILL.md`（项目级模式）
   - 拒绝/不回应 → 记录 `cloud_map: "skipped"`，不追问，不阻塞
@@ -54,7 +54,7 @@ reasoner_instructions: |
 3. 生成项目代码风格（CODE_STYLE.md）
 4. 生成你的个人代码习惯（CODE_STYLE_PERSONAL.md）
 
-另外，这个项目目前还没有「项目云图」（docs/project-cloud-map.md）。
+另外，这个项目目前还没有「项目云图」（project-cloud-map.md）。
 它相当于给 AI 用的一张项目导航地图：用关系图（Mermaid）记录各模块的作用以及模块之间的调用联系，主要帮你：
 - 查上下文——新增/修改需求前，AI 先在图上定位相关文件、函数、调用链路，快速找到该改哪里、会影响到哪些地方
 - 留痕——需求改完后，在对应节点上追加一条变更记录，方便以后快速知道"这里什么时候被谁改过、改了什么"
@@ -191,12 +191,12 @@ https://github.com/Sandanman/Claude-Code-Skills
 
 到达 Step 4 时检查该并行任务状态：
 - 已完成 → 记录 `cloud_map: "generated"`，在完成提示中展示结果
-- 仍在执行 → 记录 `cloud_map: "generating"`，在完成提示中说明"云图仍在后台生成，完成后可查看 docs/project-cloud-map.md"
+- 仍在执行 → 记录 `cloud_map: "generating"`，在完成提示中说明"云图仍在后台生成，完成后可查看 project-cloud-map.md"
 - 执行失败 → 记录 `cloud_map: "failed"`，简要说明原因，不影响 cheers 其余部分的完成判定
 
 **用户在 Step 1 拒绝或不回应**：`cloud_map: "skipped"`，不触发本并行任务，不追问。
 
-**docs/project-cloud-map.md 已存在**：`cloud_map: "pattern_reused"`，不触发本并行任务。
+**project-cloud-map.md 已存在**：`cloud_map: "pattern_reused"`，不触发本并行任务。
 
 ### 完成标准
 
@@ -216,7 +216,7 @@ https://github.com/Sandanman/Claude-Code-Skills
 - CLAUDE.md（含条件化的任务编排能力说明和代码生成优先级说明）✓
 - CODE_STYLE.md（项目代码风格）<视扫描结果>
 - CODE_STYLE_PERSONAL.md（个人代码习惯）<视用户配合度>
-- docs/project-cloud-map.md（项目云图）<视并行任务状态：已存在 / 已生成 / 仍在后台生成中 / 已跳过 / 生成失败>
+- project-cloud-map.md（项目云图）<视并行任务状态：已存在 / 已生成 / 仍在后台生成中 / 已跳过 / 生成失败>
 
 任务编排能力：
 - `orchestrator_status.available: <true/false>`

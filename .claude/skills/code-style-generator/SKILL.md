@@ -56,7 +56,7 @@ detect-and-scan
 
 ## 共享上下文
 
-各阶段应将结构化结果写入 `.claude/skills/tasks/current/task_skill.md`，使用以下字段：
+各阶段应将结构化结果写入 `docs/lijianxin/tasks/current/task_skill.md`，使用以下字段：
 
 ```yaml
 detection_result:
@@ -149,7 +149,7 @@ issues: []
 - 主 Skill：`.claude/skills/code-style-generator/SKILL.md`
 - 有效原子 Skill：`.claude/skills/code-style-generator/atomic-skills/`
 - 兼容存根：`scan-code-patterns`、`confirm-and-supplement`
-- 共享上下文：`.claude/skills/tasks/current/task_skill.md`
+- 共享上下文：`docs/lijianxin/tasks/current/task_skill.md`
 
 ## 触发关键词
 

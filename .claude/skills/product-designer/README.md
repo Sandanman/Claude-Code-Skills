@@ -23,7 +23,7 @@
 
 ## 输出产物
 
-输出至 `.claude/skills/product-designer/outputs/{product_name}_{timestamp}/`：
+输出至 `docs/lijianxin/product-designer/{product_name}_{timestamp}/`：
 
 | 文件 | 说明 |
 | --- | --- |

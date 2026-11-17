@@ -28,7 +28,7 @@ Orchestrator 默认直接执行明确、低风险、单 Skill 请求；只有歧
 只有多候选需要用户选择时，`selection_reason` 才需要记录用户选择依据。Fast → Durable 升级时沿用原主 Skill 选择信息，追加升级原因和新的持久化/校验信息，不重复匹配或重复询问。
 
 
-触发条件：`tasks/current/` 中存在多个活动任务，或旧格式任务与新格式任务同时存在。
+触发条件：`docs/lijianxin/tasks/current/` 中存在多个活动任务，或旧格式任务与新格式任务同时存在。
 
 处理规则：
 

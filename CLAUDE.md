@@ -54,7 +54,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 ### 任务状态管理
 
-所有任务状态写入 `.claude/skills/tasks/current/task_skill.md`（固定文件名），实时更新原子 skill 状态列和执行日记。任务完成后自动归档到 `.claude/skills/tasks/history/YYYY-MM/`。
+所有任务状态写入 `docs/lijianxin/tasks/current/task_skill.md`（固定文件名），实时更新原子 skill 状态列和执行日记。任务完成后自动归档到 `docs/lijianxin/tasks/history/YYYY-MM/`。
 
 ---
 
@@ -64,7 +64,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 |------|------|
 | `.claude/skills/orchestrator/SKILL.md` | 统一任务编排器，完整任务流程 |
 | `.claude/skills/orchestrator/skills_register.md` | 主 skill 注册表（意图匹配数据源） |
-| `.claude/skills/tasks/current/task_skill.md` | 当前任务状态文件（执行中实时写入） |
+| `docs/lijianxin/tasks/current/task_skill.md` | 当前任务状态文件（执行中实时写入） |
 | `.claude/skills/tasks/templates/task_skill_template.md` | 任务文件模板 |
 | `.claude/rules/*.mdc` | 项目编码、语言和工作流规则 |
 | `settings.json` → `commands` | Slash commands（以当前配置为准） |

@@ -20,7 +20,7 @@ description: 从已确认范围中提取可静态识别的 API 定义；当用�
 ## 输出
 
 - 结构化端点清单：method、path、参数、请求体、响应、认证线索和证据路径。
-- Markdown 默认写入 `docs/api.md`；OpenAPI 默认写入 `docs/openapi.json` 或用户指定路径。
+- Markdown 默认写入 `docs/lijianxin/doc-generator/api.md`；OpenAPI 默认写入 `docs/lijianxin/doc-generator/openapi.json` 或用户指定路径。
 - 无法静态确认项、动态路由和缺失类型清单。
 
 ## 执行逻辑

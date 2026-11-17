@@ -89,4 +89,4 @@ testCases:
 2. 每个参数有至少 1 个边界条件测试用例
 3. 每个可能抛出异常的方法有至少 1 个异常场景测试
 4. 所有用例有清晰的 input、expected、testSteps 描述
-5. 生成 `test-cases-design.md` 并保存
+5. 生成 `test-cases-design.md` 并保存到 `docs/lijianxin/test-generator/`

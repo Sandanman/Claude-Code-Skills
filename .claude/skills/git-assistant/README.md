@@ -30,7 +30,7 @@ stash、历史、history、blame、tag、版本、release、CHANGELOG、semver�
 
 ## Commit 云图条件链路
 
-当用户确认 commit 后，且项目根目录存在 `docs/project-cloud-map.md`，执行：
+当用户确认 commit 后，且staged 文件对应目录下存在 `project-cloud-map.md`，执行：
 
 ```text
 commit-generation

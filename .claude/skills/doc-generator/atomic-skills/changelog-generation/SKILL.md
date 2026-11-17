@@ -16,7 +16,7 @@ description: 根据可读取的 Git 提交和可选 PR 信息生成或更新 CHA
 - `previous_changelog`：可选的已有 CHANGELOG，用于增量合并。
 - `pr_source`：可选的 GitHub/GitLab 来源和访问方式，不接受或输出凭据值。
 - `output_format`：`markdown`、`json` 或 `html`。
-- `output_path`：默认 `CHANGELOG.md`；写入前确认追加、合并或覆盖。
+- `output_path`：默认 `docs/lijianxin/doc-generator/CHANGELOG.md`；写入前确认追加、合并或覆盖。
 
 ## 执行逻辑
 

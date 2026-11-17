@@ -44,7 +44,7 @@ def generate_task(intent, matched_skill, atomic_skills_list):
 - 检测缺失依赖和循环依赖。
 - 使用 Kahn 算法生成拓扑顺序。
 - 识别可并行执行的任务层。
-- 生成任务 ID 和 `tasks/current/task_skill.md`。
+- 生成任务 ID 和 `docs/lijianxin/tasks/current/task_skill.md`。
 - 写入任务基础信息、子任务列表、依赖、完成标准、执行日志、错误日志和共享上下文区域。
 
 ## 4. 输出契约

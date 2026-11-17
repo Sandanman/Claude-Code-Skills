@@ -96,7 +96,7 @@ class TaskState:
     final_result: dict[str, Any] = field(default_factory=dict)
 ```
 
-Durable 状态使用 `tasks/current/task_skill_{task_id}.md`。读取时兼容旧的 `tasks/current/task_skill.md`；创建新任务不得覆盖已有状态。
+Durable 状态使用 `docs/lijianxin/tasks/current/task_skill_{task_id}.md`。读取时兼容旧的 `docs/lijianxin/tasks/current/task_skill.md`；创建新任务不得覆盖已有状态。
 
 ## 2. 路由决策
 

@@ -52,8 +52,8 @@ Claude-Code-Skills/
 | 路径 | 作用 |
 |------|------|
 | `.claude/skills/orchestrator/` | 唯一任务编排入口及注册信息 |
-| `.claude/skills/tasks/current/task_skill.md` | 当前任务状态、执行日记和共享上下文 |
-| `.claude/skills/tasks/history/YYYY-MM/` | 已完成任务的月度归档 |
+| `docs/lijianxin/tasks/current/task_skill.md` | 当前任务状态、执行日记和共享上下文 |
+| `docs/lijianxin/tasks/history/YYYY-MM/` | 已完成任务的月度归档 |
 | `.claude/rules/` | 项目通用行为和编码规则 |
 | `.claude/settings.json` | Slash commands 配置 |
 
@@ -74,7 +74,7 @@ Claude-Code-Skills/
     ↓
 生成任务 DAG
     ↓
-初始化 tasks/current/task_skill.md
+初始化 docs/lijianxin/tasks/current/task_skill.md
     ↓
 按依赖层执行 Skill，并更新状态和共享上下文
     ↓

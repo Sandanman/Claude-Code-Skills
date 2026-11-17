@@ -95,7 +95,7 @@ confidence: 0-1
 
 当变更涉及 3 个或以上文件，或包含原子 Skill 依赖时，按 orchestrator 统一流程处理：
 
-1. 生成或更新 `.claude/skills/tasks/current/task_skill.md`，填写任务 ID、用户意图、主 Skill、子任务、依赖和完成标准。
+1. 生成或更新 `docs/lijianxin/tasks/current/task_skill.md`，填写任务 ID、用户意图、主 Skill、子任务、依赖和完成标准。
 2. 依赖检查：目标目录、注册表、settings 配置和辅助资源路径必须存在或明确为待创建；禁止循环依赖。
 3. 可并行执行读取和静态检查；写入注册表前完成目标内容设计。
 4. 每个步骤完成后更新任务状态、执行日志和共享上下文。

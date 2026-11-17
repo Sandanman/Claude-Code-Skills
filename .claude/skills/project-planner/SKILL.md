@@ -147,11 +147,11 @@ status: 启用
 
 | 输出文件 | 路径 | 说明 |
 | --- | --- | --- |
-| 日报 | `.claude/skills/project-planner/outputs/daily_YYYY-MM-DD.md` | 当日任务 + 完成状态 + 明日计划 |
-| 周报 | `.claude/skills/project-planner/outputs/weekly_YYYY-Www.md` | 周目标完成率 + 项目进度 + 风险汇总 |
-| 仪表盘 | `.claude/skills/project-planner/outputs/dashboard_YYYY-MM-DD.md` | 多项目汇总表格 + 进度条 + 预警状态 |
-| 规划存档 | `.claude/skills/project-planner/outputs/planning_archive.md` | 迭代规划存档（含里程碑和偏差系数） |
-| 任务状态 | `.claude/skills/tasks/current/task_skill.md` | 写入任务状态管理 |
+| 日报 | `docs/lijianxin/project-planner/daily_YYYY-MM-DD.md` | 当日任务 + 完成状态 + 明日计划 |
+| 周报 | `docs/lijianxin/project-planner/weekly_YYYY-Www.md` | 周目标完成率 + 项目进度 + 风险汇总 |
+| 仪表盘 | `docs/lijianxin/project-planner/dashboard_YYYY-MM-DD.md` | 多项目汇总表格 + 进度条 + 预警状态 |
+| 规划存档 | `docs/lijianxin/project-planner/planning_archive.md` | 迭代规划存档（含里程碑和偏差系数） |
+| 任务状态 | `docs/lijianxin/tasks/current/task_skill.md` | 写入任务状态管理 |
 
 ---
 
@@ -450,9 +450,9 @@ EWMA_偏差系数计算：
 ## 文件系统位置
 
 - 主 Skill 路径：`.claude/skills/project-planner/SKILL.md`
-- 输出目录：`.claude/skills/project-planner/outputs/`
-- 共享上下文：`.claude/skills/tasks/current/task_skill.md`
-- 任务状态：`.claude/skills/tasks/current/task_skill.md`
+- 输出目录：`docs/lijianxin/project-planner/`
+- 共享上下文：`docs/lijianxin/tasks/current/task_skill.md`
+- 任务状态：`docs/lijianxin/tasks/current/task_skill.md`
 
 ---
 

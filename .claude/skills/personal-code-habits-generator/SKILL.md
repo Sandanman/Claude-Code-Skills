@@ -113,7 +113,7 @@ options:
 
 ## 共享上下文
 
-如项目任务使用 `.claude/skills/tasks/current/task_skill.md`，在每个访谈批次完成后更新以下信息：
+如项目任务使用 `docs/lijianxin/tasks/current/task_skill.md`，在每个访谈批次完成后更新以下信息：
 
 ```yaml
 personal_habits:
@@ -269,7 +269,7 @@ requires_confirmation: boolean
 
 - 主 Skill：`.claude/skills/personal-code-habits-generator/SKILL.md`
 - 默认输出：项目根目录 `CODE_STYLE_PERSONAL.md`
-- 共享上下文：`.claude/skills/tasks/current/task_skill.md`
+- 共享上下文：`docs/lijianxin/tasks/current/task_skill.md`
 
 ## 版本
 

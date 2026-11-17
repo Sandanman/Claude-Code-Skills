@@ -87,7 +87,7 @@ Security Report 是安全扫描流程的收尾阶段，负责汇总来自 vulner
 4. **评分计算**: 基于漏洞数量和严重程度计算安全评分
 5. **修复建议**: 为每个 High+ 漏洞生成修复代码示例
 6. **格式生成**: 生成 Markdown 报告、JSON 数据、HTML 报告
-7. **归档保存**: 保存报告到 `.claude/outputs/security/` 目录
+7. **归档保存**: 保存报告到 `docs/lijianxin/security-scanner/` 目录
 
 ## 依赖关系
 
@@ -101,4 +101,4 @@ Security Report 是安全扫描流程的收尾阶段，负责汇总来自 vulner
 3. Critical 和 High 漏洞数量为 0，或有明确的修复计划
 4. 安全评分计算合理（无 High 漏洞时评分 >= 80）
 5. 生成 Markdown、JSON 两种格式的报告
-6. 报告保存到 `.claude/outputs/security/security-report-{date}.md`
+6. 报告保存到 `docs/lijianxin/security-scanner/security-report-{date}.md`

@@ -86,7 +86,7 @@ Durable Path 检查缺失依赖和循环依赖，使用稳定拓扑排序识别�
 
 ## 状态持久化
 
-Fast Path 默认不创建完整任务状态。Durable Path 使用任务 ID 隔离的状态文件；仍兼容读取旧的 `tasks/current/task_skill.md`。发现多个活动任务时不得覆盖或自动选择，必须精确恢复或请求用户选择。
+Fast Path 默认不创建完整任务状态。Durable Path 使用任务 ID 隔离的状态文件；仍兼容读取旧的 `docs/lijianxin/tasks/current/task_skill.md`。发现多个活动任务时不得覆盖或自动选择，必须精确恢复或请求用户选择。
 
 ## 校验与归档
 

@@ -12,7 +12,7 @@ description: 根据真实部署上下文执行或设计部署后验证；当用�
 - `smoke_tests`：用户指定的页面/API 和必要的认证边界。
 - `logs`：可读取的部署或启动日志。
 - `rollback_context`：平台支持的版本、镜像、命令或操作手册。
-- `output_path`：验证报告路径。
+- `output_path`：验证报告路径，默认 `docs/lijianxin/deploy-helper/`。
 
 ## 执行逻辑
 

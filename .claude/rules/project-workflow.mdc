@@ -56,7 +56,7 @@ alwaysApply: true
 
 ### 任务归档
 
-- 任务完成后写入 `tasks/current/task_skill.md` 归档记录
+- 任务完成后写入 `docs/lijianxin/tasks/current/task_skill.md` 归档记录
 - 不主动迁移任何文件到项目目录（需用户确认）
 - 不主动修改 CHANGELOG、版本号等版本相关文件
 

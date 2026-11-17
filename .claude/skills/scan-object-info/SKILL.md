@@ -139,7 +139,7 @@ stack-003: 共享上下文命中率低于 50% 时触发警告
 
 - `target_path`：待扫描项目路径，默认当前项目根目录。
 - `scan_scope`：扫描范围，可为 `all` 或指定技术栈、配置、结构、网络路由等范围。
-- `write_shared_context`：是否写入 `.claude/skills/tasks/current/task_skill.md`，默认由任务上下文决定。
+- `write_shared_context`：是否写入 `docs/lijianxin/tasks/current/task_skill.md`，默认由任务上下文决定。
 - `output_preference`：输出完整报告或按需裁剪的章节。
 
 扫描范围必须来自用户输入或上层任务上下文，不得擅自扩大扫描范围。
@@ -150,7 +150,7 @@ stack-003: 共享上下文命中率低于 50% 时触发警告
 - 报告必须包含项目摘要、实际执行的扫描范围、检测结果、confidence 和问题记录。
 - 每个检测结果使用 `high`、`medium` 或 `low` 标注置信度，并说明证据来源。
 - 返回状态：`passed`、`partial`、`failed` 或 `cancelled`。
-- 核心输出路径和共享上下文路径由任务上下文确定；不得声称写入未实际生成的文件。
+- 核心输出路径默认 `docs/lijianxin/scan-object-info/`，共享上下文路径由任务上下文确定；不得声称写入未实际生成的文件。
 
 ## 主 Skill 完成标准
 

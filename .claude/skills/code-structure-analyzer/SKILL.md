@@ -20,7 +20,7 @@ description: 分析页面、业务模块或流程的代码结构、执行流程�
 
 ## 输出契约
 
-在 `target_path` 所在目录生成 `{分析对象名称}.md`，并返回：
+在被分析文件的同级目录下生成 `{分析对象名称}.md`（分析对象为目录时，生成在该目录的同级目录，即其父目录下），并返回：
 
 ```yaml
 status: passed | partial | failed
@@ -54,7 +54,7 @@ issues: []
 | 单文件分析 | `src/views/UserList.vue` | `src/views/UserList.md` |
 | 模块分析 | `src/store/modules/auth` | `src/store/modules/auth.md` |
 | 流程分析 | `src/api/auth.ts` | `src/api/auth.md` |
-| 整个项目 | `src/` | `src.md` |
+| 整个项目 | `src/` | `src.md`（项目根目录） |
 
 ## 执行流程
 
@@ -252,7 +252,7 @@ join(dirname(target_path), "{basename(target_path)}.md")
 
 - 主 Skill：`.claude/skills/code-structure-analyzer/SKILL.md`
 - 使用说明：`.claude/skills/code-structure-analyzer/README.md`
-- 共享上下文：`.claude/skills/tasks/current/task_skill.md`
+- 共享上下文：`docs/lijianxin/tasks/current/task_skill.md`
 
 ## 版本
 
