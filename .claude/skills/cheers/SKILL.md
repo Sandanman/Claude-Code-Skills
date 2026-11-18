@@ -234,7 +234,7 @@ https://github.com/Sandanman/Claude-Code-Skills
 ## 注意事项
 
 - **全程中文**：所有提示和输出均为中文
-- **orchestrator 条件使用**：仅当 Step 1 的三项检查全部通过时才引用或调用 `orchestrator`；否则不强制编排，并输出安装推荐
+- **orchestrator 条件使用**：仅当 Step 1 的三项安装完整性检查全部通过时才引用或调用 `orchestrator`；否则不强制编排，并输出安装推荐
 - **允许跳过**：用户对任何步骤不配合时，允许跳过（记录为 `skipped`），不阻塞后续流程
 - **复用已有文件**：CLAUDE.md 或项目云图存在时跳过对应初始化步骤
 - **共享上下文**：各 skill 输出写入 task_skill.md，供下游步骤读取，避免重复解析

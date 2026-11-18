@@ -108,13 +108,15 @@ Orchestrator 只编排主 Skill，不应绕过主 Skill 直接以用户意图触
 
 ### 3.2 Orchestrator 启动前检查
 
-执行编排前必须同时满足：
+每次任务只做轻量判断：`orchestrator` 能被调起（在可用 Skill 列表中或 `.claude/skills/orchestrator/SKILL.md` 存在）即直接编排；不存在时不使用编排系统，按实际可用 Skill 执行。
+
+完整安装检查不属于每次任务，仅在安装或同步后（`cheers`）或用户明确要求时执行，三项须同时满足：
 
 1. `.claude/skills/orchestrator/SKILL.md` 存在，且 frontmatter 的 `name` 为 `orchestrator`；
 2. 主 Skill 注册表中存在路径正确且 `status: 启用` 的 `orchestrator` 条目；
 3. `.claude/settings.json` 的 `commands` 中存在 `orchestrator`。
 
-任一项缺失或无效时停止编排，不进入意图识别、Skill 匹配或任务执行，并说明具体缺失项。当前项目三项均可确认存在。
+缺失时输出缺失项和安装地址，不自动修复。
 
 ## 4. 统一编排流程
 
@@ -495,7 +497,7 @@ Skill 文档版本、执行规则版本和项目发布版本分别管理。改�
 
 以下能力已通过 Skill 文件、注册表、任务模板或配置存在，但多数属于 Markdown 协议和目录能力，实际执行依赖 Claude 按协议完成，不代表存在独立运行时：
 
-- Orchestrator 统一入口和三项启动检查；
+- Orchestrator 统一入口，每次任务轻量存在性判断，安装完整性三项检查按需执行；
 - 主 Skill 和原子 Skill 分层；
 - 主/原子注册表；
 - Fast Path / Durable Path 路由协议；

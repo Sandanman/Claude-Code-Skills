@@ -16,7 +16,7 @@ version: 1.8
 
 ```yaml
 - name: orchestrator
-  desc: 统一任务编排入口 — 使用前必须确认自身 Skill 文件、启用注册表条目和 settings.json command 均存在；通过检查后负责意图识别、Skill 匹配、任务生成、执行控制、结果校验和任务归档
+  desc: 统一任务编排入口 — Skill 文件存在即可使用（完整安装检查仅在安装/同步后按需执行）；负责意图识别、Skill 匹配、任务生成、执行控制、结果校验和任务归档
   path: .claude/skills/orchestrator/SKILL.md
   core_ability: 意图识别、上下文感知、多 Skill 组合、DAG 任务生成、断点恢复、结果校验和归档
   match_keywords: [所有意图]

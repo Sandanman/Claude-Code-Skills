@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | 技术栈 | Node.js / Claude API / Claude Code |
 | 开发入口 | Claude Code CLI（`/help` 查看帮助）|
 
-这是一个 **AI Agent Skills 编排系统**。当当前项目同时存在并启用 `orchestrator` 时，所有用户请求必须通过 orchestrator 调度；如果任一检查项不满足，不得假设 `orchestrator` 可用，也不得因本文件中的说明强制调用它。
+这是一个 **AI Agent Skills 编排系统**。当前项目存在 `orchestrator`（可被调起或 `SKILL.md` 存在）时，所有用户请求必须通过 orchestrator 调度；不存在时，不得假设可用，也不得强制调用它。
 
 ---
 
@@ -36,13 +36,9 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 ### 调度器（条件入口）
 
-**orchestrator** 只有在以下条件同时满足时才是所有任务的统一入口：
+**orchestrator** 存在即为所有任务的统一入口（`.claude/skills/orchestrator/SKILL.md` 存在，或已出现在可用 Skill 列表中），每次任务不再逐项检查注册表和 `settings.json`。
 
-- `.claude/skills/orchestrator/SKILL.md` 存在且可读取
-- 注册表中存在启用的 `orchestrator` 条目
-- `.claude/settings.json` 中存在 `orchestrator` command
-
-满足条件时按复杂度选择执行策略；任一条件不满足时，不得强制调用不存在的 `orchestrator`，应按当前项目实际可用 Skill 执行。
+不存在时，不得强制调用，应按当前项目实际可用 Skill 执行。注册表与 `settings.json` command 的完整性检查只在安装或同步后（`cheers`）或用户明确要求时执行，规则见 orchestrator 的“安装完整性检查”。
 
 ```
 用户输入 → 意图识别 + complexity 评分
@@ -74,7 +70,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 ## 主 Skill 体系
 
-所有任务仅在 `orchestrator` 三项可用性检查通过时才通过 `/orchestrator` 统一调度；否则按当前项目实际可用 Skill 执行。也可直接触发已存在且已注册的 slash command：
+所有任务在 `orchestrator` 存在时通过 `/orchestrator` 统一调度；不存在时按当前项目实际可用 Skill 执行。也可直接触发已存在且已注册的 slash command：
 
 | Skill | 触发关键词 |
 |-------|-----------|

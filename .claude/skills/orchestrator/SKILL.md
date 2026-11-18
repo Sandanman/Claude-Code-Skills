@@ -8,20 +8,25 @@ impl_status: action_based
 
 ## 1. 启动前置检查
 
-在读取项目上下文、主 Skill 注册表和执行任何编排步骤前，必须检查当前项目中的 `orchestrator` 是否完整可用。以下三项必须同时满足：
+每次任务只做轻量判断：`orchestrator` 能被调起（已出现在可用 Skill 列表中，或 `.claude/skills/orchestrator/SKILL.md` 存在）即视为可用，直接进入编排，不再逐项检查注册表和 `settings.json`。检查当前文件系统，不以 Git 是否跟踪为依据；被 `.gitignore` 忽略但实际存在的文件仍可用。
+
+`SKILL.md` 不存在且 Skill 列表中也没有 `orchestrator` 时，不使用编排系统，按当前项目实际可用的 Skill 执行，并输出一次：
+
+```text
+当前项目未安装 orchestrator，已按可用 Skill 直接执行。
+如需统一编排，请从以下地址安装或同步 Claude Code Skills：
+https://github.com/Sandanman/Claude-Code-Skills
+```
+
+### 安装完整性检查（按需，不属于每次任务）
+
+仅在安装或同步后（如 `cheers`）、或用户明确要求“检查 orchestrator 安装”时执行，三项须同时满足：
 
 1. `.claude/skills/orchestrator/SKILL.md` 存在且 frontmatter 中的 `name` 为 `orchestrator`
 2. `.claude/skills/orchestrator/skills_register.md` 中存在路径正确且 `status: 启用` 的 `orchestrator` 条目
 3. `.claude/settings.json` 的 `commands` 中存在 `name: orchestrator`
 
-检查当前文件系统，不以 Git 是否跟踪文件作为依据；被 `.gitignore` 忽略但实际存在的文件仍可用。任一项缺失或无效时，立即停止编排，不进入意图识别、Skill 匹配或任务执行，并输出：
-
-```text
-无法启动 orchestrator：当前项目的 orchestrator 安装不完整。
-缺失或无效项：{具体文件或配置}
-请先从以下地址安装或同步 Claude Code Skills：
-https://github.com/Sandanman/Claude-Code-Skills
-```
+任一项缺失时，输出缺失或无效项和上述安装地址，不自动修复。编排运行中若发现注册表缺少所需 Skill 条目，按步骤 3 的“无匹配”分支处理。
 
 ## 2. 核心定位
 
