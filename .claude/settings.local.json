@@ -40,7 +40,9 @@
       "Read(//Users/lijianxin1/Desktop/sandaman/20-ai/**)",
       "Read(//Users/lijianxin1/Desktop/sandaman/20-ai-code/**)",
       "Bash(git ls-tree:*)",
-      "Bash(perl -ne 'print if /\\(?:^|\\\\/\\)\\(?:package\\\\.json|Makefile|.*\\\\.\\(?:sh|py|js|ts|mjs|cjs|yaml|yml\\)\\)$/i')"
+      "Bash(perl -ne 'print if /\\(?:^|\\\\/\\)\\(?:package\\\\.json|Makefile|.*\\\\.\\(?:sh|py|js|ts|mjs|cjs|yaml|yml\\)\\)$/i')",
+      "Read(//Users/lijianxin1/Desktop/日报/**)",
+      "Bash(chmod 644 ~/Desktop/日报/2026年11月.txt)"
     ]
   }
 }
