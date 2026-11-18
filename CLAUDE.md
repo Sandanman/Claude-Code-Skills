@@ -97,6 +97,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 | `/product-designer` | 设计产品模块、扩展需求、用户故事、功能规格 |
 | `/project-cloud-map` | 生成项目云图、页面/入口关系、模块、数据流和交互分析 |
 | `/project-planner` | 项目规划、迭代计划、每日工作、进度追踪、超期预警、多项目管理 |
+| `/daily-report` | 日报、今日日报、指定日期日报、工作总结（输出到 ~/Desktop/日报/） |
 
 **新增主 skill**：创建目录 → 编写 SKILL.md → 注册到 `orchestrator/skills_register.md` → 添加到 `settings.json` commands。
 

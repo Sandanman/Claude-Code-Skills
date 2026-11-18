@@ -546,7 +546,7 @@ atomic_skills:
 
 ## 原子技能统计（v1.5）
 
-> `project-planner` 已注册为主 Skill，但当前未拆分独立 `atomic-skills` 目录，因此按 0 个原子 Skill 统计。
+> `project-planner`、`daily-report` 已注册为主 Skill，但当前未拆分独立 `atomic-skills` 目录，因此按 0 个原子 Skill 统计。
 
 | 主技能 | 原子技能数 |
 |--------|----------|
@@ -559,6 +559,7 @@ atomic_skills:
 | doc-generator | 4 |
 | deploy-helper | 4 |
 | project-planner | 0（当前未拆分独立原子技能） |
+| daily-report | 0（单主 Skill，Fast Path，无原子拆分） |
 | code-redundancy-checker | 0（已合并至 code-optimizer v2.0）|
 | **合计** | **83（已统计的原子技能；已合并项单独列示）** |
 

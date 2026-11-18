@@ -1,5 +1,5 @@
 # 任务基础信息
-任务ID：{自动生成，格式：YYYYMMDDHHMMSS_随机6位数字}
+任务ID：{自动生成，格式：YYYYMMDD-NNN，NNN 为当日三位递增序号，从 001 开始}
 用户意图：{Reasoner传入的明确意图}
 最终目标：{Reasoner与主skill确认的核心目标}
 归属主skill：{所选主skill名称}
@@ -54,5 +54,5 @@
 
 # 归档说明
 归档时间：{Durable 执行完毕后自动填写YYYY-MM-DD HH:MM:SS}
-归档路径：{docs/lijianxin/tasks/history/YYYY-MM/task_skill_{任务ID}.md}
+归档路径：{docs/lijianxin/tasks/history/YYYY-MM/task_{任务ID}.md}
 是否可固化：{是/否，提示用户手动迁移至项目目录}

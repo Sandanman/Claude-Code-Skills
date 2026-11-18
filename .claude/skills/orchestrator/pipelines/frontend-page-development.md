@@ -110,7 +110,7 @@ code-generator 原子 Skill 当前未显式声明读取 `page-layout.json`，且
 
 ## 6. 任务状态与恢复
 
-- 创建 `docs/lijianxin/tasks/current/task_skill_{任务ID}.md`，阶段表使用 S1、S2、S3，各阶段内部原子 Skill 的进展写入执行日记。
+- 创建 `docs/lijianxin/tasks/current/task_{任务ID}.md`，阶段表使用 S1、S2、S3，各阶段内部原子 Skill 的进展写入执行日记。
 - 阶段状态：待执行 / 执行中 / 已完成 / 已提供 / 已跳过 / 失败 / 待恢复；`partial` 作为结果标注附在“已完成”之后。
 - 中断恢复：从第一个未完成阶段继续；已有产物先校验再复用，不重复执行已完成阶段；覆盖已有产物前必须确认。
 - 终态后调用 `task-archiver` 归档并更新月度索引。

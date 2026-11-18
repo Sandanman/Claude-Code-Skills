@@ -2,9 +2,11 @@
 
 | 任务 ID | 用户意图 | 主 Skill | 执行路径 | 校验级别 | 状态 | 归档时间 | 归档文件 |
 |---------|---------|---------|---------|---------|------|---------|---------|
-| 20261117-001 | 对原型链接 airun-skills.html 做需求拆分 | requirement-generator（原型链接模式 v1.3） | durable | L1 | 已完成（passed） | 2026-11-17 11:47 | [task_skill_20261117-001.md](task_skill_20261117-001.md) |
-| 20261117-002 | 依照需求 JSON 完成 Skills 管理列表页的页面交互详细设计 | page-layout-designer | durable | L1 | 已完成（partial：存在待确认项） | 2026-11-17 13:06 | [task_skill_20261117-002.md](task_skill_20261117-002.md) |
-| 20261117-003 | 依据页面布局文档生成 React + Antd 3 代码 | code-generator | durable | L1 | 已完成（partial：未做语法/构建校验） | 2026-11-17 14:19 | [task_skill_20261117-003.md](task_skill_20261117-003.md) |
+| 20261117-001 | 对原型链接 airun-skills.html 做需求拆分 | requirement-generator（原型链接模式 v1.3） | durable | L1 | 已完成（passed） | 2026-11-17 11:47 | [task_20261117-001.md](task_20261117-001.md) |
+| 20261117-002 | 依照需求 JSON 完成 Skills 管理列表页的页面交互详细设计 | page-layout-designer | durable | L1 | 已完成（partial：存在待确认项） | 2026-11-17 13:06 | [task_20261117-002.md](task_20261117-002.md) |
+| 20261117-003 | 依据页面布局文档生成 React + Antd 3 代码 | code-generator | durable | L1 | 已完成（partial：未做语法/构建校验） | 2026-11-17 14:19 | [task_20261117-003.md](task_20261117-003.md) |
+| 20261118-001 | 新建 daily-report（支持指定日期）并将 project-planner 恢复为 v1.0 | skill-creator-orchestrator | durable | L1 | 已完成（passed） | 2026-11-18 | [task_20261118-001.md](task_20261118-001.md) |
+| 20261118-002 | 统一任务命名为 task_YYYYMMDD-NNN 并更新生成规则 | orchestrator | durable | L1 | 已完成（passed） | 2026-11-18 | [task_20261118-002.md](task_20261118-002.md) |
 
 ## 任务摘要
 
@@ -25,3 +27,15 @@
 - 产出：`docs/lijianxin/code-generator/Skills管理列表页/SkillsListPage.jsx` / `SkillsListPage.less`。
 - 校验：人工对照与行长检查通过；esbuild、lessc 未安装，未做语法/构建校验。
 - 风险备注：Popconfirm 确定按钮无 loading；「共 N 个」独立渲染；搜索框、分类下拉宽度及 `scroll.x` 为暂定值。
+
+### 20261118-001
+- 最终目标：独立的 daily-report 主 Skill 可用并已注册；project-planner 回到 v1.0。
+- 产出：`.claude/skills/daily-report/SKILL.md`；注册同步 skills_register / atomic 统计 / settings commands / CLAUDE.md / skills README。
+- 校验：注册四处、settings JSON 合法、project-planner 与 HEAD 一致、关键词无冲突，均通过。
+- 风险备注：未执行 git commit；outputs/.gitkeep 删除与 settings.local.json 为既有未提交变更，未触碰。
+
+### 20261118-002
+- 最终目标：任务名统一为 `task_YYYYMMDD-NNN`，历史文件与索引同步，生成规则含当日序号递增。
+- 产出：重命名 4 个历史任务文件；更新 orchestrator、task-generator、task-archiver、模板、配置、设计文档中的命名规则。
+- 校验：历史目录无旧格式残留，规则文件 grep 仅剩兼容读取说明，passed。
+- 风险备注：未执行 git commit；`.claude/skills/tasks/history` 旧路径历史未改。

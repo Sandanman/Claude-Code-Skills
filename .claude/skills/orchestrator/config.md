@@ -96,8 +96,14 @@ Fast Path 不创建完整任务状态；若需要重试、暂停、恢复、跨�
 ```python
 TASK_FILE_CONFIG = {
     "legacy_current_path": "docs/lijianxin/tasks/current/task_skill.md",
-    "current_path_template": "docs/lijianxin/tasks/current/task_skill_{task_id}.md",
-    "history_path": "docs/lijianxin/tasks/history/{YYYY-MM}/task_skill_{task_id}.md",
+    "legacy_current_path_with_id": "docs/lijianxin/tasks/current/task_skill_{legacy_task_id}.md",
+    "task_id_format": "{YYYYMMDD}-{NNN}",  # NNN 为当日三位递增序号，从 001 开始，超过 999 视为错误
+    "task_id_sequence_scope": [
+        "docs/lijianxin/tasks/current/task_{YYYYMMDD}-*.md",
+        "docs/lijianxin/tasks/history/{YYYY-MM}/task_{YYYYMMDD}-*.md",
+    ],
+    "current_path_template": "docs/lijianxin/tasks/current/task_{task_id}.md",
+    "history_path": "docs/lijianxin/tasks/history/{YYYY-MM}/task_{task_id}.md",
     "legacy_read_supported": True,
     "required_sections": [
         "任务基础信息",

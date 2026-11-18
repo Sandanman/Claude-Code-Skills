@@ -50,8 +50,8 @@ def generate_task(intent, matched_skill, atomic_skills_list, route_mode="durable
         return {"error": "循环依赖"}
 
     parallel_layers = identify_parallel_layers(sorted_skills, graph)
-    task_id = generate_task_id()
-    task_path = f"docs/lijianxin/tasks/current/task_skill_{task_id}.md"
+    task_id = generate_task_id()  # 格式 YYYYMMDD-NNN，见下方“任务 ID 规则”
+    task_path = f"docs/lijianxin/tasks/current/task_{task_id}.md"
     task_skill_md = create_task_skill_file(
         task_id=task_id,
         task_path=task_path,
@@ -73,6 +73,13 @@ def generate_task(intent, matched_skill, atomic_skills_list, route_mode="durable
         "validation_level": "L1",
     }
 ```
+
+### 任务 ID 规则
+
+- 格式：`YYYYMMDD-NNN`，文件名为 `task_{任务ID}.md`，如 `task_20261118-001.md`、`task_20261118-002`、`task_20261119-001`。
+- NNN 为当日三位递增序号：扫描 `docs/lijianxin/tasks/current/` 与 `docs/lijianxin/tasks/history/YYYY-MM/` 中当日已有的 `task_YYYYMMDD-*.md`，取最大序号加 1；当日无任务时为 `001`；次日从 `001` 重新开始。
+- 创建时若目标文件已存在，序号再加 1 重试，不得覆盖已有文件。
+- 旧格式（`task_skill.md`、`task_skill_{任务ID}.md`、`YYYYMMDDHHMMSS_随机6位数字`）仅用于兼容读取，不再生成。
 
 ## 4. 完成标准
 

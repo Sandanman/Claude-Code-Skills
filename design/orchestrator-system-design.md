@@ -279,7 +279,7 @@ DAG 表示 Orchestrator 的调度先后，不表示原子 Skill 在内部直接�
 Durable Path 创建唯一任务 ID，并使用：
 
 ```text
-.claude/skills/tasks/current/task_skill_{任务ID}.md
+.claude/skills/tasks/current/task_{任务ID}.md
 ```
 
 旧的：
@@ -434,7 +434,7 @@ Durable Path 创建唯一任务 ID，并使用：
 
 仅 Durable Path 在终态（`passed`、`partial`、`failed` 或明确 `blocked`）后归档：
 
-1. 将 `.claude/skills/tasks/current/task_skill_{任务ID}.md` 移至 `.claude/skills/tasks/history/YYYY-MM/`；
+1. 将 `.claude/skills/tasks/current/task_{任务ID}.md` 移至 `.claude/skills/tasks/history/YYYY-MM/`；
 2. 更新或创建当月任务索引；
 3. 保留执行摘要、校验结果、错误日志和共享上下文；
 4. 验证归档文件和索引，不要求当前目录全局为空。

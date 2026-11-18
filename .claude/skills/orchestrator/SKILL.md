@@ -155,7 +155,7 @@ Durable Path 执行：
 3. 使用稳定的拓扑排序生成执行顺序。
 4. 识别计划层；计划层不代表实际并行。
 5. 生成唯一任务 ID。
-6. 创建 `docs/lijianxin/tasks/current/task_skill_{任务ID}.md`，兼容读取旧的 `docs/lijianxin/tasks/current/task_skill.md`。
+6. 生成任务 ID（格式 `YYYYMMDD-NNN`，NNN 为当日三位递增序号，从 001 开始；取 `current/` 与 `history/YYYY-MM/` 中当日已有 `task_YYYYMMDD-*.md` 的最大序号加 1），创建 `docs/lijianxin/tasks/current/task_{任务ID}.md`（如 `task_20261118-001.md`）。兼容读取旧的 `task_skill.md` 与 `task_skill_{任务ID}.md`。
 
 循环依赖、缺失依赖或多个活动任务应在执行前返回明确错误，不覆盖已有任务。
 
@@ -222,7 +222,7 @@ Durable Path 发现任务状态时，读取任务 ID、路由模式、依赖、�
 
 仅 Durable Path 在终态（“已完成”或“失败”）后调用 `task-archiver`：
 
-1. 按任务 ID 将 `docs/lijianxin/tasks/current/task_skill_{任务ID}.md` 移动到 `docs/lijianxin/tasks/history/YYYY-MM/task_skill_{任务ID}.md`。
+1. 按任务 ID 将 `docs/lijianxin/tasks/current/task_{任务ID}.md` 移动到 `docs/lijianxin/tasks/history/YYYY-MM/task_{任务ID}.md`。
 2. 更新或创建当月任务索引。
 3. 保留执行摘要、校验结果、错误日志和共享上下文。
 4. 验证本次任务的历史文件和索引，不要求当前目录全局为空。

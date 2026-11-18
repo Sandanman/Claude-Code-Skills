@@ -23,7 +23,7 @@ def generate_task(intent, matched_skill, atomic_skills_list):
         return {"error": "循环依赖"}
 
     parallel_layers = identify_parallel_layers(sorted_skills, graph)
-    task_id = generate_task_id()
+    task_id = generate_task_id()  # YYYYMMDD-NNN，规则见 task-generator
     task_skill_md = create_task_skill_file(
         task_id=task_id,
         intent=intent,

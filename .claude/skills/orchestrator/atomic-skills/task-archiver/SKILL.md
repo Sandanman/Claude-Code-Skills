@@ -17,7 +17,7 @@
 ## 3. 路径规则
 
 - `route_mode: fast`：返回 `skipped`，不创建或移动归档文件。
-- `route_mode: durable`：移动 `docs/lijianxin/tasks/current/task_skill_{task_id}.md` 至 `docs/lijianxin/tasks/history/YYYY-MM/task_skill_{task_id}.md`。
+- `route_mode: durable`：移动 `docs/lijianxin/tasks/current/task_{task_id}.md` 至 `docs/lijianxin/tasks/history/YYYY-MM/task_{task_id}.md`。
 - 旧的 `docs/lijianxin/tasks/current/task_skill.md` 仅作为兼容读取来源；归档时不得覆盖同名历史文件。
 
 ## 4. 归档流程
