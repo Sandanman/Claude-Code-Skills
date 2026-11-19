@@ -142,8 +142,7 @@ src/utils/date.ts                  # 共享工具函数
 ## 技术栈检测优先级
 
 1. `requirements.json` 中的 `project_context`
-2. 项目根目录的 `project_context.json`
-3. 项目文件扫描，包括 `package.json`、构建配置、源码目录、ESLint/Prettier 和 `CODE_STYLE.md`
+2. 项目文件扫描，包括 `package.json`、构建配置、源码目录、ESLint/Prettier 和 `CODE_STYLE.md`
 
 ## 代码生成业务规则
 

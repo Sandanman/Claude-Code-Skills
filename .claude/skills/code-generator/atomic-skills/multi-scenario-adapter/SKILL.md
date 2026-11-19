@@ -29,11 +29,11 @@ description: 根据输入来源、功能点和模块特征识别需求场景，�
 {
   "scenario_type": "scenario_1 | scenario_2 | scenario_3",
   "scenario_name": "标准输入 | 简单需求 | 复杂/多模块需求",
-  "input_source": "requirements_json | project_context_json | free_text",
+  "input_source": "requirements_json | free_text",
   "execution_plan": {
     "skip_requirement_analysis": true,
     "skip_module_integration": true,
-    "tech_stack_source": "requirements_json | project_context_json | project_scan",
+    "tech_stack_source": "requirements_json | project_scan",
     "execution_path": ["requirement-reader", "tech-stack-detection", "code-design", ...]
   },
   "complexity_assessment": {
@@ -73,8 +73,7 @@ description: 根据输入来源、功能点和模块特征识别需求场景，�
 ### Step 1：检测输入来源
 
 1. 检测 `docs/lijianxin/requirement-generator/`、当前目录和上级目录是否有 `requirements.json`
-2. 检测项目根目录是否有 `project_context.json`
-3. 分析用户输入是文件路径还是文本描述
+2. 分析用户输入是文件路径还是文本描述
 
 ### Step 2：判断场景类型
 
@@ -213,11 +212,10 @@ def assess_complexity(requirement_text):
 ## 完成标准
 
 1. ✅ 已检测 requirements.json 是否存在
-2. ✅ 已检测 project_context.json 是否存在
-3. ✅ 已分析需求文本复杂度
-4. ✅ 已判断单模块/多模块
-5. ✅ 已生成执行计划
-6. ✅ 已输出场景决策报告
+2. ✅ 已分析需求文本复杂度
+3. ✅ 已判断单模块/多模块
+4. ✅ 已生成执行计划
+5. ✅ 已输出场景决策报告
 
 ## 错误处理
 
@@ -336,7 +334,7 @@ def assess_complexity(requirement_text):
 
 1. **新增组件**：作为 code-generator 的首个原子skill，智能决定后续流程
 2. **4场景路由**：标准输入、简单需求、复杂需求、多模块需求各有最优路径
-3. **优先级检测**：优先检测 requirements.json 和 project_context.json
+3. **优先级检测**：优先检测 requirements.json
 4. **执行计划生成**：明确哪些skill需要执行，哪些需要跳过
 5. **复杂度评估**：量化评估需求复杂度，辅助决策
 

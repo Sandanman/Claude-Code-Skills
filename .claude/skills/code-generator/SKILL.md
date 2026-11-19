@@ -12,7 +12,7 @@ Code Generator 根据 `requirements.json`、项目上下文或用户自然语言
 ## 核心能力
 
 - 识别标准化输入、简单需求、复杂需求和复杂需求标准化四类场景
-- 读取并校验 `requirements.json`、`project_context.json` 与自由文本需求
+- 读取并校验 `requirements.json` 与自由文本需求
 - 检测框架、语言、构建工具、依赖、目录结构和 `CODE_STYLE.md`
 - 设计组件、函数、类型、API、路由、状态和模块关系
 - 生成 Vue/React 组件、JavaScript/TypeScript 文件、API、类型、路由、状态和工具函数
@@ -110,7 +110,6 @@ multi-scenario-adapter
   "user_input": "需求文本或文件路径",
   "project_root": "项目根目录",
   "requirements_path": "可选，requirements.json 路径",
-  "project_context_path": "可选，project_context.json 路径",
   "existing_context": "可选的已有项目上下文"
 }
 ```
@@ -136,7 +135,7 @@ multi-scenario-adapter
 
 ## 共享上下文
 
-各原子 Skill 通过结构化结果传递上下文，不重复猜测已经确认的信息。共享内容包括：场景决策、需求来源和原文、项目根目录、技术栈、目录结构、代码规范、模块清单、API/UI 规格、生成文件清单、验证问题和修复状态。`requirements.json` 中的 `project_context` 优先于单独的 `project_context.json`，后者优先于项目扫描结果；冲突时记录来源并以更具体、更新的用户输入为准。
+各原子 Skill 通过结构化结果传递上下文，不重复猜测已经确认的信息。共享内容包括：场景决策、需求来源和原文、项目根目录、技术栈、目录结构、代码规范、模块清单、API/UI 规格、生成文件清单、验证问题和修复状态。`requirements.json` 中的 `project_context` 优先于项目扫描结果；冲突时记录来源并以更具体、更新的用户输入为准。
 
 ## 完成标准
 

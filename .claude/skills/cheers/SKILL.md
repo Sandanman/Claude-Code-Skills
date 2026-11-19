@@ -2,7 +2,7 @@
 name: cheers
 description: 首次将 Claude Code Skills 引入项目时的初始化 skill。当用户提到"初始化项目"、"设置项目"、"首次配置"、"项目引导"、"cheers"时触发。依次执行：检测/生成 CLAUDE.md → 扫描项目信息补充（与项目云图并行生成）→ 生成项目代码风格 → 生成个人代码风格。最终在 CLAUDE.md 中写入代码生成优先级说明（个人风格优先，项目风格兜底），并汇总项目云图生成状态。本 skill 是编排型主 skill。
 reasoner_instructions: |
-  EXECUTE FULL WORKFLOW: check-claude-md-and-cloud-map → scan-project (parallel with cloud-map-generation if accepted) → generate-project-style → generate-personal-style → finalize-claude-md-and-merge-cloud-map-result。
+  EXECUTE FULL WORKFLOW: check-claude-md-gitignore-and-cloud-map → scan-project (parallel with cloud-map-generation if accepted) → generate-project-style → generate-personal-style → finalize-claude-md-and-merge-cloud-map-result。
   全程中文交流，友善引导。CLAUDE.md 或项目云图已存在时跳过对应初始化步骤，项目云图生成与 scan/style 步骤并行执行以缩短串行等待。
   DO NOT SKIP ANY CORE STEP.
 ---
@@ -24,13 +24,26 @@ reasoner_instructions: |
 
 ## 详细步骤
 
-### Step 1: 检测 CLAUDE.md、orchestrator + 检测/询问项目云图
+### Step 1: 检测 CLAUDE.md、.gitignore、orchestrator + 检测/询问项目云图
 
-使用 Glob 或 Read 工具一次性检测项目根目录是否存在 `CLAUDE.md`、`project-cloud-map.md`，并检查当前项目是否存在可用的 `orchestrator`。`orchestrator` 只有同时满足以下条件才视为可用：
+使用 Glob 或 Read 工具一次性检测项目根目录是否存在 `CLAUDE.md`、`project-cloud-map.md`，检查 `.gitignore` 是否已包含 `/docs/lijianxin/`，并检查当前项目是否存在可用的 `orchestrator`。
+
+**.gitignore 检测与写入**（与 CLAUDE.md、云图检测一起完成，引入 skill 系统时一次配好，后续任务不再重复判断）：
+- `.gitignore` 已含 `/docs/lijianxin/`（忽略首尾空白后整行匹配）→ 记录 `gitignore: "pattern_reused"`
+- `.gitignore` 存在但缺少该行 → 在文件末尾追加（保证前面有换行）：
+  ```
+  # Claude Code Skills 任务状态与归档（个人本地数据）
+  /docs/lijianxin/
+  ```
+  记录 `gitignore: "updated"`
+- `.gitignore` 不存在 → 创建并写入上述内容，记录 `gitignore: "created"`
+- 只追加，不修改、不删除 `.gitignore` 已有内容；写入失败记录 `gitignore: "failed"` 并简要说明，不阻塞后续流程
+
+`orchestrator` 只有同时满足以下条件才视为可用：
 
 1. `.claude/skills/orchestrator/SKILL.md` 存在，且 frontmatter 中的 `name` 为 `orchestrator`
 2. `.claude/skills/orchestrator/skills_register.md` 中存在路径正确且 `status: 启用` 的 `orchestrator` 条目
-3. `.claude/settings.json` 的 `commands` 中存在 `name: orchestrator`
+3. `.claude/settings.local.json` 的 `commands` 中存在 `name: orchestrator`（兼容检查 `.claude/settings.json`）
 
 记录 `orchestrator_status.available` 和具体缺失项。后续是否写入编排规则、是否引用 `/orchestrator`，必须使用本次检查结果；不能仅因注册表中存在条目就假设可用。云图的询问也在这一步提前问，答案决定是否在后续并行启动云图生成。
 
@@ -49,7 +62,7 @@ reasoner_instructions: |
 你好！欢迎使用 cheers 项目初始化引导。
 
 我来帮你完成以下配置：
-1. 检测/生成 CLAUDE.md（项目上下文配置）
+1. 检测/生成 CLAUDE.md（项目上下文配置），并确保 .gitignore 忽略 /docs/lijianxin/（任务状态与归档）
 2. 扫描项目信息（技术栈、框架、配置）
 3. 生成项目代码风格（CODE_STYLE.md）
 4. 生成你的个人代码习惯（CODE_STYLE_PERSONAL.md）
@@ -147,7 +160,7 @@ https://github.com/Sandanman/Claude-Code-Skills
 
 - `.claude/skills/orchestrator/SKILL.md`
 - `skills_register.md` 中启用的 `orchestrator` 条目
-- `.claude/settings.json` 中的 `orchestrator` command
+- `.claude/settings.local.json` 中的 `orchestrator` command
 
 ---
 
@@ -201,6 +214,7 @@ https://github.com/Sandanman/Claude-Code-Skills
 ### 完成标准
 
 1. CLAUDE.md 已存在或已生成
+1a. `.gitignore` 已包含 `/docs/lijianxin/`（`pattern_reused` / `updated` / `created` 之一；`failed` 时需在完成提示中说明）
 2. 项目信息已扫描（可选跳过）
 3. CODE_STYLE.md 已生成（可选跳过）
 4. CODE_STYLE_PERSONAL.md 已生成（可选跳过）
@@ -214,6 +228,7 @@ https://github.com/Sandanman/Claude-Code-Skills
 
 已生成/更新：
 - CLAUDE.md（含条件化的任务编排能力说明和代码生成优先级说明）✓
+- .gitignore（忽略 /docs/lijianxin/）<已存在 / 已追加 / 已创建 / 写入失败>
 - CODE_STYLE.md（项目代码风格）<视扫描结果>
 - CODE_STYLE_PERSONAL.md（个人代码习惯）<视用户配合度>
 - project-cloud-map.md（项目云图）<视并行任务状态：已存在 / 已生成 / 仍在后台生成中 / 已跳过 / 生成失败>
@@ -236,14 +251,15 @@ https://github.com/Sandanman/Claude-Code-Skills
 - **全程中文**：所有提示和输出均为中文
 - **orchestrator 条件使用**：仅当 Step 1 的三项安装完整性检查全部通过时才引用或调用 `orchestrator`；否则不强制编排，并输出安装推荐
 - **允许跳过**：用户对任何步骤不配合时，允许跳过（记录为 `skipped`），不阻塞后续流程
-- **复用已有文件**：CLAUDE.md 或项目云图存在时跳过对应初始化步骤
+- **复用已有文件**：CLAUDE.md 或项目云图存在时跳过对应初始化步骤；`.gitignore` 已含 `/docs/lijianxin/` 时不重复写入
+- **.gitignore 只追加**：仅在缺失时追加 `/docs/lijianxin/`，不改动已有内容
 - **共享上下文**：各 skill 输出写入 task_skill.md，供下游步骤读取，避免重复解析
 - **不可覆盖**：不删除用户已修改的 CLAUDE.md 内容，只追加补充
 - **优先级明确**：在 CLAUDE.md 中明确写入"个人风格优先，项目规范兜底"
 
 ## 版本
 
-版本：1.2
+版本：1.3
 主 skill 名称：cheers
 状态：启用
-核心功能：项目初始化引导 → 生成/更新 CLAUDE.md →（与扫描/风格生成并行）检测/生成项目云图
+核心功能：项目初始化引导 → 检测/写入 .gitignore（/docs/lijianxin/）→ 生成/更新 CLAUDE.md →（与扫描/风格生成并行）检测/生成项目云图

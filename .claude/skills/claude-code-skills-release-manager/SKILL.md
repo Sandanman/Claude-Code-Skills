@@ -80,7 +80,6 @@ Git 操作交给 `git-assistant` 处理。
 ```text
 .claude/rules
 .claude/skills
-.claude/project_context.json
 .claude/settings.json
 .claude/settings.local.json
 .claude/skills/README.md

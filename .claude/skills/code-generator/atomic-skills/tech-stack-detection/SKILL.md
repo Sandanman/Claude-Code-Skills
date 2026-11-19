@@ -5,12 +5,11 @@ description: 检测项目框架、语言、构建工具、依赖、目录结构�
 
 ## 概述
 
-检测项目使用的技术栈和代码规范。**v1.2 改进：优先从 requirements.json 或 project_context.json 读取**，仅在缺失或不完整时扫描项目文件。避免重复工作，与 requirement-generator 协同。
+检测项目使用的技术栈和代码规范。**优先从 requirements.json 的 project_context 读取**，仅在缺失或不完整时扫描项目文件。避免重复工作，与 requirement-generator 协同。
 
 ## 核心能力
 
 - 优先读取 requirements.json 的 project_context
-- 优先读取 project_context.json（v1.2 新增）
 - 验证技术栈数据完整性
 - 补充缺失的技术栈信息（必要时扫描项目）
 - 检测项目框架（Vue/React/Angular等）
@@ -35,7 +34,7 @@ description: 检测项目框架、语言、构建工具、依赖、目录结构�
 ## 检测概览
 - **检测时间**：2026-04-08 20:00:10
 - **项目根目录**：<项目根路径>
-- **数据来源**：requirements_json | project_context_json | project_scan
+- **数据来源**：requirements_json | project_scan
 - **检测状态**：完成
 
 ## 框架检测
@@ -128,11 +127,7 @@ description: 检测项目框架、语言、构建工具、依赖、目录结构�
    → 有：使用 project_context，标记来源为 "requirements_json"
    → 无：继续
    
-2. 检查项目根目录是否有 project_context.json
-   → 有：使用 project_context.json，标记来源为 "project_context_json"
-   → 无：继续
-   
-3. 扫描项目文件
+2. 扫描项目文件
    → 读取 package.json
    → 检测 vite.config.js / webpack.config.js
    → 检测 src/ 目录结构
@@ -150,15 +145,7 @@ description: 检测项目框架、语言、构建工具、依赖、目录结构�
 5. 输出技术栈报告
 6. 标记来源：`requirements_json`
 
-### 场景2：project_context.json 存在
-
-1. 读取 project_context.json
-2. 验证数据完整性
-3. 补充缺失字段（扫描项目文件）
-4. 输出技术栈报告
-5. 标记来源：`project_context_json`
-
-### 场景3：扫描项目文件
+### 场景2：扫描项目文件
 
 1. 读取 package.json
 2. 检测构建工具配置文件
@@ -180,7 +167,7 @@ description: 检测项目框架、语言、构建工具、依赖、目录结构�
 4. ✅ 明确 CODE_STYLE.md 状态（存在/不存在）
 5. ✅ 提供代码生成建议
 6. ✅ 输出完整检测报告（markdown）
-7. ✅ 标记数据来源（requirements_json/project_context_json/project_scan）
+7. ✅ 标记数据来源（requirements_json/project_scan）
 
 ## 错误处理
 
@@ -211,17 +198,15 @@ description: 检测项目框架、语言、构建工具、依赖、目录结构�
 
 ## v1.2 改进点
 
-1. **新增 project_context.json 支持**：不依赖 requirements.json 也能获取技术栈
-2. **明确标记数据来源**：区分 requirements_json、project_context_json、project_scan
-3. **优化读取优先级**：避免不必要的文件扫描
-4. **统一输出格式**：所有来源都输出为统一的技术栈报告
+1. **明确标记数据来源**：区分 requirements_json、project_scan
+2. **优化读取优先级**：避免不必要的文件扫描
+3. **统一输出格式**：所有来源都输出为统一的技术栈报告
 
 ## 注意事项
 
 - 必须准确检测框架版本，影响代码生成方式
 - CODE_STYLE.md 的存在与否直接影响代码风格
 - 优先读取已有配置，不依赖假设
-- project_context.json 由 scan-object-info 生成，优先使用
 
 ## 原子skill位置
 

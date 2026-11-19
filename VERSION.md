@@ -11,13 +11,21 @@
 
 - 唯一入口：`.claude/skills/orchestrator/SKILL.md`
 - 任务流程：意图识别 → Skill 匹配 → DAG 规划 → 执行控制 → 结果校验 → 输出 → 归档
-- 运行状态：`.claude/skills/tasks/current/task_skill.md`
-- 历史任务：`.claude/skills/tasks/history/YYYY-MM/`
+- 运行状态：`docs/lijianxin/tasks/current/task_YYYYMMDD-NNN.md`
+- 历史任务：`docs/lijianxin/tasks/history/YYYY-MM/`
 - 共享上下文：由当前任务文件承载，供有依赖关系的 Skill 传递中间结果
 
 ---
 
 ## 版本列表
+
+### v.1.4.7
+
+- **日期**：2026-11-19
+- **提交**：待提交
+- **类型**：小修改
+- **变更**：删project_context.json及引用，改AI权限
+- **归档**：`.claude/history/v.1.4.7.zip`
 
 ### v.1.4.6
 

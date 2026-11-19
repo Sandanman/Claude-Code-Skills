@@ -14,7 +14,7 @@ impl_status: action_based
 
 - 先读取现有规则和目标 Skill，再决定创建或更新方案，避免覆盖用户已有内容。
 - 保留已有 Skill 的目录名和 frontmatter `name`，更新已有 Skill 时不擅自改名。
-- 新增主 Skill 必须同步更新 `.claude/skills/orchestrator/skills_register.md`、`.claude/skills/orchestrator/atomic_skills_register.md`（若新增原子 Skill）和 `.claude/settings.json` 的 `commands`。
+- 新增主 Skill 必须同步更新 `.claude/skills/orchestrator/skills_register.md`、`.claude/skills/orchestrator/atomic_skills_register.md`（若新增原子 Skill）和 `.claude/settings.local.json` 的 `commands`。
 - 只有用户明确要求或项目现有结构需要时才创建辅助资源；不为假设场景增加无用文件。
 - 不执行 git commit，不覆盖无关的未提交修改；写入前检查工作区状态，发现目标文件存在用户修改时先说明并请求确认。
 - 所有说明、报告和新增文档使用中文，技术标识符、路径、命令和配置键保持原样。
@@ -40,7 +40,7 @@ impl_status: action_based
 2. `.claude/skills/orchestrator/SKILL.md`。
 3. `.claude/skills/orchestrator/skills_register.md`。
 4. `.claude/skills/orchestrator/atomic_skills_register.md`。
-5. `.claude/settings.json`。
+5. `.claude/settings.local.json`。
 6. 目标 Skill 的 `SKILL.md`、同目录辅助资源和相关历史文档（更新场景）。
 7. `.claude/skills/tasks/templates/task_skill_template.md`，确认任务状态字段和完成标准格式。
 
@@ -80,7 +80,7 @@ confidence: 0-1
 3. 编写简洁但可执行的正文，至少包含：核心定位、触发分类、执行流程、输入输出、完成标准、校验和错误处理。
 4. 如需原子 Skill，在 `atomic-skills/<atomic-name>/SKILL.md` 创建详情，并同步原子注册表；没有必要时不要拆分。
 5. 将主 Skill 添加到 `skills_register.md` 的主技能索引，并更新统计数字、版本或最后更新时间（沿用文件现有格式）。
-6. 将 slash command 添加到 `.claude/settings.json` 的 `commands`，`name` 使用目录名，`description` 与 frontmatter 保持一致但可适当精简。
+6. 将 slash command 添加到 `.claude/settings.local.json` 的 `commands`，`name` 使用目录名，`description` 与 frontmatter 保持一致但可适当精简。
 
 ### 5.2 更新已有 Skill
 
@@ -88,7 +88,7 @@ confidence: 0-1
 2. 保留目录名、frontmatter `name` 和仍然有效的功能；只修改用户要求或为一致性所必需的内容。
 3. 更新 `description` 时同时检查触发边界，避免与其他 Skill 关键词冲突。
 4. 若增加/删除原子 Skill、依赖或输出路径，同步更新 `atomic_skills_register.md`、相关注册信息和正文引用。
-5. 若 Skill 的主职责或命令描述变化，同步更新 `skills_register.md` 和 `.claude/settings.json`。
+5. 若 Skill 的主职责或命令描述变化，同步更新 `skills_register.md` 和 `.claude/settings.local.json`。
 6. 不删除用户已有辅助资源，除非用户明确要求删除；发现过时内容时先在结果中说明。
 
 ## 6. 编排与任务状态
@@ -109,7 +109,7 @@ confidence: 0-1
 
 - `action`、目标 Skill、任务 ID（如创建了任务文件）。
 - 新增或修改的文件路径。
-- 注册状态：`skills_register.md`、`atomic_skills_register.md`、`.claude/settings.json`。
+- 注册状态：`skills_register.md`、`atomic_skills_register.md`、`.claude/settings.local.json`。
 - 核心功能和触发关键词摘要。
 - 校验结果、未解决项和需要用户确认的后续动作。
 
@@ -124,7 +124,7 @@ confidence: 0-1
 - 正文包含可执行流程、输入输出和完成标准，且引用的路径真实存在或明确标注待创建。
 - 主 Skill 已注册，`path` 指向实际 `SKILL.md`，`status` 正确。
 - 若新增原子 Skill，原子详情和 `atomic_skills_register.md` 一致；若未新增，不凭空添加注册项。
-- `.claude/settings.json` 中 slash command 不重复，名称、描述和目标 Skill 一致。
+- `.claude/settings.local.json` 中 slash command 不重复，名称、描述和目标 Skill 一致。
 - YAML/JSON/Markdown 结构可解析，文件末尾有换行，无无关变更。
 - 变更未写入 token、密钥或硬编码外部敏感信息。
 - 若存在任务文件，所有子任务状态、完成标准、最终结果和归档信息完整。

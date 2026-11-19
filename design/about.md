@@ -43,7 +43,7 @@ DAG 用于表达 Skill 之间的依赖关系。没有依赖的节点可以并行
 3. 最终结果是否满足用户目标
 4. 输出文件和状态记录是否完整
 
-校验通过后，`orchestrator` 输出执行摘要和业务结果，并将当前任务归档到 `.claude/skills/tasks/history/YYYY-MM/`。无法完成的任务也应保留状态、失败原因、已完成部分和后续建议。
+校验通过后，`orchestrator` 输出执行摘要和业务结果，并将当前任务归档到 `docs/lijianxin/tasks/history/YYYY-MM/`。无法完成的任务也应保留状态、失败原因、已完成部分和后续建议。
 
 ## 设计原则
 

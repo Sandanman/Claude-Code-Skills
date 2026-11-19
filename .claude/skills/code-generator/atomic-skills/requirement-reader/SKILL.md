@@ -1,6 +1,6 @@
 ---
 name: requirement-reader
-description: 读取并校验 requirements.json、project_context.json 或自由文本，输出统一的结构化需求数据。
+description: 读取并校验 requirements.json 或自由文本，输出统一的结构化需求数据。
 ---
 
 ## 概述
@@ -13,7 +13,6 @@ description: 读取并校验 requirements.json、project_context.json 或自由�
 - 解析标准化的JSON需求文档
 - 验证需求文档结构完整性
 - 提取所有关键信息（模块、流程、UI组件、API规格、测试用例、质量评估）
-- 继承 project_context.json 项目上下文（优先）
 - 兼容自由文本输入（fallback 机制）
 
 ## 输入
@@ -70,7 +69,7 @@ description: 读取并校验 requirements.json、project_context.json 或自由�
     "needs_clarification": false
   },
   "fallback_reason": null,
-  "source": "project_context_json | requirements_json | free_text"
+  "source": "requirements_json | free_text"
 }
 ```
 
@@ -103,14 +102,6 @@ description: 读取并校验 requirements.json、project_context.json 或自由�
 3. 验证结构（参考场景1）
 4. 输出结果
 
-### 场景4：从 project_context.json 读取（v1.2 改进）
-
-1. 检测 requirements.json 不存在
-2. 查找项目根目录的 `project_context.json`
-3. 读取项目上下文信息
-4. 标记 `source` 为 `project_context_json`
-5. 补充技术栈信息供后续使用
-
 ## 依赖关系
 
 - **依赖**：multi-scenario-adapter（提供场景类型）
@@ -123,7 +114,7 @@ description: 读取并校验 requirements.json、project_context.json 或自由�
 3. ✅ 已验证关键字段完整性
 4. ✅ 已识别需求类型（单模块/多模块）
 5. ✅ 已继承项目上下文（如果存在）
-6. ✅ 已标记数据来源（requirements_json/project_context_json/free_text）
+6. ✅ 已标记数据来源（requirements_json/free_text）
 7. ✅ 输出统一的结构化需求数据
 
 ## 错误处理
@@ -164,22 +155,21 @@ code-generator → requirement-reader（读取）
 
 ### 可选字段（有默认值）
 
-- `project_context`（如果缺失，尝试读取 project_context.json）
+- `project_context`（如果缺失，由 tech-stack-detection 扫描项目文件补充）
 - `flow`（如果缺失，不执行 flow-based 设计）
 - `test_cases`（如果缺失，生成基础测试用例）
 - `quality`（如果缺失，设为 80 分并生成警告）
 
 ## v1.2 改进点
 
-1. **优先读取 project_context.json**：不依赖 requirements.json 也能获取技术栈信息
-2. **标记数据来源**：明确区分 requirements_json、project_context_json、free_text
-3. **改进 fallback 逻辑**：根据 multi-scenario-adapter 的场景类型调整处理方式
-4. **统一输出格式**：所有来源的数据都输出为统一结构
+1. **标记数据来源**：明确区分 requirements_json、free_text
+2. **改进 fallback 逻辑**：根据 multi-scenario-adapter 的场景类型调整处理方式
+3. **统一输出格式**：所有来源的数据都输出为统一结构
 
 ## 注意事项
 
 - 优先读取 requirements.json，不重复造轮子
-- 如果 requirements.json 存在但项目上下文缺失，尝试读取 project_context.json
+- 如果 requirements.json 存在但项目上下文缺失，交由 tech-stack-detection 扫描项目文件补充
 - 验证所有字段，拒绝不完整的数据
 - 记录日志和警告供后续步骤使用
 

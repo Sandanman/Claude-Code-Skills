@@ -270,7 +270,7 @@ atomic_skills:
     depend: requirement-decomposition, api-spec-designer, test-case-generator
     status: 启用
   - name: project-context-reader
-    core_ability: 读取项目上下文（来自 scan-object-info 或用户上传的 project_context.json）
+    core_ability: 读取项目上下文（来自 scan-object-info 或用户上传的项目上下文文件）
     depend: requirement-evaluation
     status: 启用
   - name: requirement-documentation

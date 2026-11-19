@@ -1,12 +1,4 @@
 {
-  "model": "Opus",
-  "modelCatalog": [
-    "Default (recommended) ",
-    "Opus",
-    "Sonnet",
-    "Sonnet (1M context)",
-    "Haiku"
-  ],
   "permissions": {
     "allow": [
       "Read",
@@ -18,15 +10,42 @@
       "TaskUpdate",
       "TaskList",
       "TaskGet",
-      "Bash(ls *|cat|head|tail|grep|find|mkdir|rm|cp|mv|touch|chmod)",
-      "Bash(git status|git diff|git log|git branch|git checkout)",
-      "Bash(npm *|yarn *|pnpm *|node *|npx *)",
-      "Bash(eslint *|prettier *|vitest *|jest *)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm:*)",
+      "Bash(yarn:*)",
+      "Bash(pnpm:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
+      "Bash(vitest:*)",
+      "Bash(jest:*)",
       "WebSearch",
       "WebFetch"
     ],
     "deny": [
-      "Bash(rm -rf /|mkfs|format|sudo|passwd|ssh|telnet)",
+      "Bash(rm -rf /:*)",
+      "Bash(mkfs:*)",
+      "Bash(diskutil eraseDisk:*)",
+      "Bash(diskutil eraseVolume:*)",
+      "Bash(sudo:*)",
+      "Bash(passwd:*)",
+      "Bash(ssh:*)",
+      "Bash(telnet:*)",
       "WebFetch(domain:*.internal)"
     ]
   },
@@ -41,175 +60,10 @@
           }
         ]
       }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '\n⚠️  上下文管理提醒：单次会话上下文有限，复杂任务完成后建议新建会话来获得最佳效果。\n    如需压缩上下文，可使用 /compact 命令。\n'"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '\n🔄  上下文即将超过限制，系统将自动压缩上下文...'"
-          },
-          {
-            "type": "prompt",
-            "prompt": "上下文压缩即将触发。Claude Code 将自动压缩上下文以继续任务。\n压缩前请：\n1. 记住当前任务的关键状态和进度\n2. 记住待完成的关键步骤\n3. 压缩完成后，如需要关键上下文（任务目标、文件路径、待完成步骤），请告知我，我会从项目文件和记忆系统中恢复"
-          }
-        ]
-      }
-    ],
-    "PostCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '\n✅  上下文压缩完成，任务已继续执行。'"
-          },
-          {
-            "type": "prompt",
-            "prompt": "上下文压缩完成。任务继续执行。如果需要恢复关键上下文（任务目标、文件路径、待完成步骤），请告知我，我会从项目文件和记忆系统中恢复。"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '\n⚠️  【重要】上下文即将超过最大限制，建议开始新的任务以获得最佳体验。\n    复杂任务建议分阶段执行，每阶段完成后新建会话。'"
-          },
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"上下文即将超过最大限制，建议开始新的任务\" with title \"Claude Code\"'"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "idle_prompt",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "如果当前上下文使用量已接近最大限制，请在下次回复开始时提示用户：「⚠️  上下文使用量较高，建议使用 /compact 压缩或开始新任务以保持最佳性能。」"
-          }
-        ]
-      }
     ]
   },
   "rules": {
     "alwaysApply": true
-  },
-  "commands": [
-    {
-      "name": "bug-solver",
-      "description": "系统化地解决应用程序中的bug，通过7个原子Skill协同工作，从问题识别到修复验证"
-    },
-    {
-      "name": "cheers",
-      "description": "首次引入 Claude Code Skills 到项目时的初始化引导，生成/更新 CLAUDE.md（含代码生成优先级：个人风格优先，项目规范兜底）"
-    },
-    {
-      "name": "code-generator",
-      "description": "根据需求文档或需求描述自动生成符合项目规范的代码"
-    },
-    {
-      "name": "code-optimizer",
-      "description": "系统化地优化代码（v2.0），整合代码质量分析、性能优化和冗余检测"
-    },
-    {
-      "name": "code-style-generator",
-      "description": "自动检测项目代码规范，生成个人代码习惯文档 CODE_STYLE.md"
-    },
-    {
-      "name": "code-structure-analyzer",
-      "description": "读取项目中某个页面、业务模块或流程的代码，分析流程、关键节点、变量和依赖，在同目录下生成 md 文档"
-    },
-    {
-      "name": "skill-analyzer",
-      "description": "系统化地解读和分析任意 Skill 的 SKILL.md 文件，生成结构化的分析报告（功能说明、执行流程、架构设计、优缺点分析）"
-    },
-    {
-      "name": "scan-object-info",
-      "description": "智能扫描并分析前端项目的各种技术信息（框架、UI库、状态管理等）"
-    },
-    {
-      "name": "requirement-generator",
-      "description": "将用户自然语言需求转化为标准化、可执行的机器需求文档（requirements.json）"
-    },
-    {
-      "name": "security-scanner",
-      "description": "系统化地扫描前端项目中的安全漏洞，包括XSS、CSRF、依赖漏洞、敏感信息泄露等"
-    },
-    {
-      "name": "test-generator",
-      "description": "根据现有代码或需求自动生成测试用例，覆盖单元测试、集成测试和E2E测试"
-    },
-    {
-      "name": "doc-generator",
-      "description": "自动生成代码文档，包括API文档、README、组件文档、变更日志等"
-    },
-    {
-      "name": "skill-creator-orchestrator",
-      "description": "创建新 Skill 或定制、扩展已有 Skill，依据项目规则同步注册配置并完成一致性校验"
-    },
-    {
-      "name": "claude-code-skills-release-manager",
-      "description": "仅针对当前 Claude-Code-Skills 项目管理版本文档与版本归档，协调版本管理和 ZIP 归档两个原子 Skill"
-    },
-    {
-      "name": "git-assistant",
-      "description": "智能 Git 操作助手，支持 commit 生成、分支管理、历史分析、冲突解决、版本管理"
-    },
-    {
-      "name": "deploy-helper",
-      "description": "辅助部署操作，支持Docker配置、CI/CD流水线生成、环境配置、部署脚本生成"
-    },
-    {
-      "name": "orchestrator",
-      "description": "统一任务编排入口；使用前需确认 orchestrator Skill、注册表条目和当前项目 settings 配置完整，按复杂度选择执行策略，完成意图识别、Skill 匹配、任务规划、执行、校验、输出和归档"
-    },
-    {
-      "name": "personal-code-habits-generator",
-      "description": "从人的角度主动询问用户，生成个人代码习惯文档 CODE_STYLE_PERSONAL.md"
-    },
-    {
-      "name": "product-designer",
-      "description": "将用户简单的需求描述扩展为完整的产品模块设计方案，替代产品经理工作。75%围绕需求本身，25%合理发散，不确定部分必须向用户提问而非臆想"
-    },
-    {
-      "name": "project-cloud-map",
-      "description": "读取项目当前代码快照或指定文件，生成并增量维护 Mermaid 项目云图；支持项目级/文件级分析及已有云图补充，优先在主文件关系图中维护详细子项，云图生成到被分析的目录下，仅在必要时使用该目录下的 cloud-map/ 子文档；涉及业务代码变更前必须列候选方案并等待确认"
-    },
-    {
-      "name": "project-planner",
-      "description": "基于迭代周期规划项目目标，生成每日工作内容与项目进度追踪，支持多项目分组管理和超期预警，具备历史速度学习能力动态调整估算精度"
-    },
-    {
-      "name": "daily-report",
-      "description": "生成并维护桌面月度日报 ~/Desktop/日报/YYYY年MM月.txt，默认今日、支持指定日期，同日追加去重，多终端项目优先分组并加锁写入"
-    },
-    {
-      "name": "page-layout-designer",
-      "description": "通过分阶段提问设计前端页面布局、组件、交互、页面状态、响应式行为和视觉规范，生成可供 AI 读取并用于页面代码生成的 Markdown 与 JSON 页面设计文档"
-    }
-  ],
-  "auto-save": true,
-  "history": {
-    "maxSessions": 50
   },
   "diagnostics": {
     "enabled": true,
@@ -226,9 +80,6 @@
         "enabled": true
       }
     }
-  },
-  "resume": {
-    "prompt": "继续上一个任务。请先回顾之前的对话上下文，恢复到上次离开的位置继续工作。确认当前状态后，简要说明下一步计划。"
   },
   "mcpServers": {},
   "experimental": {}

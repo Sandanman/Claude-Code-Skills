@@ -102,7 +102,7 @@ Orchestrator 只编排主 Skill，不应绕过主 Skill 直接以用户意图触
 - 原子 Skill 注册表：`.claude/skills/orchestrator/atomic_skills_register.md`；
 - 主 Skill 实体：`.claude/skills/<skill-name>/SKILL.md`；
 - 原子 Skill 通常位于所属主 Skill 的 `atomic-skills/` 目录中；
-- Slash command 入口配置位于 `.claude/settings.json` 的 `commands`。
+- Slash command 入口配置位于 `.claude/settings.local.json` 的 `commands`（个人本地配置）。
 
 未注册的主 Skill 不允许被 Orchestrator 选择和执行。新增、删除、重命名、合并或拆分 Skill 时，必须同步检查注册表、实际路径、依赖和 command 入口。
 
@@ -114,7 +114,7 @@ Orchestrator 只编排主 Skill，不应绕过主 Skill 直接以用户意图触
 
 1. `.claude/skills/orchestrator/SKILL.md` 存在，且 frontmatter 的 `name` 为 `orchestrator`；
 2. 主 Skill 注册表中存在路径正确且 `status: 启用` 的 `orchestrator` 条目；
-3. `.claude/settings.json` 的 `commands` 中存在 `orchestrator`。
+3. `.claude/settings.local.json` 的 `commands` 中存在 `orchestrator`（兼容检查 `.claude/settings.json`）。
 
 缺失时输出缺失项和安装地址，不自动修复。
 
@@ -281,7 +281,7 @@ DAG 表示 Orchestrator 的调度先后，不表示原子 Skill 在内部直接�
 Durable Path 创建唯一任务 ID，并使用：
 
 ```text
-.claude/skills/tasks/current/task_{任务ID}.md
+docs/lijianxin/tasks/current/task_{任务ID}.md
 ```
 
 旧的：
@@ -290,7 +290,7 @@ Durable Path 创建唯一任务 ID，并使用：
 .claude/skills/tasks/current/task_skill.md
 ```
 
-仅作为兼容读取来源。多个活动任务不得互相覆盖、合并或静默忽略。
+仅作为兼容读取来源（旧目录已并入 `docs/lijianxin/tasks/`）。多个活动任务不得互相覆盖、合并或静默忽略。
 
 ### 7.2 状态机
 
@@ -436,7 +436,7 @@ Durable Path 创建唯一任务 ID，并使用：
 
 仅 Durable Path 在终态（`passed`、`partial`、`failed` 或明确 `blocked`）后归档：
 
-1. 将 `.claude/skills/tasks/current/task_{任务ID}.md` 移至 `.claude/skills/tasks/history/YYYY-MM/`；
+1. 将 `docs/lijianxin/tasks/current/task_{任务ID}.md` 移至 `docs/lijianxin/tasks/history/YYYY-MM/`；
 2. 更新或创建当月任务索引；
 3. 保留执行摘要、校验结果、错误日志和共享上下文；
 4. 验证归档文件和索引，不要求当前目录全局为空。

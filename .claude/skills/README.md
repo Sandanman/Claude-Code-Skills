@@ -2,9 +2,9 @@
 
 ## 当前版本
 
-- **版本**：v.1.4.6
-- **最后更新时间**：2026-11-18
-- **变更**：新增日报 Skill（多终端取证），任务名日期序号化
+- **版本**：v.1.4.7
+- **最后更新时间**：2026-11-19
+- **变更**：删project_context.json及引用，改AI权限
 
 ## 版本信息
 
@@ -20,9 +20,8 @@
 ```text
 .claude/
 ├── rules/                                  # 项目规则
-├── project_context.json                    # 项目上下文
-├── settings.json                           # Claude Code 配置
-├── settings.local.json                     # 本地配置
+├── settings.json                           # 团队共用配置（权限、hooks、诊断）
+├── settings.local.json                     # 个人本地配置（模型、commands、报告权限）
 └── skills/
     ├── orchestrator/                       # 统一任务编排器
     │   ├── SKILL.md                        # 核心入口与统一执行流程
@@ -70,7 +69,6 @@
 
 ### 1. 意图识别增强（步骤1）
 
-- **上下文感知**：自动读取 `.claude/project_context.json` 作为背景
 - **LLM驱动**：结构化意图JSON（intent_id, domain, action, target, keywords, constraints, success_criteria, complexity_assessment, confidence）
 - **置信度分级**：<0.6 时提示用户确认
 - **智能fallback**：LLM不可用时自动切换到规则算法
@@ -103,7 +101,7 @@
 ### 6. 归档增强（步骤9）
 
 - **自动归档**：所有原子skill执行完毕后自动归档
-- **月度索引**：自动维护 `docs/lijianxin/tasks/history/YYYY-MM/月度任务索引.md`
+- **月度索引**：自动维护 `docs/lijianxin/tasks/history/YYYY-MM/index.md`
 - **可固化检测**：识别可复用文档
 
 ---
@@ -159,5 +157,5 @@
 
 ---
 
-**当前版本**：v.1.4.6
-**最后更新时间**：2026-11-18
+**当前版本**：v.1.4.7
+**最后更新时间**：2026-11-19

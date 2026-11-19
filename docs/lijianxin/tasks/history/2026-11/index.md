@@ -7,6 +7,7 @@
 | 20261117-003 | 依据页面布局文档生成 React + Antd 3 代码 | code-generator | durable | L1 | 已完成（partial：未做语法/构建校验） | 2026-11-17 14:19 | [task_20261117-003.md](task_20261117-003.md) |
 | 20261118-001 | 新建 daily-report（支持指定日期）并将 project-planner 恢复为 v1.0 | skill-creator-orchestrator | durable | L1 | 已完成（passed） | 2026-11-18 | [task_20261118-001.md](task_20261118-001.md) |
 | 20261118-002 | 统一任务命名为 task_YYYYMMDD-NNN 并更新生成规则 | orchestrator | durable | L1 | 已完成（passed） | 2026-11-18 | [task_20261118-002.md](task_20261118-002.md) |
+| 20261119-001 | 发布 v.1.4.7：更新版本文档并生成归档 ZIP | claude-code-skills-release-manager | durable | L1 | 已完成（passed） | 2026-11-19 | [task_20261119-001.md](task_20261119-001.md) |
 
 ## 任务摘要
 
@@ -39,3 +40,9 @@
 - 产出：重命名 4 个历史任务文件；更新 orchestrator、task-generator、task-archiver、模板、配置、设计文档中的命名规则。
 - 校验：历史目录无旧格式残留，规则文件 grep 仅剩兼容读取说明，passed。
 - 风险备注：未执行 git commit；`.claude/skills/tasks/history` 旧路径历史未改。
+
+### 20261119-001
+- 最终目标：发布 v.1.4.7，反映 `.claude/project_context.json` 删除及相关引用清理、AI 操作权限调整。
+- 产出：`VERSION.md` 新增 v.1.4.7 条目；`.claude/skills/README.md` 版本同步；`.claude/history/v.1.4.7.zip`。
+- 校验：`unzip -t` 无错误；ZIP 含 settings.local.json 且与源文件一致，skills/README.md 单份，无 project_context.json，passed。
+- 风险备注：提交栏为“待提交”，提交后需回填 hash；临时目录由用户手动删除（钩子拦截 rm）。

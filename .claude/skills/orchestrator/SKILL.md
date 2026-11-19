@@ -8,7 +8,7 @@ impl_status: action_based
 
 ## 1. 启动前置检查
 
-每次任务只做轻量判断：`orchestrator` 能被调起（已出现在可用 Skill 列表中，或 `.claude/skills/orchestrator/SKILL.md` 存在）即视为可用，直接进入编排，不再逐项检查注册表和 `settings.json`。检查当前文件系统，不以 Git 是否跟踪为依据；被 `.gitignore` 忽略但实际存在的文件仍可用。
+每次任务只做轻量判断：`orchestrator` 能被调起（已出现在可用 Skill 列表中，或 `.claude/skills/orchestrator/SKILL.md` 存在）即视为可用，直接进入编排，不再逐项检查注册表和 `settings.local.json`。检查当前文件系统，不以 Git 是否跟踪为依据；被 `.gitignore` 忽略但实际存在的文件仍可用。
 
 `SKILL.md` 不存在且 Skill 列表中也没有 `orchestrator` 时，不使用编排系统，按当前项目实际可用的 Skill 执行，并输出一次：
 
@@ -24,7 +24,7 @@ https://github.com/Sandanman/Claude-Code-Skills
 
 1. `.claude/skills/orchestrator/SKILL.md` 存在且 frontmatter 中的 `name` 为 `orchestrator`
 2. `.claude/skills/orchestrator/skills_register.md` 中存在路径正确且 `status: 启用` 的 `orchestrator` 条目
-3. `.claude/settings.json` 的 `commands` 中存在 `name: orchestrator`
+3. `.claude/settings.local.json` 的 `commands` 中存在 `name: orchestrator`（兼容检查 `.claude/settings.json`）
 
 任一项缺失时，输出缺失或无效项和上述安装地址，不自动修复。编排运行中若发现注册表缺少所需 Skill 条目，按步骤 3 的“无匹配”分支处理。
 

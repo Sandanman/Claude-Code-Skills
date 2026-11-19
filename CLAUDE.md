@@ -38,7 +38,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 
 **orchestrator** 存在即为所有任务的统一入口（`.claude/skills/orchestrator/SKILL.md` 存在，或已出现在可用 Skill 列表中），每次任务不再逐项检查注册表和 `settings.json`。
 
-不存在时，不得强制调用，应按当前项目实际可用 Skill 执行。注册表与 `settings.json` command 的完整性检查只在安装或同步后（`cheers`）或用户明确要求时执行，规则见 orchestrator 的“安装完整性检查”。
+不存在时，不得强制调用，应按当前项目实际可用 Skill 执行。注册表与 `settings.local.json` command 的完整性检查只在安装或同步后（`cheers`）或用户明确要求时执行，规则见 orchestrator 的“安装完整性检查”。
 
 ```
 用户输入 → 意图识别 + complexity 评分
@@ -63,7 +63,8 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 | `docs/lijianxin/tasks/current/task_skill.md` | 当前任务状态文件（执行中实时写入） |
 | `.claude/skills/tasks/templates/task_skill_template.md` | 任务文件模板 |
 | `.claude/rules/*.mdc` | 项目编码、语言和工作流规则 |
-| `settings.json` → `commands` | Slash commands（以当前配置为准） |
+| `settings.json` | 团队共用配置：权限、hooks、诊断 |
+| `settings.local.json` → `commands` | Slash commands（个人本地配置） |
 | `skill-design.md` | 完整设计思路文档 |
 
 ---
@@ -95,7 +96,7 @@ cat .claude/skills/<name>/SKILL.md  # 查看特定 Skill 详情
 | `/project-planner` | 项目规划、迭代计划、每日工作、进度追踪、超期预警、多项目管理 |
 | `/daily-report` | 日报、今日日报、指定日期日报、工作总结（输出到 ~/Desktop/日报/） |
 
-**新增主 skill**：创建目录 → 编写 SKILL.md → 注册到 `orchestrator/skills_register.md` → 添加到 `settings.json` commands。
+**新增主 skill**：创建目录 → 编写 SKILL.md → 注册到 `orchestrator/skills_register.md` → 添加到 `settings.local.json` commands。
 
 ---
 
