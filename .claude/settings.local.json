@@ -94,7 +94,7 @@
     },
     {
       "name": "daily-report",
-      "description": "生成并维护桌面月度日报 ~/Desktop/日报/YYYY年MM月.txt，默认今日、支持指定日期，同日追加去重，多终端项目优先分组并加锁写入"
+      "description": "生成并维护桌面月度日报 ~/Desktop/日报/YYYY年MM月.txt，按周分组并附按项目分段的周报（每项目20～60字）、月报（每项目20～80字），默认今日、支持指定日期，同日追加去重，多终端项目优先分组并加锁写入"
     },
     {
       "name": "page-layout-designer",
