@@ -1,5 +1,106 @@
 {
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.anthropic.com)",
+      "Bash(git ls-tree:*)",
+      "Read(//Users/lijianxin1/Desktop/sandaman/21-ai-code/jiawei/**)",
+      "Read(//Users/lijianxin1/Desktop/sandaman/20-ai/**)",
+      "Read(//Users/lijianxin1/Desktop/sandaman/20-ai-code/**)",
+      "Read(//Users/lijianxin1/Desktop/日报/**)",
+      "Bash(chmod 644 ~/Desktop/日报/*.txt)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/*.md)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/pipelines/*)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/*/SKILL.md)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/*)",
+      "Read($CLAUDE_PROJECT_DIR/.claude/skills/tasks/templates/*)",
+      "Read($CLAUDE_PROJECT_DIR/docs/lijianxin/**)",
+      "Edit($CLAUDE_PROJECT_DIR/docs/lijianxin/**)",
+      "Write($CLAUDE_PROJECT_DIR/docs/lijianxin/**)",
+      "Edit($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
+      "Edit($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/missing_skills.md)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/current)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9])",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/*)",
+      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/SKILL.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/SKILL.md)",
+      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/README.md)",
+      "Bash(mv $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/current/task_*.md $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/task_*.md)",
+      "Bash(echo \"\" >> $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/index.md)",
+      "Read(//Users/lijianxin1/.claude/projects/-Users-lijianxin1-work-worker/memory/**)",
+      "Bash(printf '%s\\\\n' '- [提交包含 settings.local.json]\\(feedback_commit_settings_local.md\\) — Claude-Code-Skills 项目中它有变更需一并提交，不再排除')"
+    ]
+  },
   "model": "Opus",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n⚠️  上下文管理提醒：单次会话上下文有限，复杂任务完成后建议新建会话来获得最佳效果。\n    如需压缩上下文，可使用 /compact 命令。\n'"
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n🔄  上下文即将超过限制，系统将自动压缩上下文...'"
+          },
+          {
+            "type": "prompt",
+            "prompt": "上下文压缩即将触发。Claude Code 将自动压缩上下文以继续任务。\n压缩前请：\n1. 记住当前任务的关键状态和进度\n2. 记住待完成的关键步骤\n3. 压缩完成后，如需要关键上下文（任务目标、文件路径、待完成步骤），请告知我，我会从项目文件和记忆系统中恢复"
+          }
+        ]
+      }
+    ],
+    "PostCompact": [
+      {
+        "matcher": "auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n✅  上下文压缩完成，任务已继续执行。'"
+          },
+          {
+            "type": "prompt",
+            "prompt": "上下文压缩完成。任务继续执行。如果需要恢复关键上下文（任务目标、文件路径、待完成步骤），请告知我，我会从项目文件和记忆系统中恢复。"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "clear",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '\n⚠️  【重要】上下文即将超过最大限制，建议开始新的任务以获得最佳体验。\n    复杂任务建议分阶段执行，每阶段完成后新建会话。'"
+          },
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"上下文即将超过最大限制，建议开始新的任务\" with title \"Claude Code\"' 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "如果当前上下文使用量已接近最大限制，请在下次回复开始时提示用户：「⚠️  上下文使用量较高，建议使用 /compact 压缩或开始新任务以保持最佳性能。」"
+          }
+        ]
+      }
+    ]
+  },
   "modelCatalog": [
     "Default (recommended) ",
     "Opus",
@@ -101,105 +202,6 @@
       "description": "通过分阶段提问设计前端页面布局、组件、交互、页面状态、响应式行为和视觉规范，生成可供 AI 读取并用于页面代码生成的 Markdown 与 JSON 页面设计文档"
     }
   ],
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:docs.anthropic.com)",
-      "Bash(git ls-tree:*)",
-      "Read(//Users/lijianxin1/Desktop/sandaman/21-ai-code/jiawei/**)",
-      "Read(//Users/lijianxin1/Desktop/sandaman/20-ai/**)",
-      "Read(//Users/lijianxin1/Desktop/sandaman/20-ai-code/**)",
-      "Read(//Users/lijianxin1/Desktop/日报/**)",
-      "Bash(chmod 644 ~/Desktop/日报/*.txt)",
-      "Read($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/*.md)",
-      "Read($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/pipelines/*)",
-      "Read($CLAUDE_PROJECT_DIR/.claude/skills/*/SKILL.md)",
-      "Read($CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/*)",
-      "Read($CLAUDE_PROJECT_DIR/.claude/skills/tasks/templates/*)",
-      "Read($CLAUDE_PROJECT_DIR/docs/lijianxin/**)",
-      "Edit($CLAUDE_PROJECT_DIR/docs/lijianxin/**)",
-      "Write($CLAUDE_PROJECT_DIR/docs/lijianxin/**)",
-      "Edit($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/skills_register.md)",
-      "Edit($CLAUDE_PROJECT_DIR/.claude/skills/orchestrator/missing_skills.md)",
-      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/current)",
-      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9])",
-      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/*)",
-      "Bash(mkdir -p $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills)",
-      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/SKILL.md)",
-      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/SKILL.md)",
-      "Bash(touch $CLAUDE_PROJECT_DIR/.claude/skills/*/atomic-skills/README.md)",
-      "Bash(mv $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/current/task_*.md $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/task_*.md)",
-      "Bash(echo \"\" >> $CLAUDE_PROJECT_DIR/docs/lijianxin/tasks/history/[0-9][0-9][0-9][0-9]-[0-9][0-9]/index.md)"
-    ]
-  },
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "startup",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '\n⚠️  上下文管理提醒：单次会话上下文有限，复杂任务完成后建议新建会话来获得最佳效果。\n    如需压缩上下文，可使用 /compact 命令。\n'"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '\n🔄  上下文即将超过限制，系统将自动压缩上下文...'"
-          },
-          {
-            "type": "prompt",
-            "prompt": "上下文压缩即将触发。Claude Code 将自动压缩上下文以继续任务。\n压缩前请：\n1. 记住当前任务的关键状态和进度\n2. 记住待完成的关键步骤\n3. 压缩完成后，如需要关键上下文（任务目标、文件路径、待完成步骤），请告知我，我会从项目文件和记忆系统中恢复"
-          }
-        ]
-      }
-    ],
-    "PostCompact": [
-      {
-        "matcher": "auto",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '\n✅  上下文压缩完成，任务已继续执行。'"
-          },
-          {
-            "type": "prompt",
-            "prompt": "上下文压缩完成。任务继续执行。如果需要恢复关键上下文（任务目标、文件路径、待完成步骤），请告知我，我会从项目文件和记忆系统中恢复。"
-          }
-        ]
-      }
-    ],
-    "SessionEnd": [
-      {
-        "matcher": "clear",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '\n⚠️  【重要】上下文即将超过最大限制，建议开始新的任务以获得最佳体验。\n    复杂任务建议分阶段执行，每阶段完成后新建会话。'"
-          },
-          {
-            "type": "command",
-            "command": "osascript -e 'display notification \"上下文即将超过最大限制，建议开始新的任务\" with title \"Claude Code\"' 2>/dev/null || true"
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "idle_prompt",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "如果当前上下文使用量已接近最大限制，请在下次回复开始时提示用户：「⚠️  上下文使用量较高，建议使用 /compact 压缩或开始新任务以保持最佳性能。」"
-          }
-        ]
-      }
-    ]
-  },
   "auto-save": true,
   "history": {
     "maxSessions": 50
